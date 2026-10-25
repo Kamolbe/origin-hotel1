@@ -62,7 +62,7 @@ Bu buyruq lockfile bo‘yicha `npm.cmd ci` qiladi, Firebase/Tailwind fayllarini 
 
 ## Kabinet, bron havolalari va admin boshqaruvi
 
-Asosiy sahifadagi bron tugmalari `/app/rooms` manziliga olib boradi. Kirilmagan bo‘lsa login orqali qaytiladi; sanalar, mehmonlar soni va tanlangan xona turi saqlanadi. Tizimga kirgan foydalanuvchi `/login` ochsa kabinetga qaytariladi. Xona kartasidagi “Batafsil” esa kirishni talab qilmaydigan modalni ochadi.
+Asosiy sahifadagi bron tugmalari `/app/rooms` manziliga olib boradi. Kirilmagan bo‘lsa login orqali qaytiladi; sanalar, mehmonlar soni va tanlangan xona turi saqlanadi. Tizimga kirgan foydalanuvchi `/login` ochsa kabinetga qaytariladi. Xona kartasidagi “Batafsil” esa kirishni talab qilmaydigan `/rooms/:roomId` sahifasini ochadi.
 
 Admin → Sozlamalar → Mehmonxona va aloqa orqali nom, telefon, email, manzil va xarita havolasini o‘zgartirish mumkin. Bu qiymatlar asosiy sahifa, navigatsiya va footer’da ishlatiladi. Admin → Xonalar’da yaratish/tahrirlash/o‘chirish bor; bron tarixi bor xona o‘chirilmaydi. Admin → Foydalanuvchilar’da lokal hisoblar, oxirgi kirish va faoliyat tarixi ko‘rinadi.
 

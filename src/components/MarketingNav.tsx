@@ -31,10 +31,10 @@ export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
 
   const transparent = overlay && !scrolled && !menuOpen;
   const links = [
-    { href: '#rooms', label: t('nav.rooms') },
-    { href: '#about', label: t('nav.about') },
-    { href: '#reviews', label: t('landing.reviewsTitle') },
-    { href: '#contact', label: t('nav.contact') },
+    { href: '/#rooms', label: t('nav.rooms') },
+    { href: '/#about', label: t('nav.about') },
+    { href: '/#reviews', label: t('landing.reviewsTitle') },
+    { href: '/#contact', label: t('nav.contact') },
   ];
   const accountPath = '/app';
   const iconButton = `rounded-full border p-2.5 transition ${transparent ? 'border-white/30 text-white hover:border-champagne hover:text-champagne' : 'border-[var(--line)] text-[var(--text)] hover:border-champagne hover:text-champagne'}`;

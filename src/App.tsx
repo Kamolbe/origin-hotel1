@@ -5,6 +5,7 @@ import { AppLayout } from './app/AppLayout';
 import { UnauthorizedPage, NotFoundPage } from './pages/UtilityPages';
 import type { UserRole } from './types';
 
+const RoomDetailsPage = lazy(async () => ({ default: (await import('./pages/RoomDetailsPage')).RoomDetailsPage }));
 const LandingPage = lazy(async () => ({ default: (await import('./pages/LandingPage')).LandingPage }));
 const LoginPage = lazy(async () => ({ default: (await import('./pages/LoginPage')).LoginPage }));
 const DashboardPage = lazy(async () => ({ default: (await import('./pages/DashboardPage')).DashboardPage }));
@@ -25,6 +26,7 @@ function RouteFallback() {
 export function App() {
   return <Suspense fallback={<RouteFallback />}><Routes>
     <Route path="/" element={<LandingPage />} />
+    <Route path="/rooms/:roomId" element={<RoomDetailsPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/unauthorized" element={<UnauthorizedPage />} />
     <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

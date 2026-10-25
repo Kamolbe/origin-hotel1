@@ -11,11 +11,11 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   const explore = [
-    { href: '#rooms', label: t('nav.rooms') },
-    { href: '#about', label: t('nav.about') },
-    { href: '#gallery', label: t('landing.galleryTitle') },
-    { href: '#reviews', label: t('landing.reviewsTitle') },
-    { href: '#contact', label: t('nav.contact') },
+    { href: '/#rooms', label: t('nav.rooms') },
+    { href: '/#about', label: t('nav.about') },
+    { href: '/#gallery', label: t('landing.galleryTitle') },
+    { href: '/#reviews', label: t('landing.reviewsTitle') },
+    { href: '/#contact', label: t('nav.contact') },
   ];
   const services = [
     { to: '/app/rooms', label: t('landing.book') },
