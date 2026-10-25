@@ -1,0 +1,118 @@
+export type UserRole = 'user' | 'manager' | 'admin';
+export type RoomType = 'Standard' | 'Deluxe' | 'Suite' | 'Family' | 'Presidential';
+export type RoomStatus = 'available' | 'occupied' | 'cleaning' | 'maintenance';
+export type BookingStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed';
+export type FinanceType = 'income' | 'expense';
+export type FinanceCategory = 'room_revenue' | 'food_and_beverage' | 'housekeeping' | 'utilities' | 'maintenance' | 'payroll' | 'supplies' | 'marketing' | 'other';
+export type FinancePaymentMethod = 'cash' | 'card' | 'bank_transfer' | 'online';
+export type Currency = 'UZS' | 'USD' | 'EUR';
+
+export interface DemoUserCredentials {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  accessCode?: string;
+}
+
+export interface User extends DemoUserCredentials {
+  isActive: boolean;
+  createdAt: string;
+  phone?: string;
+  avatarUrl?: string;
+  twoFactorEnabled?: boolean;
+}
+
+export interface Guest {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  nationality: string;
+  createdAt: string;
+  notes?: string;
+}
+
+export interface Room {
+  id: string;
+  number: string;
+  floor: number;
+  type: RoomType;
+  status: RoomStatus;
+  capacity: number;
+  pricePerNight: number;
+  amenities: string[];
+}
+
+export interface Booking {
+  id: string;
+  bookingNumber: string;
+  userId?: string;
+  guestId: string;
+  roomId: string;
+  checkIn: string;
+  checkOut: string;
+  status: BookingStatus;
+  adults: number;
+  children: number;
+  totalAmount: number;
+  paidAmount: number;
+  source: 'website' | 'phone' | 'walk_in' | 'travel_partner';
+  createdAt: string;
+  notes?: string;
+}
+
+export interface FinanceEntry {
+  id: string;
+  type: FinanceType;
+  category: FinanceCategory;
+  amount: number;
+  date: string;
+  description: string;
+  paymentMethod: FinancePaymentMethod;
+  bookingId?: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  userId?: string;
+  type: 'booking' | 'payment' | 'system';
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  entityType: 'room' | 'guest' | 'booking' | 'finance' | 'user';
+  entityId: string;
+  userId?: string;
+  createdAt: string;
+  details?: Record<string, unknown>;
+}
+
+export interface AppSettings {
+  hotelName: string;
+  currency: Currency;
+  timeZone: string;
+  dateFormat: string;
+  checkInTime: string;
+  checkOutTime: string;
+  taxRate: number;
+  serviceFeeRate: number;
+}
+
+export interface AppData {
+  rooms: Room[];
+  guests: Guest[];
+  bookings: Booking[];
+  finance: FinanceEntry[];
+  users: User[];
+  notifications: NotificationItem[];
+  auditLog: AuditEntry[];
+  settings: AppSettings;
+}
