@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BedDouble, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +18,7 @@ const ROOM_LABEL_KEY: Record<RoomType, string> = {
 };
 
 export function RoomsShowcase() {
+  const reduced = usePrefersReducedMotion();
   const { t } = useTranslation();
   const { data } = useAppData();
   const rooms = ROOM_ORDER.map((type) => ({ type, room: data.rooms.find((item) => item.type === type) })).filter((entry) => entry.room);
@@ -28,7 +31,7 @@ export function RoomsShowcase() {
     </div>
 
     <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {rooms.map(({ type, room }) => <article key={type} className="surface group flex flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1 hover:shadow-lift">
+      {rooms.map(({ type, room }, index) => <motion.article initial={reduced ? false : { opacity: 0, y: 55 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .15 }} transition={{ duration: .65, delay: index % 3 * .12 }} key={type} className="surface group flex flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1 hover:shadow-lift">
         <div className="relative h-56 overflow-hidden">
           <img
             src={optimizedUnsplashUrl(roomPhotoForType(type), 720, 74)}
@@ -53,7 +56,7 @@ export function RoomsShowcase() {
             <Link to="/login" className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-4 py-2.5 text-[11px] font-semibold transition hover:border-champagne hover:bg-champagne/10 hover:text-champagne">{t('landing.reserve')}<ArrowRight size={13} /></Link>
           </div>
         </div>
-      </article>)}
+      </motion.article>)}
 
       <article className="flex flex-col justify-between rounded-3xl border border-champagne/40 bg-champagne/10 p-6">
         <div>

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useInView } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { HOTEL } from '../../data/marketing';
@@ -44,8 +45,10 @@ export function StatsStrip() {
 }
 
 function Counter({ label, value, decimals, suffix, enabled }: { label: string; value: number; decimals: number; suffix: string; enabled: boolean }) {
-  const formatted = useCountUp(value, decimals, enabled);
-  return <div className="border-l-2 border-champagne/40 pl-5">
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useInView(ref, { once: true, amount: .5 });
+  const formatted = useCountUp(value, decimals, enabled && visible);
+  return <div ref={ref} data-reveal-item className="border-l-2 border-champagne/40 pl-5">
     <p className="font-display text-4xl lg:text-5xl">{formatted}<span className="ml-1 text-2xl text-champagne">{suffix}</span></p>
     <p className="mt-2 text-[11px] font-semibold uppercase tracking-[.14em] text-muted">{label}</p>
   </div>;

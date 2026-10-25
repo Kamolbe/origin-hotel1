@@ -1,3 +1,4 @@
+import { Select } from '../Select';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CalendarDays, Users } from 'lucide-react';
@@ -45,9 +46,9 @@ export function BookingSearch({ className = '' }: { className?: string }) {
     </div>
     <label className="mt-3 block">
       <span className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-muted"><Users size={12} className="text-champagne" />{t('landing.guests')}</span>
-      <select value={guests} onChange={(event) => setGuests(event.target.value)} className={fieldClass}>
+      <Select value={guests} onChange={(event) => setGuests(event.target.value)} className={fieldClass}>
         {['1', '2', '3', '4'].map((count) => <option key={count} value={count}>{count}</option>)}
-      </select>
+      </Select>
     </label>
     {error && <p role="alert" className="mt-3 rounded-xl border border-danger/40 bg-danger/10 px-3.5 py-2.5 text-[11px] font-medium text-danger">{error}</p>}
     <button type="submit" className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-champagne px-5 py-3.5 text-xs font-bold text-ink transition hover:bg-ink hover:text-white">
