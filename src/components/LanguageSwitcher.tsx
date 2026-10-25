@@ -1,3 +1,5 @@
+import { AnimatePresence, motion } from 'framer-motion';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, Globe2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -5,6 +7,7 @@ import { i18n, supportedLanguages, type SupportedLanguage } from '../i18n';
 
 export function LanguageSwitcher({ light = false }: { light?: boolean }) {
   const { i18n: activeI18n } = useTranslation();
+  const reduced = usePrefersReducedMotion();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const current = supportedLanguages.find(({ code }) => code === activeI18n.language.split('-')[0]) ?? supportedLanguages[0];
@@ -35,8 +38,6 @@ export function LanguageSwitcher({ light = false }: { light?: boolean }) {
   return <div
     ref={rootRef}
     className="relative"
-    onMouseEnter={() => setOpen(true)}
-    onMouseLeave={() => setOpen(false)}
   >
     <button
       type="button"
@@ -51,7 +52,7 @@ export function LanguageSwitcher({ light = false }: { light?: boolean }) {
       <ChevronDown size={13} className={`ml-auto transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
     </button>
 
-    {open && <div role="menu" aria-label="Tilni tanlang" className="absolute right-0 top-full z-[70] w-[230px] pt-2">
+    <AnimatePresence>{open && <motion.div initial={reduced ? false : { opacity: 0, y: -8, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: reduced ? 0 : -6, scale: reduced ? 1 : .98 }} transition={{ duration: reduced ? 0 : .32, ease: [.22, 1, .36, 1] }} style={{ transformOrigin: 'top right' }} role="menu" aria-label="Tilni tanlang" className="absolute right-0 top-full z-[70] w-[230px] pt-2">
       <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-1.5 shadow-lift">
         <p className="px-3 pb-1 pt-2 text-[9px] font-bold uppercase tracking-[.18em] text-champagne">Tilni tanlang</p>
         {supportedLanguages.map((language) => {
@@ -69,6 +70,6 @@ export function LanguageSwitcher({ light = false }: { light?: boolean }) {
           </button>;
         })}
       </div>
-    </div>}
+    </motion.div>}</AnimatePresence>
   </div>;
 }
