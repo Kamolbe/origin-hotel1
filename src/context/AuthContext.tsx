@@ -126,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, data.users, updateData, establishSession]);
 
   const logout = useCallback(() => {
+    void import('../services/googleAuth').then(({ signOutFirebaseGoogle }) => signOutFirebaseGoogle()).catch(() => { /* Local logout still completes offline. */ });
     setUser(null);
     try { localStorage.removeItem(SESSION_KEY); } catch { /* Ignore unavailable storage. */ }
   }, []);

@@ -38,22 +38,14 @@ Dashboard’dagi daromad grafigi ham viewport’ga yaqinlashgandagina alohida ko
 
 ## Google bilan kirish
 
-“Google bilan kirish” haqiqiy Google Identity Services (GIS) oqimidan foydalanadi va `VITE_GOOGLE_CLIENT_ID` muhit o‘zgaruvchisi bilan sozlanadi:
+Google kirish Firebase Authentication orqali `signInWithPopup` va `GoogleAuthProvider` bilan ishlaydi. Firebase web konfiguratsiyasi `src/services/googleAuth.ts` ichida saqlangan; Client Secret kerak emas. `VITE_GOOGLE_CLIENT_ID` endi ishlatilmaydi.
 
-1. Google Cloud Console’da OAuth 2.0 turidagi “Web application” client yarating.
-2. **Authorized JavaScript origins** ro‘yxatiga har bir manzilni alohida qo‘shing: mahalliy ishlab chiqish uchun `http://localhost:3000`, preview uchun `https://3000-$BASE44_PUBLIC_HOST_SUFFIX` (joriy qiymatni ilova muhitidan oling) va ishlab chiqarish domeningiz.
-3. Client ID’ni ilovaning **Secrets** bo‘limiga `VITE_GOOGLE_CLIENT_ID` nomi bilan kiriting. Qiymat konteynerga `/run/base44/app.env` orqali uzatiladi; Vite muhit o‘zgaruvchilarini ishga tushishda o‘qiganligi uchun servis qayta ishga tushiriladi.
+1. Firebase Console → origin-hotel → Authentication → Sign-in method → Google → Enable. Support email tanlab, saqlang.
+2. Authentication → Settings → Authorized domains ro‘yxatiga `localhost` va haqiqiy sayt domenini kiriting (protokol, port va yo‘lsiz). Yangi Firebase loyihalarida localhost avtomatik qo‘shilmasligi mumkin.
+3. O‘zgartirishlardan so‘ng saytni yangilang. Popup bloklangan bo‘lsa, shu sayt uchun popup’ga ruxsat bering.
 
-Client ID berilmasa ilova ishlashda davom etadi: tugma “Google orqali kirish hozircha sozlanmagan” deb xabar beradi.
-
-Google hisobi bilan kirgan foydalanuvchi har doim **mehmon (`user`)** rolini oladi. Admin va manager rollari faqat email + maxsus kod orqali beriladi, shu tariqa Google identifikatori o‘zi bilan yuqori huquq olib kelmaydi. ID token `accounts.google.com` tomonidan imzolanadi; uni serverda qo‘shimcha tekshirish faqat backend qo‘shilganda talab qilinadi.
+Google hisobi faqat mehmon rolini oladi; mavjud admin yoki manager hisobiga shu yo‘l bilan kirilmaydi. Firebase foydalanuvchini tekshiradi, lekin mehmonxona ma’lumotlari va ilova sessiyasi hozircha lokal demo: bu o‘zgarish backend avtorizatsiyasini qo‘shmaydi. Haqiqiy hisob bilan kirish Firebase provider va domen sozlamalari tayyor bo‘lgach tekshiriladi.
 
 ## Bron oynasi va Preview
 
 Xona kartasidan bron so‘ralganda dialog tanlangan xona rasmi, turi/raqami, sig‘imi, qulayliklari va narxini ko‘rsatadi; desktop’da rasm va forma yonma-yon, telefonda esa ixcham rasm kartasi yuqorida turadi. Dialog ekran markazida ochiladi, uzun formalar ichida scroll bo‘ladi, sarlavha va yuborish/bekor qilish amallari ko‘rinishda qoladi. Bron sanalari bo‘sh kelsa, kelish ertaga va ketish keyingi kunga qo‘yiladi; yaroqsiz sanalarda jami narx ko‘rsatilmaydi va bron yuborilmaydi. Vite Preview serveri `.manus.computer` domeniga ruxsat beradi, qolgan noma’lum hostlarni ochiq qoldirmaydi.
-
-## Google OAuth client sozlamasi
-
-Origin Hotel uchun public Web Client ID kodda standart sifatida sozlangan; boshqa client ishlatish uchun `VITE_GOOGLE_CLIENT_ID` orqali almashtiring. Client secret brauzer kodiga kiritilmaydi.
-
-Google Cloud Console → APIs & Services → Credentials → shu OAuth Web client → Authorized JavaScript origins ichiga `http://localhost:3000` va saytingizning haqiqiy HTTPS originini (yo‘lsiz) kiriting. Firebase authorized domains ro‘yxati GIS uchun ushbu origin sozlamasining o‘rnini bosmaydi. Haqiqiy Google hisobiga kirishni tekshirish uchun shu origin ruxsati talab qilinadi.

@@ -1,79 +1,29 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Info } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
-import {
-  googleClientId,
-  isGoogleSignInConfigured,
-  loadGoogleIdentityServices,
-  readGoogleCredential,
-  renderGoogleButton,
-  type GoogleProfile,
-} from '../services/googleAuth';
+import { LoaderCircle } from 'lucide-react';
+import { googleSignInError, signInWithFirebaseGoogle, type GoogleProfile } from '../services/googleAuth';
 
-/**
- * Renders Google's official button when a client id is configured, and a plain
- * button that explains what is missing when it is not.
- */
 export function GoogleSignInButton({ onProfile, onError }: {
   onProfile: (profile: GoogleProfile) => void;
   onError: (message: string) => void;
 }) {
   const { t } = useTranslation();
-  const { theme } = useTheme();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const renderedRef = useRef(false);
-  const [configured] = useState(() => isGoogleSignInConfigured());
-  const [hint, setHint] = useState('');
-
-  const handleCredential = useCallback((credential: string) => {
-    try {
-      onProfile(readGoogleCredential(credential, googleClientId()));
-    } catch {
-      onError(t('auth.googleFailed'));
-    }
-  }, [onProfile, onError, t]);
-
-  useEffect(() => {
-    if (!configured || renderedRef.current) return;
-    const element = containerRef.current;
-    const clientId = googleClientId();
-    if (!element || !clientId) return;
-
-    let cancelled = false;
-    loadGoogleIdentityServices()
-      .then(() => {
-        if (cancelled || !containerRef.current) return;
-        renderGoogleButton(containerRef.current, clientId, handleCredential, {
-          theme: theme === 'dark' ? 'filled_black' : 'outline',
-          width: 360,
-        });
-        renderedRef.current = true;
-      })
-      .catch(() => { if (!cancelled) onError(t('auth.googleFailed')); });
-
-    return () => { cancelled = true; };
-  }, [configured, handleCredential, onError, t, theme]);
-
-  if (configured) {
-    return <div className="mt-5">
-      <div ref={containerRef} className="flex min-h-[44px] justify-center" />
-      <p className="mt-2 text-center text-[10px] text-muted">{t('auth.googleTrust')}</p>
-    </div>;
+  const [busy, setBusy] = useState(false);
+  const pending = useRef(false);
+  async function signIn() {
+    if (pending.current) return;
+    pending.current = true;
+    setBusy(true);
+    onError('');
+    try { onProfile(await signInWithFirebaseGoogle()); }
+    catch (error) { onError(googleSignInError(error)); }
+    finally { pending.current = false; setBusy(false); }
   }
-
   return <div className="mt-5">
-    <button
-      type="button"
-      onClick={() => { setHint(t('auth.googleUnavailable')); onError(t('auth.googleUnavailable')); }}
-      className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-xs font-semibold transition hover:border-champagne"
-    >
-      <GoogleGlyph />{t('auth.google')}
+    <button type="button" onClick={signIn} disabled={busy} aria-busy={busy} className="flex w-full items-center justify-center gap-3 rounded-full border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-xs font-semibold text-[var(--text)] transition hover:border-champagne disabled:cursor-wait disabled:opacity-60">
+      {busy ? <LoaderCircle size={16} className="animate-spin" /> : <GoogleGlyph />}{busy ? 'Google bilan ulanmoqda…' : t('auth.google')}
     </button>
-    {hint && <p className="mt-2 flex items-start gap-2 rounded-xl border border-[var(--line)] bg-[var(--page)] px-3.5 py-2.5 text-[10px] leading-5 text-muted">
-      <Info size={13} className="mt-0.5 shrink-0 text-champagne" />
-      <span>{hint}</span>
-    </p>}
+    <p className="mt-2 text-center text-[10px] text-muted">{t('auth.googleTrust')}</p>
   </div>;
 }
 

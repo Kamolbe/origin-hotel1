@@ -1,139 +1,50 @@
-/**
- * "Continue with Google", implemented with Google Identity Services (GIS).
- *
- * Uses the hotel's public OAuth web client ID by default. Deployments can
- * override it through VITE_GOOGLE_CLIENT_ID. OAuth client IDs are public
- * browser identifiers, not client secrets.
- *
- * The ID token is decoded here to read the verified profile (email, name,
- * picture). Signature verification is deliberately left to `accounts.google.com`
- * — a production deployment that must *trust* the token for server-side
- * authorisation has to verify it on a backend as well.
- */
-export const GOOGLE_SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
+import { initializeApp, getApps } from 'firebase/app';
+import { GoogleAuthProvider, getAuth, signInWithPopup, signOut, type Auth } from 'firebase/auth';
 
+export type GoogleProfile = { id: string; email: string; name: string; picture?: string };
 
-
-export type GoogleProfile = {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
+// Firebase web configuration is public. Never put a client secret here.
+const firebaseConfig = {
+  apiKey: 'AIzaSyB0V2FzD0O7H23h3-P0jJaA5_vk0wTV6Cs',
+  authDomain: 'origin-hotel.firebaseapp.com',
+  projectId: 'origin-hotel',
+  storageBucket: 'origin-hotel.firebasestorage.app',
+  messagingSenderId: '91387979562',
+  appId: '1:91387979562:web:8df372021a1302ff872053',
 };
+let auth: Auth | undefined;
+function firebaseAuth(): Auth {
+  const app = getApps().find((item) => item.name === 'origin-hotel-auth') ?? initializeApp(firebaseConfig, 'origin-hotel-auth');
+  return auth ??= getAuth(app);
+}
 
-type GoogleCredentialResponse = { credential?: string };
-
-type GoogleIdentityServices = {
-  accounts: {
-    id: {
-      initialize: (options: { client_id: string; callback: (response: GoogleCredentialResponse) => void; auto_select?: boolean; cancel_on_tap_outside?: boolean }) => void;
-      renderButton: (parent: HTMLElement, options: Record<string, string | number | boolean>) => void;
-      disableAutoSelect?: () => void;
-    };
-  };
-};
-
-declare global {
-  interface ImportMetaEnv {
-    readonly VITE_GOOGLE_CLIENT_ID?: string;
+export async function signInWithFirebaseGoogle(): Promise<GoogleProfile> {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  const result = await signInWithPopup(firebaseAuth(), provider);
+  if (!result.user.email || !result.user.emailVerified) {
+    await signOut(firebaseAuth());
+    throw new Error('google-unverified-email');
   }
+  return { id: result.user.uid, email: result.user.email, name: result.user.displayName ?? result.user.email.split('@')[0], picture: result.user.photoURL ?? undefined };
+}
 
-  interface ImportMeta {
-    readonly env: ImportMetaEnv;
+export async function signOutFirebaseGoogle(): Promise<void> {
+  if (auth) await signOut(auth);
+}
+
+export function googleSignInError(error: unknown): string {
+  const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
+  switch (code) {
+    case 'auth/unauthorized-domain': return 'Bu domen Firebase’da ruxsat etilmagan. Authentication → Settings → Authorized domains ro‘yxatiga sayt domenini qo‘shing.';
+    case 'auth/operation-not-allowed': return 'Firebase Authentication’da Google orqali kirish yoqilmagan.';
+    case 'auth/popup-blocked': return 'Brauzer kirish oynasini blokladi. Shu sayt uchun popup oynalariga ruxsat bering va qayta urining.';
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request': return 'Google orqali kirish bekor qilindi. Qayta urinishingiz mumkin.';
+    case 'auth/network-request-failed': return 'Tarmoqqa ulanishda xatolik. Internetni tekshirib, qayta urining.';
+    case 'auth/invalid-api-key':
+    case 'auth/configuration-not-found': return 'Firebase loyiha sozlamalarini va Authentication yoqilganini tekshiring.';
+    case 'auth/account-exists-with-different-credential': return 'Bu email boshqa kirish usuli bilan ro‘yxatdan o‘tgan. Avval o‘sha usul bilan kiring.';
+    default: return 'Google orqali kirib bo‘lmadi. Qayta urinib ko‘ring.';
   }
-
-  interface Window {
-    google?: GoogleIdentityServices;
-  }
-}
-
-interface GoogleIdTokenClaims {
-  iss?: string;
-  aud?: string;
-  exp?: number;
-  sub?: string;
-  email?: string;
-  email_verified?: boolean | string;
-  name?: string;
-  picture?: string;
-}
-
-export function googleClientId(): string {
-  const value = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  return (typeof value === 'string' ? value.trim() : '') || '91387979562-6otor1hd5h793bg6enbk5f2ktlskr4qb.apps.googleusercontent.com';
-}
-
-export function isGoogleSignInConfigured(): boolean {
-  return googleClientId().length > 0;
-}
-
-let loader: Promise<void> | null = null;
-
-/** Loads the GIS client script once; a failed load clears the cache so a later
- *  attempt can retry instead of failing forever. */
-export function loadGoogleIdentityServices(): Promise<void> {
-  if (typeof window === 'undefined') return Promise.reject(new Error('google-unavailable'));
-  if (window.google?.accounts?.id) return Promise.resolve();
-  if (loader) return loader;
-
-  loader = new Promise<void>((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = GOOGLE_SCRIPT_SRC;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => (window.google?.accounts?.id ? resolve() : reject(new Error('google-unavailable')));
-    script.onerror = () => { loader = null; reject(new Error('google-unavailable')); };
-    document.head.appendChild(script);
-  });
-  return loader;
-}
-
-function decodeBase64Url(segment: string): string {
-  const normalized = segment.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-  const binary = atob(padded);
-  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
-
-/** Reads and sanity-checks the ID token Google returns for the signed-in user. */
-export function readGoogleCredential(credential: string, clientId: string): GoogleProfile {
-  const segments = credential.split('.');
-  if (segments.length !== 3) throw new Error('google-malformed-token');
-
-  const claims = JSON.parse(decodeBase64Url(segments[1])) as GoogleIdTokenClaims;
-  if (claims.aud !== clientId) throw new Error('google-audience-mismatch');
-  if (claims.iss !== 'accounts.google.com' && claims.iss !== 'https://accounts.google.com') throw new Error('google-invalid-issuer');
-  if (typeof claims.exp === 'number' && claims.exp * 1000 <= Date.now()) throw new Error('google-expired-token');
-  if (claims.email_verified !== true && claims.email_verified !== 'true') throw new Error('google-unverified-email');
-  if (!claims.email || !claims.sub) throw new Error('google-incomplete-profile');
-
-  return { id: claims.sub, email: claims.email, name: claims.name ?? claims.email.split('@')[0], picture: claims.picture };
-}
-
-/** Renders Google's own button into `parent` and reports the chosen account. */
-export function renderGoogleButton(
-  parent: HTMLElement,
-  clientId: string,
-  onCredential: (credential: string) => void,
-  options: { theme?: 'outline' | 'filled_blue' | 'filled_black'; width?: number } = {},
-): void {
-  const identity = window.google?.accounts?.id;
-  if (!identity) throw new Error('google-unavailable');
-
-  identity.initialize({
-    client_id: clientId,
-    auto_select: false,
-    cancel_on_tap_outside: true,
-    callback: (response) => { if (response.credential) onCredential(response.credential); },
-  });
-  identity.renderButton(parent, {
-    type: 'standard',
-    theme: options.theme ?? 'outline',
-    size: 'large',
-    shape: 'pill',
-    text: 'continue_with',
-    logo_alignment: 'center',
-    width: options.width ?? 360,
-  });
 }
