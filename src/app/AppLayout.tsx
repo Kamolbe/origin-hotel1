@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, CalendarDays, ChartNoAxesCombined, ChevronDown, CircleHelp, Command, FileBarChart2, LayoutDashboard, LogOut, Menu, Moon, Search, Settings, ShieldCheck, Sun, Users, WalletCards, X, BedDouble } from 'lucide-react';
+import { Bell, CalendarDays, ChartNoAxesCombined, ChevronDown, CircleHelp, Command, FileBarChart2, LayoutDashboard, LogOut, Menu, Moon, Search, Settings, ShieldCheck, Sun, Users, WalletCards, X, BedDouble, House } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Logo } from '../components/Logo';
@@ -34,6 +34,8 @@ export function AppLayout() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -48,7 +50,17 @@ export function AppLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    const closeOnOutside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!notificationsRef.current?.contains(target)) setNotificationsOpen(false);
+      if (!profileRef.current?.contains(target)) setProfileOpen(false);
+    };
+    window.addEventListener('pointerdown', closeOnOutside);
+    return () => window.removeEventListener('pointerdown', closeOnOutside);
+  }, []);
+
+  useEffect(() => { setMobileOpen(false); setNotificationsOpen(false); setProfileOpen(false); }, [location.pathname]);
 
   const visibleNav = navigation.filter((item) => user && item.roles.includes(user.role));
   const title = visibleNav.find((item) => item.to === location.pathname)?.key ?? (location.pathname.endsWith('/profile') ? 'nav.profile' : 'nav.dashboard');
@@ -92,14 +104,19 @@ export function AppLayout() {
         <div className="flex h-[72px] items-center justify-between gap-3 px-4 sm:px-7">
           <div className="flex min-w-0 items-center gap-3"><button onClick={() => setMobileOpen(true)} className="rounded-xl border border-[var(--line)] p-2.5 xl:hidden" aria-label="Menyuni ochish"><Menu size={17} /></button><div className="hidden sm:block"><p className="text-[9px] font-bold uppercase tracking-[.2em] text-muted">Origin Hotel</p><h1 className="mt-0.5 truncate text-sm font-semibold">{title.startsWith('nav.') ? t(title) : title}</h1></div></div>
           <div className="flex items-center gap-2">
+            <Link to="/" title="Asosiy saytga qaytish" aria-label="Asosiy saytga qaytish" className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] p-2.5 text-muted transition hover:border-champagne/60 hover:text-champagne"><House size={16} /><span className="hidden text-xs font-semibold lg:inline">Sayt</span></Link>
             <button onClick={() => setSearchOpen(true)} className="hidden items-center gap-3 rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-xs text-muted transition hover:border-champagne sm:flex"><Search size={14} /><span className="mr-5">{t('common.search')}...</span><kbd className="flex items-center gap-0.5 rounded bg-[var(--page)] px-1.5 py-1 text-[9px]"><Command size={10} />K</kbd></button>
             <button onClick={() => setSearchOpen(true)} className="rounded-full border border-[var(--line)] p-2.5 text-muted sm:hidden" aria-label={t('common.search')}><Search size={16} /></button>
             <div className="hidden sm:block"><LanguageSwitcher /></div>
             <button onClick={toggleTheme} aria-label="Mavzuni almashtirish" className="rounded-full border border-[var(--line)] p-2.5 text-muted hover:text-champagne">{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>
-            <div className="relative"><button onClick={() => setNotificationsOpen((value) => !value)} aria-label="Bildirishnomalar" className="relative rounded-full border border-[var(--line)] p-2.5 text-muted hover:text-champagne"><Bell size={16} />{unread.length > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-champagne ring-2 ring-[var(--page)]" />}</button>
+            <div ref={notificationsRef} className="relative" onPointerEnter={(event) => event.pointerType === 'mouse' && setNotificationsOpen(true)} onPointerLeave={(event) => event.pointerType === 'mouse' && setNotificationsOpen(false)}>
+              <button onClick={() => setNotificationsOpen((value) => !value)} aria-label="Bildirishnomalar" className="relative rounded-full border border-[var(--line)] p-2.5 text-muted transition hover:border-champagne/60 hover:text-champagne"><Bell size={16} />{unread.length > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-champagne ring-2 ring-[var(--page)]" />}</button>
               {notificationsOpen && <div className="fixed right-4 top-[80px] z-50 max-h-[calc(100dvh-96px)] w-[min(340px,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 shadow-lift sm:absolute sm:right-0 sm:top-12"><div className="flex items-center justify-between"><p className="text-sm font-semibold">Bildirishnomalar</p>{unread.length > 0 && <button onClick={markAllRead} className="text-[10px] font-semibold text-champagne">Barchasini o‘qish</button>}</div><div className="mt-3 max-h-80 space-y-2 overflow-y-auto">{data.notifications.filter((item) => !item.userId || item.userId === user?.id).slice(0, 8).map((item) => <div key={item.id} className={`rounded-xl p-3 ${item.read ? 'bg-[var(--page)]' : 'bg-champagne/10'}`}><p className="text-xs font-semibold">{item.title}</p><p className="mt-1 text-[10px] leading-4 text-muted">{item.message}</p><p className="mt-1 text-[9px] text-muted">{new Date(item.createdAt).toLocaleString('uz-UZ')}</p></div>)}{data.notifications.length === 0 && <p className="py-6 text-center text-xs text-muted">Hozircha bildirishnoma yo‘q.</p>}</div></div>}
             </div>
-            <div className="relative"><button onClick={() => setProfileOpen((value) => !value)} className="flex items-center gap-2 rounded-full border border-[var(--line)] py-1 pl-1 pr-2"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-champagne">{user?.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase()}</span><ChevronDown size={13} className="text-muted" /></button>{profileOpen && <div className="absolute right-0 top-12 z-50 min-w-44 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-2 shadow-lift"><Link to="/app/profile" className="block rounded-lg px-3 py-2 text-xs hover:bg-[var(--page)]">{t('nav.profile')}</Link><button onClick={doLogout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-rose-600 hover:bg-rose-50"><LogOut size={13} />{t('nav.logout', { defaultValue: 'Chiqish' })}</button></div>}</div>
+            <div ref={profileRef} className="relative" onPointerEnter={(event) => event.pointerType === 'mouse' && setProfileOpen(true)} onPointerLeave={(event) => event.pointerType === 'mouse' && setProfileOpen(false)}>
+              <button aria-label="Profil menyusi" onClick={() => setProfileOpen((value) => !value)} className="flex items-center gap-2 rounded-full border border-[var(--line)] py-1 pl-1 pr-2 transition hover:border-champagne/60"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-champagne">{user?.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase()}</span><ChevronDown size={13} className={`text-muted transition-transform ${profileOpen ? 'rotate-180' : ''}`} /></button>
+              {profileOpen && <div className="absolute right-0 top-full z-50 pt-2"><div className="min-w-44 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-2 shadow-lift"><Link to="/app/profile" onClick={() => setProfileOpen(false)} className="block rounded-lg px-3 py-2 text-xs transition hover:bg-[var(--page)]">{t('nav.profile')}</Link><button onClick={doLogout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-rose-600 hover:bg-rose-50"><LogOut size={13} />{t('nav.logout', { defaultValue: 'Chiqish' })}</button></div></div>}
+            </div>
           </div>
         </div>
       </header>
