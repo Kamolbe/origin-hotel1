@@ -230,3 +230,16 @@ img { max-width: 100%; }
 /* Keep native date segments readable inside the dark hero. */
 .booking-search input, .booking-search .hotel-select-trigger { color: var(--text); -webkit-text-fill-color: var(--text); }
 .booking-search input::-webkit-datetime-edit { color: var(--text); }
+
+/* Keep authentication artwork independent of form height and selected tab. */
+.auth-page { height: 100dvh; min-height: 0; }
+.auth-art { position: sticky; top: 0; height: 100dvh; }
+.auth-form-panel { overscroll-behavior: contain; scrollbar-width: thin; }
+@media (min-width: 1024px) and (max-height: 850px) {
+  .auth-content { padding-block: 10px; }
+  .auth-content h2 { font-size: 1.9rem; }
+  .auth-content input { padding-block: 9px; }
+  .auth-content > .mt-5 { margin-top: 12px; }
+  .auth-content > .mt-7 { margin-top: 12px; }
+}
+@media (max-width: 639px) { .hotel-quick-dock { flex-wrap: wrap; justify-content: center; width: max-content; } .hotel-quick-dock a { padding: 8px 10px; } }

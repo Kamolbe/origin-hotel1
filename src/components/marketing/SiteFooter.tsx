@@ -1,11 +1,12 @@
+import { useHotelContact } from '../../hooks/useHotelContact';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '../Logo';
 import { LanguageSwitcher } from '../LanguageSwitcher';
-import { HOTEL } from '../../data/marketing';
 
 export function SiteFooter() {
+  const HOTEL = useHotelContact();
   const { t } = useTranslation();
   const year = new Date().getFullYear();
 
@@ -17,7 +18,7 @@ export function SiteFooter() {
     { href: '#contact', label: t('nav.contact') },
   ];
   const services = [
-    { to: '/login', label: t('landing.book') },
+    { to: '/app/rooms', label: t('landing.book') },
     { to: '/app/rooms', label: t('nav.rooms') },
     { to: '/app/bookings', label: t('nav.bookings') },
     { to: '/app/profile', label: t('nav.profile') },

@@ -37,7 +37,7 @@ export function StayPlanner() {
         {valid && room ? <><p className="text-xs text-muted">{formatMoney(room.pricePerNight, data.settings.currency)} × {count} tun</p><p className="mt-2 break-words font-display text-3xl">{formatMoney(room.pricePerNight * count, data.settings.currency)}</p><p className="mt-2 text-xs text-muted">Tanlangan turdagi eng arzon xona bo‘yicha. Mavjudlik sanalarga bog‘liq.</p></> : <p className="text-sm">{room ? '1 dan 30 gacha butun tun sonini kiriting.' : 'Hozircha bu turdagi xona mavjud emas.'}</p>}
       </div>
       <p id="planner-hint" className="mb-5 flex gap-2 text-xs leading-5 text-muted"><ShieldCheck size={18} className="shrink-0 text-champagne" />Taxminiy hisob, to‘lov emas. Qo‘shimcha xizmatlar kiritilmagan.</p>
-      <Link to="/login" state={{ from: '/app/rooms' }} className="primary-button w-full gap-2">Xonalarni ko‘rish<ArrowRight size={15} /></Link>
+      <Link to="/app/rooms" state={{ from: '/app/rooms' }} className="primary-button w-full gap-2">Xonalarni ko‘rish<ArrowRight size={15} /></Link>
     </div>
     <div>
       <p className="text-[10px] font-bold uppercase tracking-[.2em] text-champagne">Foydali ma’lumotlar</p>

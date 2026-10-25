@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { ArrowUp, BedDouble, Calculator } from 'lucide-react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { Reveal } from '../components/marketing/Reveal';
@@ -14,6 +16,7 @@ import { CtaBand } from '../components/marketing/CtaBand';
 import { SiteFooter } from '../components/marketing/SiteFooter';
 
 export function LandingPage() {
+  const { user } = useAuth();
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   return <div className="marketing-page min-h-screen bg-[var(--page)]">
@@ -35,6 +38,7 @@ export function LandingPage() {
     </main>
     <SiteFooter />
     <nav aria-label="Tezkor safar amallari" className="hotel-quick-dock">
+      {user && <Link to="/app" className="bg-ink text-white"><span>Kabinetga qaytish</span></Link>}
       <a href="#rooms"><BedDouble size={17} /><span>Xonalar</span></a>
       <a href="#stay-planner"><Calculator size={17} /><span>Narxni hisoblash</span></a>
       <button type="button" aria-label="Sahifa boshiga" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}><ArrowUp size={18} /></button>

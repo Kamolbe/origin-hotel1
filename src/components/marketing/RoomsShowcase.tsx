@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Modal } from '../Modal';
 import { motion } from 'framer-motion';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { Link } from 'react-router-dom';
@@ -6,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../context/AppDataContext';
 import { formatMoney } from '../../services/hotelUtils';
 import { optimizedUnsplashUrl, roomPhotoForType, unsplashSrcSet } from '../../services/imageUtils';
-import type { RoomType } from '../../types';
+import type { Room, RoomType } from '../../types';
 
 const ROOM_ORDER: RoomType[] = ['Standard', 'Deluxe', 'Suite', 'Family', 'Presidential'];
 const ROOM_LABEL_KEY: Record<RoomType, string> = {
@@ -18,6 +20,7 @@ const ROOM_LABEL_KEY: Record<RoomType, string> = {
 };
 
 export function RoomsShowcase() {
+  const [details, setDetails] = useState<Room | null>(null);
   const reduced = usePrefersReducedMotion();
   const { t } = useTranslation();
   const { data } = useAppData();
@@ -53,7 +56,7 @@ export function RoomsShowcase() {
           <p className="mt-4 text-xs leading-6 text-muted">{room?.amenities.slice(0, 3).join(' · ')}</p>
           <div className="mt-auto flex items-end justify-between gap-4 border-t border-[var(--line)] pt-5">
             <p><span className="font-display text-2xl">{room ? formatMoney(room.pricePerNight, data.settings.currency) : ''}</span><span className="ml-1 text-[10px] text-muted">{t('landing.perNight')}</span></p>
-            <Link to="/login" className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-4 py-2.5 text-[11px] font-semibold transition hover:border-champagne hover:bg-champagne/10 hover:text-champagne">{t('landing.reserve')}<ArrowRight size={13} /></Link>
+            <button type="button" onClick={() => setDetails(room ?? null)} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-4 py-2.5 text-[11px] font-semibold transition hover:border-champagne hover:bg-champagne/10 hover:text-champagne">Batafsil<ArrowRight size={13} /></button>
           </div>
         </div>
       </motion.article>)}
@@ -64,8 +67,11 @@ export function RoomsShowcase() {
           <h3 className="mt-5 font-display text-2xl">{t('landing.allRoomsTitle')}</h3>
           <p className="mt-3 text-xs leading-6 text-muted">{t('landing.allRoomsText')}</p>
         </div>
-        <Link to="/login" className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('landing.allRoomsAction')}<ArrowRight size={14} /></Link>
+        <Link to="/app/rooms" className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('landing.allRoomsAction')}<ArrowRight size={14} /></Link>
       </article>
     </div>
+    <Modal open={details !== null} onClose={() => setDetails(null)} title={details ? `${details.type} · ${details.number}-xona` : 'Xona haqida'} description="Xona qulayliklari va bron qilish" size="lg">
+      {details && <div className="grid gap-6 sm:grid-cols-2"><img src={optimizedUnsplashUrl(roomPhotoForType(details.type), 900, 78)} alt={details.type} className="aspect-[4/3] w-full rounded-2xl object-cover" /><div><p className="font-display text-3xl">{formatMoney(details.pricePerNight, data.settings.currency)}<span className="text-xs text-muted"> / tun</span></p><p className="mt-3 text-sm">{details.capacity} mehmon · {details.floor}-qavat</p><ul className="my-5 flex flex-wrap gap-2">{details.amenities.map((item) => <li key={item} className="rounded-full bg-champagne/10 px-3 py-2 text-xs">{item}</li>)}</ul><Link to="/app/rooms" state={{ selectedRoomType: details.type }} className="primary-button w-full">Mavjud xonalarni ko‘rish</Link></div></div>}
+    </Modal>
   </section>;
 }

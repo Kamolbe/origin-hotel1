@@ -21,6 +21,7 @@ export interface User extends DemoUserCredentials {
   createdAt: string;
   phone?: string;
   avatarUrl?: string;
+  lastLoginAt?: string;
   twoFactorEnabled?: boolean;
 }
 
@@ -102,6 +103,7 @@ export interface SystemRolePermission {
 
 export interface AppSettings {
   hotelName: string;
+  contact: { phone: string; email: string; address: string; city: string; mapUrl: string };
   currency: Currency;
   timeZone: string;
   dateFormat: string;

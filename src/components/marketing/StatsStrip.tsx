@@ -1,8 +1,8 @@
+import { useHotelContact } from '../../hooks/useHotelContact';
 import { useInView } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
-import { HOTEL } from '../../data/marketing';
 import { useAppData } from '../../context/AppDataContext';
 
 function useCountUp(target: number, decimals: number, enabled: boolean): string {
@@ -26,6 +26,7 @@ function useCountUp(target: number, decimals: number, enabled: boolean): string 
 }
 
 export function StatsStrip() {
+  const HOTEL = useHotelContact();
   const { t } = useTranslation();
   const { data } = useAppData();
   const reducedMotion = usePrefersReducedMotion();

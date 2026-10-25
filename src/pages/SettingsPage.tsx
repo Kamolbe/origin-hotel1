@@ -1,3 +1,4 @@
+import { HotelContactSettings } from '../components/HotelContactSettings';
 import { Select } from '../components/Select';
 import { useState, type ReactNode } from 'react';
 import { Activity, DatabaseBackup, Database, Globe2, LockKeyhole, Mail, Menu, Palette, Search, ShieldCheck, Upload, UsersRound, Wifi } from 'lucide-react';
@@ -8,6 +9,7 @@ import { useToast } from '../context/ToastContext';
 import { PageHeader } from '../components/PageHeader';
 
 const sections = [
+  { id: 'hotel', title: 'Mehmonxona va aloqa', icon: Globe2 },
   { id: 'security', title: 'Xavfsizlik', icon: ShieldCheck },
   { id: 'roles', title: 'Rollar', icon: UsersRound },
   { id: 'communication', title: 'Xabarlar', icon: Mail },
@@ -24,10 +26,11 @@ export function SettingsPage() {
   const { data, updateData } = useAppData();
   const { theme, toggleTheme } = useTheme();
   const { success } = useToast();
-  const [active, setActive] = useState<SectionId>('security');
+  const [active, setActive] = useState<SectionId>(user?.role === 'admin' ? 'hotel' : 'security');
   const settings = data.settings;
 
   const updateSettings = (patch: (current: typeof settings) => typeof settings) => {
+    if (user?.role !== 'admin') return;
     updateData((current) => ({ ...current, settings: patch(current.settings) }));
   };
 
@@ -43,12 +46,13 @@ export function SettingsPage() {
     <PageHeader eyebrow="Tizim boshqaruvi" title="Sozlamalar" description="Xavfsizlik, kontent, integratsiya, interfeys va tizim operatsiyalarini bir joydan boshqaring." />
     <div className="grid items-start gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
       <aside className="surface overflow-hidden rounded-2xl p-2 lg:sticky lg:top-24">
-        {sections.map(({ id, title, icon: Icon }) => <button key={id} type="button" onClick={() => setActive(id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold transition ${active === id ? 'bg-ink text-white' : 'text-muted hover:bg-[var(--page)] hover:text-[var(--text)]'}`}><Icon size={16} className={active === id ? 'text-champagne' : ''} />{title}</button>)}
+        {sections.filter((section) => user?.role === 'admin' || section.id === 'security').map(({ id, title, icon: Icon }) => <button key={id} type="button" onClick={() => setActive(id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold transition ${active === id ? 'bg-ink text-white' : 'text-muted hover:bg-[var(--page)] hover:text-[var(--text)]'}`}><Icon size={16} className={active === id ? 'text-champagne' : ''} />{title}</button>)}
       </aside>
       <div className="space-y-5">
+        {active === 'hotel' && user?.role === 'admin' && <HotelContactSettings />}
         {active === 'security' && <>
           <Panel title="Profil va parol himoyasi" icon={LockKeyhole}><form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2"><Field label="Ism"><input name="name" defaultValue={user?.name} className="field" /></Field><Field label="Telefon"><input name="phone" defaultValue={data.users.find((item) => item.id === user?.id)?.phone ?? ''} className="field" /></Field><div className="sm:col-span-2 flex justify-end"><button className="primary-button">Profilni saqlash</button></div></form></Panel>
-          <Panel title="Kiruvchilarga oid xavfsizlik" icon={ShieldCheck}><Toggle label="Kuchli parol talab qilish" checked={settings.security.requireStrongPasswords} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, requireStrongPasswords: value } }))} /><Toggle label="SSL / HTTPS majburiy" checked={settings.security.sslHttps} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, sslHttps: value } }))} /><Toggle label="Ikki bosqichli tasdiqlash" checked={settings.security.twoFactorEnabled} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, twoFactorEnabled: value } }))} /><IpBlockList value={settings.security.blockedIps} onSave={(blockedIps) => updateSettings((current) => ({ ...current, security: { ...current.security, blockedIps } }))} /></Panel>
+          {user?.role === 'admin' && <Panel title="Kiruvchilarga oid xavfsizlik" icon={ShieldCheck}><Toggle label="Kuchli parol talab qilish" checked={settings.security.requireStrongPasswords} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, requireStrongPasswords: value } }))} /><Toggle label="SSL / HTTPS majburiy" checked={settings.security.sslHttps} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, sslHttps: value } }))} /><Toggle label="Ikki bosqichli tasdiqlash" checked={settings.security.twoFactorEnabled} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, twoFactorEnabled: value } }))} /><IpBlockList value={settings.security.blockedIps} onSave={(blockedIps) => updateSettings((current) => ({ ...current, security: { ...current.security, blockedIps } }))} /></Panel>}
         </>}
         {active === 'roles' && <Panel title="Foydalanuvchi rollari va ruxsatlar" icon={UsersRound}><div className="space-y-3">{settings.roles.map((item) => <div key={item.role} className="grid gap-3 rounded-xl border border-[var(--line)] p-4 sm:grid-cols-[150px_1fr]"><div><b className="text-sm">{roleLabels[item.role]}</b><p className="mt-1 text-[10px] uppercase tracking-widest text-muted">{item.role}</p></div><div className="flex flex-wrap gap-2">{item.permissions.map((permission) => <span key={permission} className="rounded-full bg-champagne/10 px-3 py-1.5 text-[10px] text-champagne">{permission}</span>)}</div></div>)}</div><p className="mt-4 flex gap-2 text-[10px] leading-5 text-muted"><LockKeyhole size={13} />Ruxsatlar backend darajasida tekshirilishi kerak; lokal demo faqat interfeysdir.</p></Panel>}
         {active === 'communication' && <><Panel title="Email (SMTP)" icon={Mail}><Toggle label="SMTP bildirishnomalar" checked={settings.integrations.smtpEnabled} onChange={(value) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smtpEnabled: value } }))} /><div className="grid gap-3 sm:grid-cols-2"><Field label="SMTP host"><input value={settings.integrations.smtpHost} onChange={(event) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smtpHost: event.target.value } }))} className="field" placeholder="smtp.example.com" /></Field><Field label="Port"><input type="number" value={settings.integrations.smtpPort} onChange={(event) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smtpPort: Number(event.target.value) } }))} className="field" /></Field></div></Panel><Panel title="SMS xabarnomalar" icon={Wifi}><Toggle label="SMS bildirishnomalar" checked={settings.integrations.smsEnabled} onChange={(value) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smsEnabled: value } }))} /><Field label="Provider"><input value={settings.integrations.smsProvider} onChange={(event) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smsProvider: event.target.value } }))} className="field" placeholder="Eskiz, Twilio" /></Field></Panel></>}

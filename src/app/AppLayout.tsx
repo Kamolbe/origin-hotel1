@@ -1,3 +1,4 @@
+import { useHotelContact } from '../hooks/useHotelContact';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, CalendarDays, ChartNoAxesCombined, ChevronDown, CircleHelp, Command, FileBarChart2, LayoutDashboard, LogOut, Menu, Moon, Search, Settings, ShieldCheck, Sun, Users, WalletCards, X, BedDouble, House } from 'lucide-react';
@@ -24,6 +25,7 @@ const navigation = [
 ];
 
 export function AppLayout() {
+  const hotel = useHotelContact();
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { data, updateData } = useAppData();
@@ -90,7 +92,7 @@ export function AppLayout() {
     <nav className="flex-1 space-y-1" aria-label="Boshqaruv menyusi">{visibleNav.map(({ to, key, icon: Icon }) => <NavLink key={to} to={to} end={to === '/app'} className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-3 text-[12px] font-semibold transition ${isActive ? 'bg-ink text-white shadow-soft' : 'text-muted hover:bg-[var(--page)] hover:text-[var(--text)]'}`}>
       {({ isActive }) => <><Icon size={17} className={isActive ? 'text-champagne' : 'text-muted group-hover:text-champagne'} /><span>{key.startsWith('nav.') ? t(key) : key}</span>{to === '/app/bookings' && data.bookings.some((item) => item.status === 'pending') && user?.role === 'admin' && <span className="ml-auto h-2 w-2 rounded-full bg-champagne" />}</>}
     </NavLink>)}</nav>
-    <div className="rounded-2xl bg-[var(--page)] p-4"><div className="flex items-center gap-2 text-champagne"><CircleHelp size={16} /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Yordam markazi</span></div><p className="mt-2 text-[10px] leading-5 text-muted">Mehmonlar xizmati 24/7<br />+998 71 200 20 20</p></div>
+    <div className="rounded-2xl bg-[var(--page)] p-4"><div className="flex items-center gap-2 text-champagne"><CircleHelp size={16} /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Yordam markazi</span></div><p className="mt-2 text-[10px] leading-5 text-muted">Mehmonlar xizmati 24/7<br /><a href={hotel.phoneHref}>{hotel.phone}</a></p></div>
     <div className="mt-4 flex items-center gap-3 border-t border-[var(--line)] px-2 pt-4">
       <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-champagne">{user?.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase()}</span>
       <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold">{user?.name}</p><p className="text-[10px] capitalize text-muted">{user?.role}</p></div>

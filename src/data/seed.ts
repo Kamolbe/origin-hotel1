@@ -251,6 +251,7 @@ export function createDemoData(): AppData {
     auditLog: [],
     settings: {
       hotelName: "Origin Hotel",
+      contact: { phone: '+998 71 200 20 20', email: 'reservations@originhotel.uz', address: 'Amir Temur shoh ko‘chasi 15', city: 'Yunusobod tumani, Toshkent 100000', mapUrl: 'https://www.openstreetmap.org/?mlat=41.3111&mlon=69.2797#map=14/41.3111/69.2797' },
       currency: "UZS",
       timeZone: "Asia/Tashkent",
       dateFormat: "DD.MM.YYYY",

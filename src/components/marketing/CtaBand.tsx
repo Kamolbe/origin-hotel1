@@ -1,10 +1,12 @@
+import { useHotelContact } from '../../hooks/useHotelContact';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { HOTEL, PHOTOS } from '../../data/marketing';
+import { PHOTOS } from '../../data/marketing';
 import { optimizedUnsplashUrl, unsplashSrcSet } from '../../services/imageUtils';
 
 export function CtaBand() {
+  const HOTEL = useHotelContact();
   const { t } = useTranslation();
 
   return <section className="relative isolate overflow-hidden bg-ink text-white">
@@ -27,7 +29,7 @@ export function CtaBand() {
         <p className="mt-3 text-sm leading-7 text-white/80">{t('landing.ctaText')}</p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <Link to="/login" className="inline-flex items-center gap-2 rounded-full bg-champagne px-6 py-3.5 text-xs font-bold text-ink transition hover:bg-white">{t('landing.book')}<ArrowRight size={14} /></Link>
+        <Link to="/app/rooms" className="inline-flex items-center gap-2 rounded-full bg-champagne px-6 py-3.5 text-xs font-bold text-ink transition hover:bg-white">{t('landing.book')}<ArrowRight size={14} /></Link>
         <a href={HOTEL.phoneHref} className="inline-flex items-center gap-2 rounded-full border border-white/35 px-6 py-3.5 text-xs font-bold text-white transition hover:border-champagne hover:text-champagne"><Phone size={14} />{HOTEL.phone}</a>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { DEMO_USERS } from '../data/seed';
+import { recordAudit } from '../services/hotelUtils';
 import { makeId } from '../services/storage';
 import type { GoogleProfile } from '../services/googleAuth';
 import type { User, UserRole } from '../types';
@@ -36,10 +36,16 @@ function persistSession(user: SessionUser) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data, updateData } = useAppData();
   const [user, setUser] = useState<SessionUser | null>(readSession);
-  const establishSession = useCallback((record: User) => {
+  useEffect(() => {
+    const syncSession = (event: StorageEvent) => { if (event.key === SESSION_KEY || event.key === null) setUser(readSession()); };
+    window.addEventListener('storage', syncSession);
+    return () => window.removeEventListener('storage', syncSession);
+  }, []);
+  const establishSession = useCallback((record: User, trackLogin = false) => {
     const next: SessionUser = { id: record.id, name: record.name, email: record.email, role: record.role };
     setUser(next); persistSession(next);
-  }, []);
+    if (trackLogin) updateData((current) => ({ ...current, users: current.users.map((item) => item.id === record.id ? { ...item, lastLoginAt: new Date().toISOString() } : item), auditLog: recordAudit(current, 'Tizimga kirildi', 'user', record.id, record.id).slice(0, 500) }));
+  }, [updateData]);
 
   const login = useCallback<AuthContextValue['login']>(({ email, password, accessCode, name }) => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -53,15 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (account) {
       if (!account.isActive || account.password !== password) return { ok: false, error: 'credentials' };
       if ((account.role === 'admin' || account.role === 'manager') && account.accessCode !== accessCode) return { ok: false, error: 'code' };
-      establishSession(account); return { ok: true };
+      establishSession(account, true); return { ok: true };
     }
-    if (requiredCode) return { ok: false, error: 'credentials' };
-    const demo = DEMO_USERS.find((item) => item.email.toLowerCase() === normalizedEmail);
-    if (demo && demo.password !== password) return { ok: false, error: 'credentials' };
-    const displayName = name?.trim() || normalizedEmail.split('@')[0].replace(/[._-]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
-    const record: User = { id: demo?.id ?? makeId('user'), name: demo?.name ?? displayName, email: normalizedEmail, role: 'user', password, isActive: true, createdAt: new Date().toISOString() };
-    updateData((current) => ({ ...current, users: current.users.some((item) => item.email.toLowerCase() === normalizedEmail) ? current.users : [...current.users, record] }));
-    establishSession(record); return { ok: true };
+    return { ok: false, error: 'credentials' };
   }, [data.users, establishSession, updateData]);
 
   const register = useCallback<AuthContextValue['register']>(({ firstName, lastName, email, password, accessCode }) => {
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (expectedCode && expectedCode !== accessCode) return { ok: false, error: 'code' };
     const record: User = { id: makeId('user'), name: normalizedName, email: normalizedEmail, role, password, accessCode: expectedCode, isActive: true, createdAt: new Date().toISOString() };
     updateData((current) => ({ ...current, users: [...current.users, record] }));
-    establishSession(record); return { ok: true };
+    establishSession(record, true); return { ok: true };
   }, [data.users, establishSession, updateData]);
 
   /**
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!account.isActive) return { ok: false, error: 'credentials' };
       const linked: User = { ...account, name: account.name || profile.name, avatarUrl: account.avatarUrl ?? profile.picture };
       updateData((current) => ({ ...current, users: current.users.map((item) => item.id === account.id ? linked : item) }));
-      establishSession(linked);
+      establishSession(linked, true);
       return { ok: true };
     }
 
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       avatarUrl: profile.picture,
     };
     updateData((current) => ({ ...current, users: [...current.users, record] }));
-    establishSession(record);
+    establishSession(record, true);
     return { ok: true };
   }, [data.users, establishSession, updateData]);
 

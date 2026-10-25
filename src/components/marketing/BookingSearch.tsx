@@ -26,7 +26,7 @@ export function BookingSearch({ className = '' }: { className?: string }) {
     event.preventDefault();
     if (!checkIn || !checkOut || checkOut <= checkIn) { setError(t('landing.searchDatesError')); return; }
     setError('');
-    navigate('/login', { state: { from: '/app/rooms', bookingSearch: { checkIn, checkOut, guests } } });
+    navigate('/app/rooms', { state: { bookingSearch: { checkIn, checkOut, guests } } });
   }
 
   const fieldClass = 'w-full rounded-xl border border-[var(--line)] bg-[var(--page)] text-[var(--text)] px-3.5 py-3 text-xs outline-none transition focus:border-champagne';

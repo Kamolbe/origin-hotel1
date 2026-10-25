@@ -28,7 +28,7 @@ export function RoomsPage() {
   const [query, setQuery] = useState('');
   const [floor, setFloor] = useState('all');
   const [status, setStatus] = useState('all');
-  const [type, setType] = useState('all');
+  const [type, setType] = useState((location.state as { selectedRoomType?: string } | null)?.selectedRoomType ?? 'all');
   const [maxPrice, setMaxPrice] = useState('');
   const [capacity, setCapacity] = useState('1');
   const [checkIn, setCheckIn] = useState('');
@@ -66,6 +66,9 @@ export function RoomsPage() {
 
   function saveRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isAdmin) { error('Xonalarni faqat administrator boshqaradi.'); return; }
+    if (mode !== 'assign' && (!form.number.trim() || !Number.isInteger(Number(form.floor)) || Number(form.floor) < 1 || !Number.isInteger(Number(form.capacity)) || Number(form.capacity) < 1 || !Number.isFinite(Number(form.pricePerNight)) || Number(form.pricePerNight) <= 0)) { error('Xona raqami, qavat, sig‘im va narxni to‘g‘ri kiriting.'); return; }
+    if (mode !== 'assign' && data.rooms.some((room) => room.number === form.number.trim() && room.id !== activeRoom?.id)) { error('Bu xona raqami allaqachon mavjud.'); return; }
     if (mode === 'assign' && activeRoom) {
       if (!form.guestId) { error('Avval mehmon tanlang.'); return; }
       if (form.checkOut <= form.checkIn) { error('Ketish sanasi kelish sanasidan keyin bo‘lishi kerak.'); return; }
@@ -86,9 +89,9 @@ export function RoomsPage() {
   }
 
   function removeRoom() {
-    if (!deleteRoom) return;
-    const hasBookings = data.bookings.some((booking) => booking.roomId === deleteRoom.id && ['pending', 'confirmed'].includes(booking.status));
-    if (hasBookings) { error('Faol bronlari bor xonani o‘chirib bo‘lmaydi.'); setDeleteRoom(null); return; }
+    if (!deleteRoom || !isAdmin) return;
+    const hasBookings = data.bookings.some((booking) => booking.roomId === deleteRoom.id);
+    if (hasBookings) { error('Bron tarixi bor xonani o‘chirib bo‘lmaydi. Uni ta’mir holatiga o‘tkazing.'); setDeleteRoom(null); return; }
     updateData((current) => ({ ...current, rooms: current.rooms.filter((room) => room.id !== deleteRoom.id), auditLog: recordAudit(current, 'Xona o‘chirildi', 'room', deleteRoom.id, user?.id) }));
     success(`${deleteRoom.number}-xona o‘chirildi.`); setDeleteRoom(null);
   }

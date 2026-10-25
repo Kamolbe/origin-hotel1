@@ -1,6 +1,7 @@
+import { useHotelContact } from '../../hooks/useHotelContact';
 import { CarFront, ConciergeBell, Dumbbell, Flower2, PlaneTakeoff, UtensilsCrossed, Waves, Wifi, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { HOTEL, PHOTOS } from '../../data/marketing';
+import { PHOTOS } from '../../data/marketing';
 import { optimizedUnsplashUrl, unsplashSrcSet } from '../../services/imageUtils';
 
 const AMENITIES: Array<{ icon: LucideIcon; key: string }> = [
@@ -15,6 +16,7 @@ const AMENITIES: Array<{ icon: LucideIcon; key: string }> = [
 ];
 
 export function ExperienceSection() {
+  const HOTEL = useHotelContact();
   const { t } = useTranslation();
 
   return <section id="about" className="border-y border-[var(--line)] bg-[var(--surface)]">

@@ -1,8 +1,9 @@
+import { useHotelContact } from '../../hooks/useHotelContact';
 import { Clock, ExternalLink, Mail, MapPin, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { HOTEL } from '../../data/marketing';
 
 export function LocationSection() {
+  const HOTEL = useHotelContact();
   const { t } = useTranslation();
 
   return <section id="contact" className="mx-auto max-w-[1440px] px-5 py-20 lg:px-10 lg:py-24">
@@ -31,7 +32,8 @@ export function LocationSection() {
           </li>
         </ul>
 
-        <a href={HOTEL.mapUrl} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('landing.openMap')}<ExternalLink size={14} /></a>
+        <a href={`mailto:${HOTEL.email}`} className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-5 py-3 text-xs font-semibold hover:border-champagne"><Mail size={15} />Administrator bilan bog‘lanish</a>
+        <br /><a href={HOTEL.mapUrl} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('landing.openMap')}<ExternalLink size={14} /></a>
       </div>
 
       <MapSketch caption={t('landing.mapCaption')} />
@@ -42,6 +44,7 @@ export function LocationSection() {
 /** Lightweight inline map sketch — no third-party frame, so the panel never
  *  shows an empty iframe or blocks on network. */
 function MapSketch({ caption }: { caption: string }) {
+  const HOTEL = useHotelContact();
   return <figure className="surface overflow-hidden rounded-3xl p-4 sm:p-6">
     <svg viewBox="0 0 520 360" role="img" aria-label={caption} className="h-auto w-full rounded-2xl bg-[var(--page)]">
       <g stroke="var(--line)" strokeWidth="14" strokeLinecap="round">

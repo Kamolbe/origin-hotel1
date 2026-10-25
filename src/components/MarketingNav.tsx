@@ -1,3 +1,4 @@
+import { useHotelContact } from '../hooks/useHotelContact';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, LogOut, Menu, Moon, Phone, Sun, X } from 'lucide-react';
@@ -6,13 +7,13 @@ import { Logo } from './Logo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { HOTEL } from '../data/marketing';
 
 /**
  * Public header. With `overlay` it starts transparent on top of the hero photo
  * and becomes a solid, blurred bar once the visitor scrolls.
  */
 export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
+  const HOTEL = useHotelContact();
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
@@ -35,7 +36,7 @@ export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
     { href: '#reviews', label: t('landing.reviewsTitle') },
     { href: '#contact', label: t('nav.contact') },
   ];
-  const accountPath = user?.role === 'user' ? '/app/bookings' : '/app';
+  const accountPath = '/app';
   const iconButton = `rounded-full border p-2.5 transition ${transparent ? 'border-white/30 text-white hover:border-champagne hover:text-champagne' : 'border-[var(--line)] text-[var(--text)] hover:border-champagne hover:text-champagne'}`;
   const themeButton = <button type="button" onClick={toggleTheme} className={iconButton} aria-label={theme === 'light' ? t('nav.switchToDark') : t('nav.switchToLight')}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>;
 
@@ -50,7 +51,7 @@ export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
         {user ? <div className="flex items-center gap-2 pl-2">
           <Link to={accountPath} className={`flex items-center gap-2 rounded-full border px-2 py-1.5 transition hover:border-champagne ${transparent ? 'border-white/30' : 'border-[var(--line)]'}`}>
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-champagne">{user.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase()}</span>
-            <span className="max-w-[100px] text-left"><span className={`block truncate text-xs font-semibold ${transparent ? 'text-white' : 'text-[var(--text)]'}`}>{user.name}</span><span className="block text-[10px] capitalize text-muted">{user.role}</span></span>
+            <span className="max-w-[100px] text-left"><span className={`block truncate text-xs font-semibold ${transparent ? 'text-white' : 'text-[var(--text)]'}`}>{user.name}</span><span className="block text-[10px] text-champagne">Kabinetga qaytish ↗</span></span>
           </Link>
           <button onClick={() => { logout(); navigate('/'); }} aria-label={t('nav.logout', { defaultValue: 'Chiqish' })} className={iconButton}><LogOut size={16} /></button>
         </div> : <Link to="/login" className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-xs font-semibold text-white shadow-soft transition hover:bg-ink-soft">{t('nav.login')}<ArrowUpRight size={14} /></Link>}
