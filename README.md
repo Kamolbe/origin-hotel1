@@ -49,3 +49,13 @@ Google hisobi faqat mehmon rolini oladi; mavjud admin yoki manager hisobiga shu 
 ## Bron oynasi va Preview
 
 Xona kartasidan bron so‘ralganda dialog tanlangan xona rasmi, turi/raqami, sig‘imi, qulayliklari va narxini ko‘rsatadi; desktop’da rasm va forma yonma-yon, telefonda esa ixcham rasm kartasi yuqorida turadi. Dialog ekran markazida ochiladi, uzun formalar ichida scroll bo‘ladi, sarlavha va yuborish/bekor qilish amallari ko‘rinishda qoladi. Bron sanalari bo‘sh kelsa, kelish ertaga va ketish keyingi kunga qo‘yiladi; yaroqsiz sanalarda jami narx ko‘rsatilmaydi va bron yuborilmaydi. Vite Preview serveri `.manus.computer` domeniga ruxsat beradi, qolgan noma’lum hostlarni ochiq qoldirmaydi.
+
+## Windows: yetishmayotgan paket fayllari
+
+`firebase/app` topilmasa yoki `node_modules/tailwindcss/index.css` uchun ENOENT chiqsa, avval shu loyihaning ishlayotgan Vite serverini barcha terminallarda Ctrl+C bilan to‘xtating. Node.js 22.12+ talab qilinadi. Loyiha papkasidan PowerShell yoki CMD’da:
+
+```powershell
+.\scripts\repair-windows.cmd
+```
+
+Bu buyruq lockfile bo‘yicha `npm.cmd ci` qiladi, Firebase/Tailwind fayllarini tekshiradi va build bajaradi. Faqat muvaffaqiyatli tugagach `npm.cmd run dev` qiling. EPERM chiqsa faylni ishlatayotgan loyiha serverini yoping; zarur bo‘lsa Windows’ni qayta ishga tushirib, serverni ochishdan oldin scriptni bajaring. `package-lock.json`ni o‘chirmang. PowerShell execution policy’ni o‘zgartirish talab qilinmaydi. Scriptning Windows’dagi bajarilishi bulutdagi Linux muhitida tekshirilmagan.
