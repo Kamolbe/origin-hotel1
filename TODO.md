@@ -20,8 +20,8 @@
 
 ## 3. Kirish, ro‘yxatdan o‘tish va rolli ruxsatlar
 - [x] Kirish sahifasi split-screen ko‘rinishda bo‘lsin: chap tomonda mehmonxona rasmi, qisqa ma’lumot, qulayliklar va sharhlar; o‘ng tomonda kirish/ro‘yxatdan o‘tish formasi.
-- [x] “Google bilan kirish” tugmasi, Ism, Familiya, Email, Parol maydonlari, Kirish/Ro‘yxatdan o‘tish tablari, validatsiya va xato xabarlari bo‘lsin. Google oqimi lokal demo; haqiqiy OAuth emas.
-- [x] Oddiy email yoki Google demo kirishi Foydalanuvchi (`user`) rolini bersin.
+- [x] “Google bilan kirish” tugmasi, Ism, Familiya, Email, Parol maydonlari, Kirish/Ro‘yxatdan o‘tish tablari, validatsiya va xato xabarlari bo‘lsin. Google oqimi haqiqiy Google Identity Services orqali ishlaydi va `VITE_GOOGLE_CLIENT_ID` bilan sozlanadi.
+- [x] Oddiy email yoki Google kirishi Foydalanuvchi (`user`) rolini bersin; admin/manager rollari faqat maxsus kod bilan beriladi.
 - [x] Email `@admin.com` bilan tugasa, “Maxsus kod” maydoni avtomatik ko‘rinsin; faqat `admin1234` kodi admin roliga kiritadi. Noto‘g‘ri kodda kirish rad etilib xato ko‘rsatilsin.
 - [x] Email `@manager.com` bilan tugasa, “Maxsus kod” maydoni avtomatik ko‘rinsin; faqat `manager1234` kodi manager roliga kiritadi. Noto‘g‘ri kodda kirish rad etilib xato ko‘rsatilsin.
 - [x] Ruxsat berilmagan sahifalarga rol asosidagi route guard orqali kirib bo‘lmasin.
@@ -63,6 +63,15 @@
 - [x] Tanlangan til va tema, tizim holati va CRUD ma’lumotlari kerakli joylarda localStorage’da saqlansin.
 - [x] Loyiha papkalari tuzilmasi va fayllar alohida saqlansin; to‘liq kod bo‘lsin, qisqartirish yoki `... davomi` ishlatilmasin.
 - [x] Ishga tushirish yo‘riqnomasi `npm install` va `npm run dev` buyruqlarini ko‘rsatsin; demo admin, manager va user kirish ma’lumotlari berilsin.
+
+## 9.1 Professional ko‘rinish, xatoliklarni tuzatish va media
+
+- [x] Yetishmayotgan CSS sinflari (`skeleton`, `shadow-soft`, `animate-rise-in`, `arch-mark`) qo‘shildi; `bg-ink/50`, `from-ink/95`, `hover:text-champagne`, `focus:border-champagne` kabi variantlar `@theme inline` orqali haqiqiy Tailwind utilitlariga aylandi. Shu tufayli hero pardasi, modal foni, dropdown soyasi va hover holatlari endi chindan ham ko‘rinadi.
+- [x] Dark mavzuda `bg-ink text-white` tugmalari oq matn bilan oqish fon ustida qolib, o‘qilmas edi — `--ink` endi har ikki mavzuda to‘q brand yuzasi bo‘lib qoladi.
+- [x] Landing sahifasi to‘liq qayta qurildi: hero va bron qidiruvi, animatsiyalangan statistika, 5 ta xona turi (foto, narx, sig‘im), qulayliklar, lightbox bilan galereya, mehmon sharhlari, joylashuv (inline xarita sxemasi), CTA chizig‘i va ko‘p ustunli footer.
+- [x] Navigatsiyadagi `#reviews` va `#contact` havolalari mavjud bo‘lmagan bo‘limlarga olib borardi; bo‘limlar qo‘shildi va `scroll-padding-top` bilan sarlavha ostida qolmasligi ta’minlandi.
+- [x] Media va SEO: rasmlar uchun `srcset`/`sizes`, `width`/`height`, `loading`/`decoding`, OG va Twitter meta teglari hamda JSON-LD (Hotel) sxemasi.
+- [x] Yangi marketing matnlari olti tilga (uz, ru, en, tr, ar, zh) qo‘shildi — nav, hero, statistika, xona kartalari, galereya, sharhlar, joylashuv, CTA va footer.
 
 ## 9. Responsive ko‘rinish va yuklanish tezligi bo‘yicha tuzatishlar
 - [x] Hero ostidagi bron qidiruvi 390 px, 768 px va desktop kengliklarda to‘liq ko‘rinsin; ota blok uni kesib qo‘ymasin va bo‘limlar bilan ustma-ust tushmasin.

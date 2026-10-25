@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Origin Hotel — design tokens
+   Every custom colour is declared as a plain CSS variable here and published to
+   Tailwind through `@theme inline`, so utilities such as `bg-ink/50`,
+   `from-ink/95`, `hover:text-champagne` or `group-hover:text-champagne` are
+   generated from the live value (and therefore follow the active theme).
+   --------------------------------------------------------------------------- */
 :root {
   --page: #f7f5f0;
   --surface: #ffffff;
@@ -13,51 +20,113 @@
   --danger: #a84d50;
   color: var(--text);
   background: var(--page);
-  font-family: "Manrope", sans-serif;
+  font-family: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 :root[data-theme="dark"] {
-  --page: #11171a;
+  --page: #0f1417;
   --surface: #1a2226;
   --text: #edf1ef;
   --muted: #9ba7a6;
-  --line: #30383b;
-  --ink: #e7ddd0;
-  --ink-soft: #d0c1a9;
+  --line: #2c363a;
+  /* `ink` is the brand's deep surface — buttons, avatars, the hero, the modal
+     scrim. It intentionally stays dark in both themes so `bg-ink text-white`
+     keeps its contrast; only its lightness is nudged up in dark mode so it
+     separates from the darker page background. */
+  --ink: #22303a;
+  --ink-soft: #2f4049;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-champagne: var(--champagne);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+}
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --shadow-soft: 0 10px 30px rgb(17 27 34 / 9%);
+  --shadow-lift: 0 28px 80px rgb(17 27 34 / 18%);
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+
+html {
+  scroll-behavior: smooth;
+  /* Keeps in-page anchors clear of the sticky marketing header. */
+  scroll-padding-top: 6rem;
+}
+
 body { margin: 0; min-width: 320px; background: var(--page); }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
+[id] { scroll-margin-top: 6rem; }
+img { max-width: 100%; }
+::selection { background: color-mix(in oklab, var(--champagne) 38%, transparent); }
 
-.font-display { font-family: "Playfair Display", Georgia, serif; }
-.text-muted { color: var(--muted); }
-.text-champagne { color: var(--champagne); }
-.text-ink { color: var(--ink); }
-.text-success { color: var(--success); }
-.text-danger { color: var(--danger); }
-.text-white { color: #fff; }
-.bg-ink { background: var(--ink); }
-.bg-ink-soft { background: var(--ink-soft); }
-.bg-champagne { background: var(--champagne); }
-.bg-white\/5 { background: rgb(255 255 255 / 5%); }
-.bg-champagne\/15 { background: rgb(185 154 104 / 15%); }
-.border-champagne\/40 { border-color: rgb(185 154 104 / 40%); }
-.border-champagne\/30 { border-color: rgb(185 154 104 / 30%); }
-.border-white\/30 { border-color: rgb(255 255 255 / 30%); }
+/* Visible keyboard focus everywhere; controls that opt out with `outline-none`
+   still communicate focus through their border colour. */
+:where(a, button, summary, [role="button"], input, select, textarea):focus-visible {
+  outline: 2px solid var(--champagne);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
+/* Card surface shared by every panel in the marketing site and the dashboard. */
 .surface {
   border: 1px solid var(--line);
   background: var(--surface);
 }
 
-.rounded-2xl { border-radius: 1rem; }
-.rounded-3xl { border-radius: 1.5rem; }
-.rounded-full { border-radius: 9999px; }
-.shadow-lift { box-shadow: 0 24px 70px rgb(17 27 34 / 16%); }
+/* Arch motif behind the logo mark. */
+.arch-mark {
+  border-radius: 999px 999px 10px 10px;
+  background: color-mix(in oklab, var(--champagne) 16%, transparent);
+}
+
+/* Loading placeholder used by the route fallback and the dashboard cards. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: color-mix(in oklab, var(--muted) 18%, transparent);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg, transparent, color-mix(in oklab, var(--surface) 65%, transparent), transparent);
+  animation: skeleton-sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+  to { transform: translateX(100%); }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+.animate-rise-in { animation: rise-in .55s cubic-bezier(.16, .84, .36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
 
 @media (max-width: 639px) {
   .font-display { letter-spacing: 0; }

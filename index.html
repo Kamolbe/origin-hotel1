@@ -3,15 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#111b22" />
-    <meta name="description" content="Origin Hotel — shahardagi sokin dam va puxta mehmondo‘stlik." />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f5f0" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1417" />
+    <meta name="description" content="Origin Hotel — Toshkent markazidagi besh yulduzli mehmonxona: 40 ta xona, basseyn va spa, restoran, bepul parking va aeroport transferi." />
+    <meta name="author" content="Origin Hotel" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Origin Hotel" />
+    <meta property="og:locale" content="uz_UZ" />
+    <meta property="og:title" content="Origin Hotel — Shahardagi sokin dam" />
+    <meta property="og:description" content="Toshkent markazida zamonaviy qulaylik, iliq mehmondo‘stlik va shahar shovqinidan bir qadam naridagi tinchlik." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="800" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Origin Hotel — Shahardagi sokin dam" />
+    <meta name="twitter:description" content="Toshkent markazidagi besh yulduzli mehmonxona: 40 ta xona, basseyn va spa, restoran va aeroport transferi." />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" /></noscript>
     <title>Origin Hotel — Shahardagi sokin dam</title>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Hotel",
+        "name": "Origin Hotel",
+        "description": "Toshkent markazidagi besh yulduzli mehmonxona: 40 ta xona, basseyn va spa, restoran, bepul parking va aeroport transferi.",
+        "image": "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=1200&q=80",
+        "telephone": "+998 71 200 20 20",
+        "email": "reservations@originhotel.uz",
+        "priceRange": "480000 - 2850000 UZS",
+        "checkinTime": "14:00",
+        "checkoutTime": "12:00",
+        "starRating": { "@type": "Rating", "ratingValue": "5" },
+        "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "1240" },
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Amir Temur shoh ko‘chasi 15",
+          "addressLocality": "Toshkent",
+          "postalCode": "100000",
+          "addressCountry": "UZ"
+        },
+        "geo": { "@type": "GeoCoordinates", "latitude": 41.3111, "longitude": 69.2797 },
+        "amenityFeature": [
+          { "@type": "LocationFeatureSpecification", "name": "Bepul Wi-Fi", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Basseyn", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Spa va sauna", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Restoran va bar", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Bepul parking", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Aeroport transferi", "value": true }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
