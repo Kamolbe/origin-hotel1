@@ -51,3 +51,9 @@ Google hisobi bilan kirgan foydalanuvchi har doim **mehmon (`user`)** rolini ola
 ## Bron oynasi va Preview
 
 Xona kartasidan bron so‘ralganda dialog tanlangan xona rasmi, turi/raqami, sig‘imi, qulayliklari va narxini ko‘rsatadi; desktop’da rasm va forma yonma-yon, telefonda esa ixcham rasm kartasi yuqorida turadi. Dialog ekran markazida ochiladi, uzun formalar ichida scroll bo‘ladi, sarlavha va yuborish/bekor qilish amallari ko‘rinishda qoladi. Bron sanalari bo‘sh kelsa, kelish ertaga va ketish keyingi kunga qo‘yiladi; yaroqsiz sanalarda jami narx ko‘rsatilmaydi va bron yuborilmaydi. Vite Preview serveri `.manus.computer` domeniga ruxsat beradi, qolgan noma’lum hostlarni ochiq qoldirmaydi.
+
+## Google OAuth client sozlamasi
+
+Origin Hotel uchun public Web Client ID kodda standart sifatida sozlangan; boshqa client ishlatish uchun `VITE_GOOGLE_CLIENT_ID` orqali almashtiring. Client secret brauzer kodiga kiritilmaydi.
+
+Google Cloud Console → APIs & Services → Credentials → shu OAuth Web client → Authorized JavaScript origins ichiga `http://localhost:3000` va saytingizning haqiqiy HTTPS originini (yo‘lsiz) kiriting. Firebase authorized domains ro‘yxati GIS uchun ushbu origin sozlamasining o‘rnini bosmaydi. Haqiqiy Google hisobiga kirishni tekshirish uchun shu origin ruxsati talab qilinadi.

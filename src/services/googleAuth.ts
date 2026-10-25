@@ -1,9 +1,9 @@
 /**
  * "Continue with Google", implemented with Google Identity Services (GIS).
  *
- * The integration is configured entirely through `VITE_GOOGLE_CLIENT_ID`: when
- * the variable is absent the app keeps working and the sign-in button reports
- * that Google sign-in has not been configured yet.
+ * Uses the hotel's public OAuth web client ID by default. Deployments can
+ * override it through VITE_GOOGLE_CLIENT_ID. OAuth client IDs are public
+ * browser identifiers, not client secrets.
  *
  * The ID token is decoded here to read the verified profile (email, name,
  * picture). Signature verification is deliberately left to `accounts.google.com`
@@ -60,7 +60,7 @@ interface GoogleIdTokenClaims {
 
 export function googleClientId(): string {
   const value = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  return typeof value === 'string' ? value.trim() : '';
+  return (typeof value === 'string' ? value.trim() : '') || '91387979562-6otor1hd5h793bg6enbk5f2ktlskr4qb.apps.googleusercontent.com';
 }
 
 export function isGoogleSignInConfigured(): boolean {
