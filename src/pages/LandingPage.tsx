@@ -18,7 +18,7 @@ export function LandingPage() {
   const progress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   return <div className="marketing-page min-h-screen bg-[var(--page)]">
     <motion.div aria-hidden="true" style={{ scaleX: progress }} className="fixed inset-x-0 top-0 z-[80] h-1 origin-left bg-champagne" />
-    <MarketingNav overlay />
+    <MarketingNav />
     <main>
       <HeroSection />
       <div className="hotel-ticker" aria-label="Mehmonxona qulayliklari">

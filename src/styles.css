@@ -8,6 +8,7 @@
    generated from the live value (and therefore follow the active theme).
    --------------------------------------------------------------------------- */
 :root {
+  color-scheme: light;
   --page: #f7f5f0;
   --surface: #ffffff;
   --text: #17262d;
@@ -24,6 +25,7 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --page: #0f1417;
   --surface: #1a2226;
   --text: #edf1ef;
@@ -224,3 +226,7 @@ img { max-width: 100%; }
   .marketing-page figure:hover, .marketing-page #about .grid > div:hover { translate: 0 -6px; box-shadow: 0 16px 35px #111b2212; border-color: var(--champagne); }
 }
 @media (prefers-reduced-motion: reduce) { [data-scroll-reveal] { opacity: 1; translate: none; transition: none; } }
+
+/* Keep native date segments readable inside the dark hero. */
+.booking-search input, .booking-search .hotel-select-trigger { color: var(--text); -webkit-text-fill-color: var(--text); }
+.booking-search input::-webkit-datetime-edit { color: var(--text); }

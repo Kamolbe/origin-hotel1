@@ -29,9 +29,9 @@ export function BookingSearch({ className = '' }: { className?: string }) {
     navigate('/login', { state: { from: '/app/rooms', bookingSearch: { checkIn, checkOut, guests } } });
   }
 
-  const fieldClass = 'w-full rounded-xl border border-[var(--line)] bg-[var(--page)] px-3.5 py-3 text-xs outline-none transition focus:border-champagne';
+  const fieldClass = 'w-full rounded-xl border border-[var(--line)] bg-[var(--page)] text-[var(--text)] px-3.5 py-3 text-xs outline-none transition focus:border-champagne';
 
-  return <form onSubmit={submit} className={`surface w-full rounded-3xl p-5 shadow-lift sm:p-6 ${className}`}>
+  return <form onSubmit={submit} className={`booking-search surface text-[var(--text)] w-full rounded-3xl p-5 shadow-lift sm:p-6 ${className}`}>
     <p className="text-[10px] font-bold uppercase tracking-[.22em] text-champagne">{t('landing.searchTitle')}</p>
     <p className="mt-2 text-xs leading-6 text-muted">{t('landing.searchHint')}</p>
     <div className="mt-5 grid gap-3 sm:grid-cols-2">
