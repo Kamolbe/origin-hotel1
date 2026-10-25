@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useMemo, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, ShieldCheck, Sparkles, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -6,17 +6,20 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Logo } from '../components/Logo';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
 import { optimizedUnsplashUrl, unsplashSrcSet } from '../services/imageUtils';
+import type { GoogleProfile } from '../services/googleAuth';
 
 const authPhoto = 'https://images.unsplash.com/photo-1660557989695-14fac79c086d?auto=format&fit=crop&w=1600&q=88';
 
 export function LoginPage() {
   const { t } = useTranslation();
-  const { login, register, loginWithGoogle } = useAuth();
+  const { login, register, signInWithGoogle } = useAuth();
   const { success } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const destination = (location.state as { from?: string } | null)?.from ?? '/app';
+  const forwardedState = { bookingSearch: (location.state as { bookingSearch?: unknown } | null)?.bookingSearch };
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -38,19 +41,24 @@ export function LoginPage() {
       setError(message); return;
     }
     success(mode === 'register' ? 'Hisobingiz yaratildi.' : 'Tizimga muvaffaqiyatli kirdingiz.');
-    navigate(destination, { replace: true, state: { bookingSearch: (location.state as { bookingSearch?: unknown } | null)?.bookingSearch } });
+    navigate(destination, { replace: true, state: forwardedState });
   }
 
-  function googleDemo() {
-    loginWithGoogle();
-    success('Google demo hisobi orqali kirdingiz.');
-    navigate(destination, { replace: true, state: { bookingSearch: (location.state as { bookingSearch?: unknown } | null)?.bookingSearch } });
-  }
+  const handleGoogleProfile = useCallback((profile: GoogleProfile) => {
+    const result = signInWithGoogle(profile);
+    if (!result.ok) {
+      setError(result.error === 'code' ? t('auth.invalidCode') : result.error === 'email' ? 'Google hisobidagi email manzil yaroqsiz.' : t('auth.invalidCredentials'));
+      return;
+    }
+    setError('');
+    success('Tizimga muvaffaqiyatli kirdingiz.');
+    navigate(destination, { replace: true, state: forwardedState });
+  }, [signInWithGoogle, t, success, navigate, destination, forwardedState]);
 
   return <div className="grid min-h-screen bg-[var(--page)] lg:grid-cols-[.95fr_1.05fr]">
     <section className="relative hidden min-h-screen overflow-hidden bg-ink lg:block">
       <img src={optimizedUnsplashUrl(authPhoto, 1280, 76)} srcSet={unsplashSrcSet(authPhoto, [640, 960, 1280, 1600], 76)} sizes="(min-width: 1024px) 48vw, 100vw" width={1600} height={1200} alt="Origin Hotel qabulxonasi" loading="eager" decoding="async" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/35 via-ink/50 to-ink/90" />
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/55 to-ink/90" />
       <div className="relative flex h-full min-h-screen flex-col justify-between p-10 xl:p-14">
         <Logo light />
         <div className="mb-6 max-w-xl text-white">
@@ -58,28 +66,28 @@ export function LoginPage() {
           <h1 className="font-display text-5xl leading-[1.08] xl:text-6xl">Qaytishni istaydigan manzil.</h1>
           <p className="mt-5 max-w-md text-sm leading-7 text-white/70">Har bir tashrifda osoyishtalik, mayda e’tiborlar va qulay xizmat.</p>
           <div className="mt-8 flex flex-wrap gap-2">{['24/7 xizmat', 'Spa & basseyn', 'Shahar markazi'].map((item) => <span key={item} className="rounded-full border border-white/20 bg-white/5 px-3 py-2 text-[10px] text-white/80"><Sparkles size={11} className="mr-1.5 inline text-champagne" />{item}</span>)}</div>
-          <div className="mt-10 max-w-md rounded-3xl border border-white/15 bg-white/[.08] p-5 backdrop-blur-md"><div className="flex gap-1 text-champagne"><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /></div><p className="mt-3 font-display text-xl leading-7">“Kelishdan ketishgacha hammasi nozik e’tibor bilan.”</p><p className="mt-3 text-[10px] text-white/55">— Madina R., mehmon</p></div>
+          <div className="mt-10 max-w-md rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md"><div className="flex gap-1 text-champagne" aria-hidden="true"><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /></div><p className="mt-3 font-display text-xl leading-7">“Kelishdan ketishgacha hammasi nozik e’tibor bilan.”</p><p className="mt-3 text-[10px] text-white/55">— Madina R., mehmon</p></div>
         </div>
         <p className="text-[9px] uppercase tracking-[.18em] text-white/45">Unsplash surati · haqiqiy manzil demo uchun</p>
       </div>
     </section>
     <section className="flex min-h-screen flex-col px-5 py-6 sm:px-9 lg:px-12 xl:px-20">
-      <div className="flex items-center justify-between"><Link to="/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-champagne"><ArrowLeft size={15} />Bosh sahifaga</Link><LanguageSwitcher /></div>
+      <div className="flex items-center justify-between"><Link to="/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted transition hover:text-champagne"><ArrowLeft size={15} />Bosh sahifaga</Link><LanguageSwitcher /></div>
       <div className="mx-auto my-auto w-full max-w-md py-10">
         <div className="mb-8 lg:hidden"><Logo /></div>
         <div><p className="mb-2 text-[10px] font-bold uppercase tracking-[.24em] text-champagne">Origin Hotel · Mehmonlar portali</p><h2 className="font-display text-4xl">{mode === 'login' ? t('auth.welcome') : t('auth.register')}</h2><p className="mt-2 text-sm text-muted">{mode === 'login' ? 'Hisobingizga kiring va bronlaringizni boshqaring.' : 'Bir necha qadamda hisob yarating.'}</p></div>
-        <div className="mt-7 grid grid-cols-2 rounded-full border border-[var(--line)] bg-[var(--surface)] p-1"><button type="button" onClick={() => { setMode('login'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'login' ? 'bg-ink text-white' : 'text-muted'}`}>{t('auth.signIn')}</button><button type="button" onClick={() => { setMode('register'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'register' ? 'bg-ink text-white' : 'text-muted'}`}>{t('auth.register')}</button></div>
-        <button type="button" onClick={googleDemo} className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-xs font-semibold transition hover:border-champagne"><span className="font-bold text-base text-[#4285F4]">G</span>{t('auth.google')} <span className="text-[9px] text-muted">(demo)</span></button>
+        <div className="mt-7 grid grid-cols-2 rounded-full border border-[var(--line)] bg-[var(--surface)] p-1"><button type="button" onClick={() => { setMode('login'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'login' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.signIn')}</button><button type="button" onClick={() => { setMode('register'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'register' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.register')}</button></div>
+        <GoogleSignInButton onProfile={handleGoogleProfile} onError={setError} />
         <div className="my-5 flex items-center gap-3"><span className="h-px flex-1 bg-[var(--line)]" /><span className="text-[9px] uppercase tracking-[.12em] text-muted">yoki email orqali</span><span className="h-px flex-1 bg-[var(--line)]" /></div>
         <form onSubmit={onSubmit} className="space-y-4">
           {mode === 'register' && <div className="grid grid-cols-2 gap-3"><Field label={t('auth.firstName')} value={firstName} onChange={setFirstName} required /><Field label={t('auth.lastName')} value={lastName} onChange={setLastName} required /></div>}
           <Field label={t('auth.email')} type="email" value={email} onChange={(value) => { setEmail(value); setError(''); }} autoComplete="email" required placeholder="ism@example.com" />
-          <label className="block"><span className="mb-1.5 block text-xs font-semibold">{t('auth.password')}</span><span className="relative block"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={mode === 'register' ? 6 : undefined} placeholder="••••••••" className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 pr-11 text-sm outline-none transition focus:border-champagne" /><button type="button" aria-label="Parolni ko‘rsatish" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
-          {specialDomain && <label className="block animate-rise-in"><span className="mb-1.5 flex items-center gap-2 text-xs font-semibold"><KeyRound size={13} className="text-champagne" />{t('auth.specialCode')}</span><input type="password" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} required autoComplete="off" placeholder="••••••••" className="w-full rounded-xl border border-champagne/50 bg-[var(--surface)] px-4 py-3 text-sm outline-none focus:border-champagne" /></label>}
-          {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700">{error}</p>}
+          <label className="block"><span className="mb-1.5 block text-xs font-semibold">{t('auth.password')}</span><span className="relative block"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={mode === 'register' ? 6 : undefined} placeholder="••••••••" className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 pr-11 text-sm outline-none transition focus:border-champagne" /><button type="button" aria-label="Parolni ko‘rsatish" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition hover:text-champagne">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
+          {specialDomain && <label className="block animate-rise-in"><span className="mb-1.5 flex items-center gap-2 text-xs font-semibold"><KeyRound size={13} className="text-champagne" />{t('auth.specialCode')}</span><input type="password" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} required autoComplete="off" placeholder="••••••••" className="w-full rounded-xl border border-champagne/50 bg-[var(--surface)] px-4 py-3 text-sm outline-none transition focus:border-champagne" /></label>}
+          {error && <p role="alert" className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-xs text-danger">{error}</p>}
           <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-bold text-white transition hover:bg-ink-soft">{mode === 'login' ? t('auth.signIn') : t('auth.register')}<ArrowRight size={14} /></button>
         </form>
-        <button type="button" onClick={() => setShowDemo((open) => !open)} className="mt-5 flex items-center gap-2 text-[10px] font-semibold text-muted hover:text-champagne"><ShieldCheck size={14} />Demo kirish ma’lumotlari <span>{showDemo ? '−' : '+'}</span></button>
+        <button type="button" onClick={() => setShowDemo((open) => !open)} className="mt-5 flex items-center gap-2 text-[10px] font-semibold text-muted transition hover:text-champagne"><ShieldCheck size={14} />Demo kirish ma’lumotlari <span>{showDemo ? '−' : '+'}</span></button>
         {showDemo && <div className="mt-3 space-y-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-[10px] leading-5 text-muted"><p><b className="text-[var(--text)]">Admin:</b> admin@admin.com · Admin2026! · kod admin1234</p><p><b className="text-[var(--text)]">Manager:</b> manager@manager.com · Manager2026! · kod manager1234</p><p><b className="text-[var(--text)]">Foydalanuvchi:</b> user@origin.uz · User2026!</p><p className="border-t border-[var(--line)] pt-2">Demo rejimida maxsus kodlar real himoya hisoblanmaydi.</p></div>}
         <p className="mt-7 text-center text-[10px] leading-5 text-muted">Kirish orqali Origin Hotel demo hisobidan foydalanishga rozilik bildirasiz.</p>
       </div>

@@ -1,18 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowUpRight, LogOut, Menu, Moon, Sun, X } from 'lucide-react';
+import { ArrowUpRight, LogOut, Menu, Moon, Phone, Sun, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from './Logo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { HOTEL } from '../data/marketing';
 
-export function MarketingNav() {
+/**
+ * Public header. With `overlay` it starts transparent on top of the hero photo
+ * and becomes a solid, blurred bar once the visitor scrolls.
+ */
+export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!overlay) return;
+    const onScroll = () => setScrolled(window.scrollY > 32);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [overlay]);
+
+  const transparent = overlay && !scrolled && !menuOpen;
   const links = [
     { href: '#rooms', label: t('nav.rooms') },
     { href: '#about', label: t('nav.about') },
@@ -20,26 +36,28 @@ export function MarketingNav() {
     { href: '#contact', label: t('nav.contact') },
   ];
   const accountPath = user?.role === 'user' ? '/app/bookings' : '/app';
-  const themeButton = <button type="button" onClick={toggleTheme} className="rounded-full border border-[var(--line)] p-2.5 text-[var(--text)] transition hover:border-champagne hover:text-champagne" aria-label={theme === 'light' ? 'Qorong‘i mavzuni yoqish' : 'Yorug‘ mavzuni yoqish'}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>;
+  const iconButton = `rounded-full border p-2.5 transition ${transparent ? 'border-white/30 text-white hover:border-champagne hover:text-champagne' : 'border-[var(--line)] text-[var(--text)] hover:border-champagne hover:text-champagne'}`;
+  const themeButton = <button type="button" onClick={toggleTheme} className={iconButton} aria-label={theme === 'light' ? t('nav.switchToDark') : t('nav.switchToLight')}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>;
 
-  return <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--page)]/90 backdrop-blur-xl">
-    <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between px-5 lg:px-10">
-      <Logo />
-      <nav className="hidden items-center gap-7 lg:flex" aria-label="Asosiy navigatsiya">{links.map((link) => <a key={link.href} href={link.href} className="text-xs font-semibold text-muted transition hover:text-champagne">{link.label}</a>)}</nav>
+  return <header className={`sticky top-0 z-50 border-b transition-colors duration-300 ${transparent ? 'border-transparent bg-transparent' : 'border-[var(--line)] bg-[var(--page)]/90 backdrop-blur-xl'}`}>
+    <div className="mx-auto flex h-[74px] max-w-[1440px] items-center justify-between gap-4 px-5 lg:px-10">
+      <Logo light={transparent} />
+      <nav className="hidden items-center gap-7 lg:flex" aria-label={t('nav.mainNavigation')}>{links.map((link) => <a key={link.href} href={link.href} className={`text-xs font-semibold transition ${transparent ? 'text-white/85 hover:text-champagne' : 'text-muted hover:text-champagne'}`}>{link.label}</a>)}</nav>
       <div className="hidden items-center gap-2.5 md:flex">
+        <a href={HOTEL.phoneHref} className={`hidden items-center gap-2 text-xs font-semibold transition xl:flex ${transparent ? 'text-white/85 hover:text-champagne' : 'text-muted hover:text-champagne'}`}><Phone size={14} />{HOTEL.phone}</a>
         {themeButton}
-        <LanguageSwitcher />
+        <LanguageSwitcher light={transparent} />
         {user ? <div className="flex items-center gap-2 pl-2">
-          <Link to={accountPath} className="flex items-center gap-2 rounded-full border border-[var(--line)] px-2 py-1.5 hover:border-champagne">
+          <Link to={accountPath} className={`flex items-center gap-2 rounded-full border px-2 py-1.5 transition hover:border-champagne ${transparent ? 'border-white/30' : 'border-[var(--line)]'}`}>
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-champagne">{user.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase()}</span>
-            <span className="max-w-[100px] text-left"><span className="block truncate text-xs font-semibold">{user.name}</span><span className="block text-[10px] capitalize text-muted">{user.role}</span></span>
+            <span className="max-w-[100px] text-left"><span className={`block truncate text-xs font-semibold ${transparent ? 'text-white' : 'text-[var(--text)]'}`}>{user.name}</span><span className="block text-[10px] capitalize text-muted">{user.role}</span></span>
           </Link>
-          <button onClick={() => { logout(); navigate('/'); }} aria-label={t('nav.logout', { defaultValue: 'Chiqish' })} className="rounded-full p-2 text-muted hover:bg-[var(--surface)] hover:text-rose-600"><LogOut size={16} /></button>
-        </div> : <Link to="/login" className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('nav.login')}<ArrowUpRight size={14} /></Link>}
+          <button onClick={() => { logout(); navigate('/'); }} aria-label={t('nav.logout', { defaultValue: 'Chiqish' })} className={iconButton}><LogOut size={16} /></button>
+        </div> : <Link to="/login" className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-xs font-semibold text-white shadow-soft transition hover:bg-ink-soft">{t('nav.login')}<ArrowUpRight size={14} /></Link>}
       </div>
       <div className="flex items-center gap-2 md:hidden">
         {themeButton}
-        <button type="button" aria-label={menuOpen ? 'Menyuni yopish' : 'Menyuni ochish'} onClick={() => setMenuOpen((open) => !open)} className="rounded-full border border-[var(--line)] p-2.5">{menuOpen ? <X size={17} /> : <Menu size={17} />}</button>
+        <button type="button" aria-label={menuOpen ? 'Menyuni yopish' : 'Menyuni ochish'} onClick={() => setMenuOpen((open) => !open)} className={iconButton}>{menuOpen ? <X size={17} /> : <Menu size={17} />}</button>
       </div>
     </div>
     {menuOpen && <div className="border-t border-[var(--line)] bg-[var(--page)] px-5 py-4 md:hidden">
