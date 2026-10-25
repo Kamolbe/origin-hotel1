@@ -95,6 +95,11 @@ export interface AuditEntry {
   details?: Record<string, unknown>;
 }
 
+export interface SystemRolePermission {
+  role: 'admin' | 'moderator' | 'editor' | 'user';
+  permissions: string[];
+}
+
 export interface AppSettings {
   hotelName: string;
   currency: Currency;
@@ -104,6 +109,51 @@ export interface AppSettings {
   checkOutTime: string;
   taxRate: number;
   serviceFeeRate: number;
+  security: {
+    requireStrongPasswords: boolean;
+    sessionTimeoutMinutes: number;
+    twoFactorEnabled: boolean;
+    sslHttps: boolean;
+    blockedIps: string[];
+  };
+  roles: SystemRolePermission[];
+  integrations: {
+    smtpEnabled: boolean;
+    smtpHost: string;
+    smtpPort: number;
+    smtpUser: string;
+    smsEnabled: boolean;
+    smsProvider: string;
+  };
+  content: {
+    commentsEnabled: boolean;
+    commentsModeration: 'auto' | 'manual';
+    maxUploadMb: number;
+    allowedFormats: string[];
+  };
+  seo: {
+    title: string;
+    description: string;
+    keywords: string;
+    googleAnalyticsId: string;
+    yandexMetrikaId: string;
+    facebookPixelId: string;
+    sitemapEnabled: boolean;
+    robotsDirectives: string;
+  };
+  interface: {
+    accentColor: string;
+    font: 'Manrope' | 'Inter' | 'Georgia';
+    headerMenu: string[];
+    footerMenu: string[];
+    widgets: string[];
+  };
+  operations: {
+    backupEnabled: boolean;
+    backupFrequency: 'daily' | 'weekly';
+    backupTime: string;
+    maintenanceMode: boolean;
+  };
 }
 
 export interface AppData {

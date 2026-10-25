@@ -258,6 +258,18 @@ export function createDemoData(): AppData {
       checkOutTime: "12:00",
       taxRate: 0.12,
       serviceFeeRate: 0.05,
+      security: { requireStrongPasswords: true, sessionTimeoutMinutes: 30, twoFactorEnabled: false, sslHttps: true, blockedIps: [] },
+      roles: [
+        { role: 'admin', permissions: ['Barcha boshqaruv', 'Foydalanuvchilar', 'Tizim sozlamalari'] },
+        { role: 'moderator', permissions: ['Sharhlar', 'Bronlar', 'Mehmonlar'] },
+        { role: 'editor', permissions: ['Kontent', 'Media', 'Sharhlar'] },
+        { role: 'user', permissions: ['Xona bron qilish', 'Profil'] },
+      ],
+      integrations: { smtpEnabled: false, smtpHost: '', smtpPort: 587, smtpUser: '', smsEnabled: false, smsProvider: '' },
+      content: { commentsEnabled: true, commentsModeration: 'manual', maxUploadMb: 10, allowedFormats: ['JPG', 'PNG', 'WEBP', 'PDF'] },
+      seo: { title: 'Origin Hotel', description: 'Toshkentdagi zamonaviy mehmonxona.', keywords: 'mehmonxona, Toshkent, bron', googleAnalyticsId: '', yandexMetrikaId: '', facebookPixelId: '', sitemapEnabled: true, robotsDirectives: 'User-agent: *\nAllow: /\nDisallow: /app/' },
+      interface: { accentColor: '#b99a68', font: 'Manrope', headerMenu: ['Bosh sahifa', 'Xonalar', 'Qulayliklar', 'Aloqa'], footerMenu: ['Biz haqimizda', 'Shartlar', 'Maxfiylik', 'Aloqa'] , widgets: ['Bron paneli', 'Mehmonlar sharhlari', 'Joylashuv'] },
+      operations: { backupEnabled: true, backupFrequency: 'daily', backupTime: '02:00', maintenanceMode: false },
     },
   };
 }
