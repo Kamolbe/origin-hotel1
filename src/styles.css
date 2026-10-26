@@ -364,3 +364,23 @@ img { max-width: 100%; }
 @media (max-width: 767px) { .hotel-more-panel { max-width: none; } }
 @media (min-width: 768px) { .hotel-header-account { display: none; } }
 button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accent-on-color, #111b22); }
+
+/* Role overview: compact permissions, readable contrast and balanced rows. */
+.roles-intro { margin: 0 0 18px; font-size: 12px; line-height: 1.7; color: var(--muted); }
+.roles-list { display: grid; gap: 12px; }
+.role-card { display: grid; grid-template-columns: minmax(210px, .9fr) minmax(0, 1.4fr); align-items: center; gap: 24px; padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+.role-card-admin { background: linear-gradient(120deg, color-mix(in srgb, var(--champagne) 7%, var(--surface)), var(--surface)); border-color: color-mix(in srgb, var(--champagne) 38%, var(--line)); }
+.role-identity { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.role-icon { display: grid; place-items: center; flex-shrink: 0; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 13px; background: var(--page); color: var(--text); }
+.role-card-admin .role-icon { background: var(--ink); color: #e0c69c; border-color: var(--ink); }
+.role-identity h3 { font-size: 14px; font-weight: 700; line-height: 1.5; }
+.role-identity p { margin-top: 3px; font-size: 11px; line-height: 1.6; color: var(--muted); }
+.role-count { margin-bottom: 8px; font-size: 9px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.role-permissions { min-width: 0; }
+.role-permissions ul { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.role-permissions li { display: inline-flex; align-items: center; align-self: start; gap: 6px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--page); font-size: 11px; line-height: 1.4; color: var(--text); }
+.role-permissions li svg { flex-shrink: 0; color: var(--success); }
+.roles-note { display: flex; align-items: flex-start; gap: 9px; margin-top: 18px; padding: 13px 15px; border-radius: 12px; background: var(--page); color: var(--muted); }
+.roles-note svg { flex-shrink: 0; margin-top: 2px; }
+.roles-note p { font-size: 11px; line-height: 1.8; }
+@media (max-width: 767px) { .role-card { grid-template-columns: minmax(0,1fr); gap: 16px; padding: 16px; } .role-permissions { border-top: 1px solid var(--line); padding-top: 13px; } }
