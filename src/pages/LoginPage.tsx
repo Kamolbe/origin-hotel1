@@ -12,6 +12,13 @@ import type { GoogleProfile } from '../services/googleAuth';
 
 const authPhoto = 'https://images.unsplash.com/photo-1660557989695-14fac79c086d?auto=format&fit=crop&w=1600&q=88';
 
+/** Demo accounts shown behind the collapsible hint. Kept compact so the panel never needs to scroll. */
+const demoAccounts = [
+  { role: 'Administrator', email: 'admin@admin.com', password: 'Admin2026!', code: 'admin1234' },
+  { role: 'Menejer', email: 'manager@manager.com', password: 'Manager2026!', code: 'manager1234' },
+  { role: 'Mehmon', email: 'user@origin.uz', password: 'User2026!', code: '' },
+];
+
 export function LoginPage() {
   const { t } = useTranslation();
   const { user, login, register, signInWithGoogle } = useAuth();
@@ -19,7 +26,14 @@ export function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const requested = (location.state as { from?: string } | null)?.from;
+  const reason = (location.state as { reason?: string } | null)?.reason;
   const destination = requested?.startsWith('/app') ? requested : '/app';
+  // Arriving here from a protected page is explained instead of feeling like a bounce.
+  const notice = reason === 'booking'
+    ? 'Bronni yakunlash uchun tizimga kiring yoki bir necha qadamda hisob yarating. Tanlagan sanalaringiz saqlanadi.'
+    : requested
+      ? 'Davom etish uchun tizimga kiring — kirgandan so‘ng o‘sha sahifaga qaytasiz.'
+      : '';
   const forwardedState = { bookingSearch: (location.state as { bookingSearch?: unknown } | null)?.bookingSearch, selectedRoomType: (location.state as { selectedRoomType?: string } | null)?.selectedRoomType };
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [firstName, setFirstName] = useState('');
@@ -68,21 +82,22 @@ export function LoginPage() {
           <p className="mb-4 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.25em] text-[#dfc798]"><span className="h-px w-8 bg-champagne" />Origin mehmondo‘stligi</p>
           <h1 className="font-display text-5xl leading-[1.08] xl:text-6xl">Qaytishni istaydigan manzil.</h1>
           <p className="mt-5 max-w-md text-sm leading-7 text-white/70">Har bir tashrifda osoyishtalik, mayda e’tiborlar va qulay xizmat.</p>
-          <div className="mt-8 flex flex-wrap gap-2">{['24/7 xizmat', 'Spa & basseyn', 'Shahar markazi'].map((item) => <span key={item} className="rounded-full border border-white/20 bg-white/5 px-3 py-2 text-[10px] text-white/80"><Sparkles size={11} className="mr-1.5 inline text-champagne" />{item}</span>)}</div>
-          <div className="mt-10 max-w-md rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md"><div className="flex gap-1 text-champagne" aria-hidden="true"><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /></div><p className="mt-3 font-display text-xl leading-7">“Kelishdan ketishgacha hammasi nozik e’tibor bilan.”</p><p className="mt-3 text-[10px] text-white/55">— Madina R., mehmon</p></div>
+          <div className="auth-art-badges mt-8 flex flex-wrap gap-2">{['24/7 xizmat', 'Spa & basseyn', 'Shahar markazi'].map((item) => <span key={item} className="rounded-full border border-white/20 bg-white/5 px-3 py-2 text-[10px] text-white/80"><Sparkles size={11} className="mr-1.5 inline text-champagne" />{item}</span>)}</div>
+          <div className="auth-art-quote mt-10 max-w-md rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md"><div className="flex gap-1 text-champagne" aria-hidden="true"><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /><Star size={13} fill="currentColor" /></div><p className="mt-3 font-display text-xl leading-7">“Kelishdan ketishgacha hammasi nozik e’tibor bilan.”</p><p className="mt-3 text-[10px] text-white/55">— Madina R., mehmon</p></div>
         </div>
         <p className="text-[9px] uppercase tracking-[.18em] text-white/45">Unsplash surati · haqiqiy manzil demo uchun</p>
       </div>
     </section>
-    <section className="auth-form-panel flex h-full min-h-0 flex-col overflow-y-auto px-5 py-4 sm:px-9 lg:px-12 xl:px-20">
+    <section className="auth-form-panel flex h-full min-h-0 flex-col overflow-y-auto px-5 py-3 sm:px-9 lg:px-12 xl:px-20">
       <div className="flex items-center justify-between"><Link to="/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted transition hover:text-champagne"><ArrowLeft size={15} />Bosh sahifaga</Link><LanguageSwitcher /></div>
-      <div className="auth-content mx-auto my-auto w-full max-w-md py-4">
-        <div className="mb-8 lg:hidden"><Logo /></div>
+      <div className="auth-content mx-auto my-auto w-full max-w-md py-2">
+        <div className="auth-brand mb-6 lg:hidden"><Logo /></div>
         <div><p className="mb-2 text-[10px] font-bold uppercase tracking-[.24em] text-champagne">Origin Hotel · Mehmonlar portali</p><h2 className="font-display text-4xl">{mode === 'login' ? t('auth.welcome') : t('auth.register')}</h2><p className="mt-2 text-sm text-muted">{mode === 'login' ? 'Hisobingizga kiring va bronlaringizni boshqaring.' : 'Bir necha qadamda hisob yarating.'}</p></div>
-        <div className="mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] bg-[var(--surface)] p-1"><button type="button" onClick={() => { setMode('login'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'login' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.signIn')}</button><button type="button" onClick={() => { setMode('register'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'register' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.register')}</button></div>
+        {notice && <p role="status" className="auth-notice mt-4 flex items-start gap-2 rounded-2xl border border-champagne/45 bg-champagne/10 px-4 py-3 text-[11px] leading-5 text-[var(--text)]"><ShieldCheck size={14} className="mt-0.5 shrink-0 text-champagne" />{notice}</p>}
+        <div className="auth-mode-switch mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] bg-[var(--surface)] p-1"><button type="button" aria-pressed={mode === 'login'} onClick={() => { setMode('login'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'login' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.signIn')}</button><button type="button" aria-pressed={mode === 'register'} onClick={() => { setMode('register'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'register' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.register')}</button></div>
         <GoogleSignInButton onProfile={handleGoogleProfile} onError={setError} />
         <div className="my-3 flex items-center gap-3"><span className="h-px flex-1 bg-[var(--line)]" /><span className="text-[9px] uppercase tracking-[.12em] text-muted">yoki email orqali</span><span className="h-px flex-1 bg-[var(--line)]" /></div>
-        <form onSubmit={onSubmit} className="space-y-3">
+        <form onSubmit={onSubmit} key={mode} className="animate-rise-in space-y-3">
           {mode === 'register' && <div className="grid grid-cols-2 gap-3"><Field label={t('auth.firstName')} value={firstName} onChange={setFirstName} required /><Field label={t('auth.lastName')} value={lastName} onChange={setLastName} required /></div>}
           <Field label={t('auth.email')} type="email" value={email} onChange={(value) => { setEmail(value); setError(''); }} autoComplete="email" required placeholder="ism@example.com" />
           <label className="block"><span className="mb-1.5 block text-xs font-semibold">{t('auth.password')}</span><span className="relative block"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={mode === 'register' ? 6 : undefined} placeholder="••••••••" className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 pr-11 text-sm outline-none transition focus:border-champagne" /><button type="button" aria-label="Parolni ko‘rsatish" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition hover:text-champagne">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
@@ -91,8 +106,8 @@ export function LoginPage() {
           <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-bold text-white transition hover:bg-ink-soft">{mode === 'login' ? t('auth.signIn') : t('auth.register')}<ArrowRight size={14} /></button>
         </form>
         <button type="button" onClick={() => setShowDemo((open) => !open)} className="mt-5 flex items-center gap-2 text-[10px] font-semibold text-muted transition hover:text-champagne"><ShieldCheck size={14} />Demo kirish ma’lumotlari <span>{showDemo ? '−' : '+'}</span></button>
-        {showDemo && <div className="mt-3 space-y-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-[10px] leading-5 text-muted"><p><b className="text-[var(--text)]">Admin:</b> admin@admin.com · Admin2026! · kod admin1234</p><p><b className="text-[var(--text)]">Manager:</b> manager@manager.com · Manager2026! · kod manager1234</p><p><b className="text-[var(--text)]">Foydalanuvchi:</b> user@origin.uz · User2026!</p><p className="border-t border-[var(--line)] pt-2">Demo rejimida maxsus kodlar real himoya hisoblanmaydi.</p></div>}
-        <p className="mt-3 text-center text-[10px] leading-5 text-muted">Kirish orqali Origin Hotel demo hisobidan foydalanishga rozilik bildirasiz.</p>
+        {showDemo && <div className="mt-3 grid gap-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-3 text-[10px] leading-5 text-muted sm:grid-cols-3 sm:p-4">{demoAccounts.map((account) => <p key={account.role}><b className="text-[var(--text)]">{account.role}</b><span className="mt-0.5 block break-words">{account.email}<br />{account.password}{account.code && <><br />kod {account.code}</>}</span></p>)}</div>}
+        <p className="auth-legal mt-3 text-center text-[10px] leading-5 text-muted">Kirish orqali Origin Hotel demo hisobidan foydalanishga rozilik bildirasiz.</p>
       </div>
       <div className="mx-auto flex w-full max-w-md items-center justify-between pb-2 text-[9px] text-muted"><span>© {new Date().getFullYear()} Origin Hotel</span><Link to="/" className="hover:text-champagne">OriginHotel.uz</Link></div>
     </section>

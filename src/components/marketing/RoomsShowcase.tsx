@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
-import { Link } from 'react-router-dom';
 import { ArrowRight, BedDouble, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../context/AppDataContext';
+import { useBookingAction } from '../../hooks/useBookingAction';
+import { RoomDetailsDialog } from '../RoomDetailsDialog';
 import { formatMoney } from '../../services/hotelUtils';
 import { optimizedUnsplashUrl, roomPhotoForType, unsplashSrcSet } from '../../services/imageUtils';
-import type { RoomType } from '../../types';
+import type { Room, RoomType } from '../../types';
 
 const ROOM_ORDER: RoomType[] = ['Standard', 'Deluxe', 'Suite', 'Family', 'Presidential'];
 const ROOM_LABEL_KEY: Record<RoomType, string> = {
@@ -21,6 +23,8 @@ export function RoomsShowcase() {
   const reduced = usePrefersReducedMotion();
   const { t } = useTranslation();
   const { data } = useAppData();
+  const book = useBookingAction();
+  const [details, setDetails] = useState<Room | null>(null);
   const rooms = ROOM_ORDER.map((type) => ({ type, room: data.rooms.find((item) => item.type === type) })).filter((entry) => entry.room);
 
   return <section id="rooms" className="mx-auto max-w-[1440px] px-5 py-20 lg:px-10 lg:py-24">
@@ -42,7 +46,7 @@ export function RoomsShowcase() {
             alt={t(`${ROOM_LABEL_KEY[type]}`)}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+            className="h-full w-full bg-[var(--line)] object-cover transition duration-500 group-hover:scale-[1.04]"
           />
           <span className="absolute left-4 top-4 rounded-full bg-white/92 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-ink">{t(ROOM_LABEL_KEY[type])}</span>
         </div>
@@ -53,7 +57,7 @@ export function RoomsShowcase() {
           <p className="mt-4 text-xs leading-6 text-muted">{room?.amenities.slice(0, 3).join(' · ')}</p>
           <div className="mt-6 flex flex-wrap items-end justify-between gap-3 border-t border-[var(--line)] pt-5">
             <p><span className="font-display text-2xl">{room ? formatMoney(room.pricePerNight, data.settings.currency) : ''}</span><span className="ml-1 text-[10px] text-muted">{t('landing.perNight')}</span></p>
-            <Link to={`/rooms/${room!.id}`} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-4 py-2.5 text-[11px] font-semibold transition hover:border-champagne hover:bg-champagne/10 hover:text-champagne">{t('landing.reserve')}<ArrowRight size={13} /></Link>
+            <button type="button" onClick={() => room && setDetails(room)} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-4 py-2.5 text-[11px] font-semibold transition hover:border-champagne hover:bg-champagne/10 hover:text-champagne">{t('landing.reserve')}<ArrowRight size={13} /></button>
           </div>
         </div>
       </motion.article>)}
@@ -64,8 +68,10 @@ export function RoomsShowcase() {
           <h3 className="mt-5 font-display text-2xl">{t('landing.allRoomsTitle')}</h3>
           <p className="mt-3 text-xs leading-6 text-muted">{t('landing.allRoomsText')}</p>
         </div>
-        <Link to="/app/rooms" className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('landing.allRoomsAction')}<ArrowRight size={14} /></Link>
+        <button type="button" onClick={() => book()} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('landing.allRoomsAction')}<ArrowRight size={14} /></button>
       </article>
     </div>
+
+    <RoomDetailsDialog room={details} onClose={() => setDetails(null)} onBook={(chosen) => { setDetails(null); book({ selectedRoomType: chosen.type }); }} />
   </section>;
 }

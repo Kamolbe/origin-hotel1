@@ -101,9 +101,34 @@ export interface SystemRolePermission {
   permissions: string[];
 }
 
+/** Public hotel contact channels. Every field drives the website: header, footer,
+ *  the "Administrator bilan bog'lanish" dialog and the room details page. */
+export interface HotelContact {
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  mapUrl: string;
+  telegram: string;
+  instagram: string;
+  facebook: string;
+}
+
+/** One visit to the public website, recorded so staff can see site activity. */
+export interface Visit {
+  id: string;
+  at: string;
+  path: string;
+  device: 'Mobil' | 'Planshet' | 'Desktop';
+  browser: string;
+  userId?: string;
+  userName?: string;
+  userRole?: UserRole;
+}
+
 export interface AppSettings {
   hotelName: string;
-  contact: { phone: string; email: string; address: string; city: string; mapUrl: string };
+  contact: HotelContact;
   currency: Currency;
   timeZone: string;
   dateFormat: string;
@@ -165,6 +190,7 @@ export interface AppData {
   finance: FinanceEntry[];
   users: User[];
   notifications: NotificationItem[];
+  visits: Visit[];
   auditLog: AuditEntry[];
   settings: AppSettings;
 }
