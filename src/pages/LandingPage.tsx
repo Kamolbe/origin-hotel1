@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useContactDialog } from '../context/ContactDialogContext';
-import { ArrowUp, BedDouble, Calculator, House, LogIn, Phone } from 'lucide-react';
+import { ArrowUp, Calculator, House, LogIn, Phone } from 'lucide-react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { Reveal } from '../components/marketing/Reveal';
 import { StayPlanner } from '../components/marketing/StayPlanner';
@@ -54,7 +54,6 @@ export function LandingPage() {
       {user
         ? <Link to="/app" aria-label="Kabinetga qaytish" className="hotel-dock-account"><House size={17} /><span className="dock-wide-label">Kabinetga qaytish</span><span className="dock-short-label">Kabinet</span></Link>
         : <Link to="/login" state={{ from: '/app', reason: 'account' }} className="hotel-dock-account"><LogIn size={17} /><span className="dock-wide-label">Tizimga kirish</span><span className="dock-short-label">Kirish</span></Link>}
-      <a href="#rooms" onClick={(event) => { event.preventDefault(); scrollToSection('rooms'); }}><BedDouble size={17} /><span>Xonalar</span></a>
       <a href="#stay-planner" onClick={(event) => { event.preventDefault(); scrollToSection('stay-planner'); }}><Calculator size={17} /><span className="dock-wide-label">Narxni hisoblash</span><span className="dock-short-label">Hisoblash</span></a>
       <button type="button" onClick={openContact}><Phone size={17} /><span>Aloqa</span></button>
       <button className="dock-top-button" type="button" aria-label="Sahifa boshiga" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}><ArrowUp size={18} /></button>
