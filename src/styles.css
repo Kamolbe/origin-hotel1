@@ -243,3 +243,39 @@ img { max-width: 100%; }
   .auth-content > .mt-7 { margin-top: 12px; }
 }
 @media (max-width: 639px) { .hotel-quick-dock { flex-wrap: wrap; justify-content: center; width: max-content; } .hotel-quick-dock a { padding: 8px 10px; } }
+
+/* Quiet hotel surfaces: consistent depth, spacing and controls. */
+:root { --page: #f5f4f0; --line: #e4e3dc; --muted: #637079; }
+:root[data-theme="dark"] { --page: #101719; --line: #303b3e; --muted: #acb7b9; }
+/* Remove the native rails/arrows shown in the screenshot. Wheel, touch and
+   keyboard scrolling remain available so long forms cannot become trapped. */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.hotel-select-list, .hotel-modal-body, .auth-form-panel { scrollbar-width: none; }
+.surface { box-shadow: 0 3px 16px rgb(17 27 34 / 3%); }
+.page-heading { position: relative; padding: 8px 0 24px; border-bottom: 1px solid var(--line); }
+.page-heading::after { content: ''; position: absolute; width: 48px; height: 3px; left: 0; bottom: -2px; border-radius: 8px; background: var(--champagne); }
+.page-heading h1 { letter-spacing: -.035em; }
+.stat-card { position: relative; overflow: hidden; border-radius: 24px; padding: 24px; background: linear-gradient(145deg, var(--surface), color-mix(in srgb, var(--page) 40%, var(--surface))); }
+.stat-card-accent { border-color: #b99a684d; background: linear-gradient(130deg, #182d34, #29434a); color: #fff; box-shadow: 0 10px 28px #152d3420; }
+.stat-card-accent .text-muted { color: #d1dadd; }
+.stat-card-accent span { background: #ffffff10; color: #e5c795; }
+.hotel-dashboard table thead { letter-spacing: .08em; }
+.hotel-dashboard tbody tr { transition: background .18s ease; }
+.hotel-dashboard tbody tr:hover { background: color-mix(in srgb, var(--champagne) 5%, var(--surface)); }
+.hotel-dashboard :where(input, textarea) { color: var(--text); }
+.hotel-dashboard aside nav a { min-height: 44px; }
+.hotel-modal-panel { border-color: color-mix(in srgb, var(--champagne) 20%, var(--line)); }
+.hotel-modal-heading { padding-bottom: 24px; }
+.hotel-modal-body { padding-top: 26px; }
+.hotel-select-list { padding: 8px; border-radius: 18px; }
+.hotel-select-option { min-height: 44px; padding: 12px 14px; }
+.room-showcase-card { border-radius: 28px; box-shadow: 0 6px 24px #192a3210; }
+.room-showcase-card > div:last-child { padding: 26px; }
+.room-showcase-card img { transition: transform .7s cubic-bezier(.22,1,.36,1); }
+.room-showcase-card a { min-height: 42px; background: var(--page); }
+.room-showcase-card a:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.field, .hotel-select-trigger { border-radius: 14px; }
+.primary-button, .secondary-button { min-height: 42px; }
+@media (max-width: 639px) { .stat-card { padding: 18px; border-radius: 20px; } .room-showcase-card > div:last-child { padding: 22px; } .page-heading { padding-bottom: 20px; } }
+@media (prefers-reduced-motion: reduce) { .room-showcase-card img, .hotel-dashboard tbody tr { transition: none; } }

@@ -31,8 +31,8 @@ export function RoomsShowcase() {
     </div>
 
     <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {rooms.map(({ type, room }, index) => <motion.article initial={reduced ? false : { opacity: 0, y: 55 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .15 }} transition={{ duration: .65, delay: index % 3 * .12 }} key={type} className="surface group flex flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1 hover:shadow-lift">
-        <div className="relative h-56 overflow-hidden">
+      {rooms.map(({ type, room }, index) => <motion.article initial={reduced ? false : { opacity: 0, y: 55 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .15 }} transition={{ duration: .65, delay: index % 3 * .12 }} key={type} className="surface room-showcase-card group flex flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1 hover:shadow-lift">
+        <div className="relative aspect-[16/11] overflow-hidden">
           <img
             src={optimizedUnsplashUrl(roomPhotoForType(type), 720, 74)}
             srcSet={unsplashSrcSet(roomPhotoForType(type), [420, 600, 720, 960], 74)}
@@ -51,7 +51,7 @@ export function RoomsShowcase() {
             <span className="inline-flex items-center gap-1.5"><Users size={14} className="text-champagne" />{t('landing.roomCapacity', { count: room?.capacity ?? 2 })}</span>
           </div>
           <p className="mt-4 text-xs leading-6 text-muted">{room?.amenities.slice(0, 3).join(' · ')}</p>
-          <div className="mt-auto flex items-end justify-between gap-4 border-t border-[var(--line)] pt-5">
+          <div className="mt-6 flex flex-wrap items-end justify-between gap-3 border-t border-[var(--line)] pt-5">
             <p><span className="font-display text-2xl">{room ? formatMoney(room.pricePerNight, data.settings.currency) : ''}</span><span className="ml-1 text-[10px] text-muted">{t('landing.perNight')}</span></p>
             <Link to={`/rooms/${room!.id}`} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-4 py-2.5 text-[11px] font-semibold transition hover:border-champagne hover:bg-champagne/10 hover:text-champagne">{t('landing.reserve')}<ArrowRight size={13} /></Link>
           </div>
