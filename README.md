@@ -88,3 +88,9 @@ Admin → Sozlamalar → Menyu va interfeys: aksent, yorug‘ mavzudagi sahifa/k
 Admin → Xonalar: har bir xona uchun alohida rasm va tavsif qo‘shish mumkin; bu ro‘yxat, batafsil sahifa, modal va bron preview’da qo‘llanadi.
 
 Bu boshqaruv hozir lokal demo: `localStorage` va shu origin’dagi boshqa tablar bilan ishlaydi. Barcha mehmonlar/qurilmalarga yagona nashr, server darajasidagi admin ruxsatlari, umumiy bron va foydalanuvchilar bazasi hali ulanmagan. Production uchun ishonchli autentifikatsiya va backend talab qilinadi. Admin paroli va maxsus kodlar client kodida demo sifatida mavjud; haqiqiy himoya hisoblanmaydi.
+
+## Mehmonning shaxsiy sozlamalari
+
+Oddiy foydalanuvchi/manager → Sozlamalar ichida profil, shaxsiy tanlovlar, ma’lumotlar va yordam bo‘limlari bor. Til, mavzu, kamroq animatsiya, odatiy mehmonlar soni, afzal xona turi va bron izohi hisobning `preferences` maydonida saqlanadi. Mehmonlar soni yangi qidiruv/bron shakliga, xona turi xona ro‘yxati filtriga, izoh esa bron shakliga boshlang‘ich qiymat bo‘lib o‘tadi; aniq tanlangan bron parametrlari ustun turadi. Hisob emaili bu shakldan almashtirilmaydi.
+
+Shaxsiy ma’lumotlarni JSON eksport qilish faqat joriy foydalanuvchining profili, tanlovlari va bronlarini oladi; autentifikatsiya paroli/maxsus kodlarini eksport qilmaydi. Bu sozlamalar ham umumiy backend emas, shu brauzerdagi hisobga tegishli lokal ma’lumotlardir. Xabar/email yuborish yoki boshqa qurilmalarga sinxronlash qo‘shilmagan.

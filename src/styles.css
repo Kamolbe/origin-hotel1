@@ -384,3 +384,5 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
 .roles-note svg { flex-shrink: 0; margin-top: 2px; }
 .roles-note p { font-size: 11px; line-height: 1.8; }
 @media (max-width: 767px) { .role-card { grid-template-columns: minmax(0,1fr); gap: 16px; padding: 16px; } .role-permissions { border-top: 1px solid var(--line); padding-top: 13px; } }
+:root[data-reduce-motion="true"] { scroll-behavior: auto; }
+:root[data-reduce-motion="true"] *, :root[data-reduce-motion="true"] *::before, :root[data-reduce-motion="true"] *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }

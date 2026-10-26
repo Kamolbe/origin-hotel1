@@ -1,3 +1,4 @@
+import { useUserPreferences } from '../hooks/useUserPreferences';
 import { useRoomPhotos } from '../hooks/useSiteContent';
 import { Select } from '../components/Select';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
@@ -20,6 +21,7 @@ const blankForm = { number: '', floor: '1', type: 'Standard' as RoomType, status
 
 export function RoomsPage() {
   const getRoomPhoto = useRoomPhotos();
+  const { preferences } = useUserPreferences();
   const { user } = useAuth();
   const { data, updateData } = useAppData();
   const { success, error } = useToast();
@@ -30,9 +32,9 @@ export function RoomsPage() {
   const [query, setQuery] = useState('');
   const [floor, setFloor] = useState('all');
   const [status, setStatus] = useState('all');
-  const [type, setType] = useState((location.state as { selectedRoomType?: string } | null)?.selectedRoomType ?? 'all');
+  const [type, setType] = useState((location.state as { selectedRoomType?: string } | null)?.selectedRoomType ?? preferences.roomType);
   const [maxPrice, setMaxPrice] = useState('');
-  const [capacity, setCapacity] = useState('1');
+  const [capacity, setCapacity] = useState(() => String(preferences.defaultGuests));
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [form, setForm] = useState(blankForm);

@@ -1,3 +1,4 @@
+import { useUserPreferences } from '../hooks/useUserPreferences';
 import { Select } from '../components/Select';
 import { useMemo, useState, type FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -24,6 +25,7 @@ function localDateAfter(days: number, from?: string) {
 }
 
 export function BookingsPage() {
+  const { preferences } = useUserPreferences();
   const { user } = useAuth();
   const { data, updateData } = useAppData();
   const { success, error } = useToast();
@@ -34,7 +36,7 @@ export function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [createOpen, setCreateOpen] = useState(Boolean(routeState?.selectedRoomId));
-  const [form, setForm] = useState(() => ({ guestId: '', roomId: routeState?.selectedRoomId ?? '', checkIn: routeState?.bookingSearch?.checkIn || localDateAfter(1), checkOut: routeState?.bookingSearch?.checkOut || localDateAfter(2), adults: routeState?.bookingSearch?.guests || '1', children: '0', note: '' }));
+  const [form, setForm] = useState(() => ({ guestId: '', roomId: routeState?.selectedRoomId ?? '', checkIn: routeState?.bookingSearch?.checkIn || localDateAfter(1), checkOut: routeState?.bookingSearch?.checkOut || localDateAfter(2), adults: routeState?.bookingSearch?.guests || (staff ? '1' : String(preferences.defaultGuests)), children: '0', note: staff ? '' : preferences.bookingNote }));
 
   const visibleBookings = useMemo(() => [...data.bookings]
     .filter((booking) => staff || booking.userId === user?.id || booking.notes?.includes(user?.email ?? '__none__'))
@@ -76,7 +78,7 @@ export function BookingsPage() {
     const booking: Booking = { id: makeId('booking'), bookingNumber: `OR-${new Date().getFullYear()}-${String(data.bookings.length + 1).padStart(4,'0')}`, userId: staff ? undefined : user.id, guestId: guest.id, roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut, status: staff ? 'confirmed' : 'pending', adults: Number(form.adults), children: Number(form.children), totalAmount: room.pricePerNight * days, paidAmount: 0, source: staff ? 'walk_in' : 'website', createdAt: new Date().toISOString(), notes: staff ? form.note : `user:${user.email}${form.note ? ` · ${form.note}` : ''}` };
     updateData((current) => ({ ...current, guests: current.guests.some((item) => item.id === guest.id) ? current.guests : [guest, ...current.guests], bookings: [booking, ...current.bookings], notifications: [{ id: makeId('notification'), userId: undefined, type: 'booking', title: 'Yangi bron so‘rovi', message: `${guest.firstName} ${guest.lastName} · ${room.number}-xona · ${form.checkIn}`, read: false, createdAt: new Date().toISOString() }, ...current.notifications], auditLog: recordAudit(current, staff ? 'Yangi bron yaratildi' : 'Foydalanuvchi bron so‘rovi yubordi', 'booking', booking.id, user.id) }));
     success(staff ? 'Yangi bron yaratildi.' : 'So‘rovingiz yuborildi. Admin tasdig‘i kutilmoqda.');
-    setCreateOpen(false); setForm({ guestId: '', roomId: '', checkIn: localDateAfter(1), checkOut: localDateAfter(2), adults: '1', children: '0', note: '' });
+    setCreateOpen(false); setForm({ guestId: '', roomId: '', checkIn: localDateAfter(1), checkOut: localDateAfter(2), adults: staff ? '1' : String(preferences.defaultGuests), children: '0', note: staff ? '' : preferences.bookingNote });
     window.history.replaceState({}, document.title);
   }
 
@@ -110,7 +112,7 @@ export function BookingsPage() {
           <label className="block min-w-0"><span className="mb-1.5 block text-[10px] font-semibold">Kattalar</span><Select value={form.adults} onChange={(event) => setForm({ ...form, adults: event.target.value, roomId: '' })} className="w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-xs">{[1,2,3,4].map((n) => <option key={n} value={n}>{n}</option>)}</Select></label>
           <label className="block min-w-0"><span className="mb-1.5 block text-[10px] font-semibold">Bolalar</span><Select value={form.children} onChange={(event) => setForm({ ...form, children: event.target.value, roomId: '' })} className="w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-xs">{[0,1,2,3].map((n) => <option key={n} value={n}>{n}</option>)}</Select></label>
           <label className="block min-w-0 sm:col-span-2"><span className="mb-1.5 block text-[10px] font-semibold">Bo‘sh xona ({available.length})</span><Select required value={form.roomId} onChange={(event) => setForm({ ...form, roomId: event.target.value })} className="w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-xs"><option value="">Xonani tanlang</option>{available.map((room) => <option key={room.id} value={room.id}>{room.number} · {room.type} · {formatMoney(room.pricePerNight,data.settings.currency)} / tun</option>)}</Select>{available.length === 0 && <span className="mt-1 block text-[10px] text-danger">Bizda bo‘sh o‘rinlar qolmagan</span>}</label>
-          {staff && <label className="block min-w-0 sm:col-span-2"><span className="mb-1.5 block text-[10px] font-semibold">Izoh</span><textarea value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} rows={2} className="w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-xs outline-none focus:border-champagne" /></label>}
+          <label className="block min-w-0 sm:col-span-2"><span className="mb-1.5 block text-[10px] font-semibold">Izoh</span><textarea value={form.note} maxLength={500} onChange={(event) => setForm({ ...form, note: event.target.value })} rows={2} className="w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-xs outline-none focus:border-champagne" /></label>
           {selectedRoom && validStay && <div className="flex min-w-0 items-center justify-between gap-3 rounded-xl bg-[var(--page)] p-3 text-xs sm:col-span-2"><span className="text-muted">{stayNights} tun · taxminiy jami</span><b className="shrink-0">{formatMoney(selectedRoom.pricePerNight * stayNights,data.settings.currency)}</b></div>}
           <div className="sticky bottom-0 z-20 -mx-1 flex justify-end gap-2 border-t border-[var(--line)] bg-[var(--surface)]/95 px-1 py-3 backdrop-blur sm:col-span-2"><button type="button" onClick={() => setCreateOpen(false)} className="rounded-full border border-[var(--line)] px-4 py-2.5 text-xs font-semibold">Bekor qilish</button><button disabled={!selectedRoom || !available.length || !validStay} className="rounded-full bg-ink px-5 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">{staff ? 'Bron yaratish' : 'So‘rov yuborish'}</button></div>
         </div>

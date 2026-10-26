@@ -1,3 +1,4 @@
+import { useUserPreferences } from '../../hooks/useUserPreferences';
 import { Select } from '../Select';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -32,13 +33,14 @@ function isoDate(daysFromToday: number): string {
  * are remembered until they open a booking.
  */
 export function BookingSearch({ className = '' }: { className?: string }) {
+  const { preferences } = useUserPreferences();
   const { t } = useSiteTranslation();
   const { user } = useAuth();
   const { success } = useToast();
   const navigate = useNavigate();
   const [checkIn, setCheckIn] = useState(() => isoDate(1));
   const [checkOut, setCheckOut] = useState(() => isoDate(3));
-  const [guests, setGuests] = useState('2');
+  const [guests, setGuests] = useState(() => String(preferences.defaultGuests));
   const [error, setError] = useState('');
 
   function submit(event: FormEvent<HTMLFormElement>) {

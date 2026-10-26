@@ -1,3 +1,4 @@
+import { GuestSettingsPage } from './GuestSettingsPage';
 import { RolesOverview } from '../components/RolesOverview';
 import { SiteContentSettings } from '../components/SiteContentSettings';
 import { HotelContactSettings } from '../components/HotelContactSettings';
@@ -44,6 +45,8 @@ export function SettingsPage() {
     const phone = String(form.get('phone') ?? '').trim();
     if (updateProfile({ name, phone })) success('Profil sozlamalari saqlandi.');
   };
+
+  if (user?.role !== 'admin') return <GuestSettingsPage />;
 
   return <div className="animate-rise-in">
     <PageHeader eyebrow="Tizim boshqaruvi" title="Sozlamalar" description="Aloqa, manzil, dizayn, matnlar, rasmlar va sayt bo‘limlarini boshqaring." />

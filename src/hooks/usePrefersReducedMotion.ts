@@ -1,6 +1,8 @@
+import { useUserPreferences } from './useUserPreferences';
 import { useEffect, useState } from 'react';
 
 export function usePrefersReducedMotion() {
+  const { preferences } = useUserPreferences();
   const [reducedMotion, setReducedMotion] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   useEffect(() => {
@@ -11,5 +13,5 @@ export function usePrefersReducedMotion() {
     return () => query.removeEventListener('change', update);
   }, []);
 
-  return reducedMotion;
+  return reducedMotion || preferences.reducedMotion;
 }

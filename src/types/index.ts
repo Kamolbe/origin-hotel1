@@ -16,6 +16,15 @@ export interface DemoUserCredentials {
   accessCode?: string;
 }
 
+export interface UserPreferences {
+  language?: string;
+  theme?: 'light' | 'dark';
+  reducedMotion: boolean;
+  defaultGuests: number;
+  roomType: RoomType | 'all';
+  bookingNote: string;
+}
+
 export interface User extends DemoUserCredentials {
   isActive: boolean;
   createdAt: string;
@@ -23,6 +32,7 @@ export interface User extends DemoUserCredentials {
   avatarUrl?: string;
   lastLoginAt?: string;
   twoFactorEnabled?: boolean;
+  preferences?: Partial<UserPreferences>;
 }
 
 export interface Guest {

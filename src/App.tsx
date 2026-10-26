@@ -1,3 +1,4 @@
+import { UserPreferenceSync } from './components/UserPreferenceSync';
 import { SiteAppearance } from './components/SiteAppearance';
 import { MobileNavigation } from './components/MobileNavigation';
 import { lazy, Suspense } from 'react';
@@ -35,7 +36,7 @@ function RouteFallback() {
 
 export function App() {
   useVisitLog();
-  return <><SiteAppearance /><Suspense fallback={<RouteFallback />}><Routes>
+  return <><UserPreferenceSync /><SiteAppearance /><Suspense fallback={<RouteFallback />}><Routes>
     <Route path="/" element={<LandingPage />} />
     <Route path="/rooms" element={<PublicRoomsPage />} />
     <Route path="/contact" element={<ContactPage />} />
