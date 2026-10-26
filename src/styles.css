@@ -306,8 +306,8 @@ img { max-width: 100%; }
 .room-showcase-card { border-radius: 28px; box-shadow: 0 6px 24px #192a3210; }
 .room-showcase-card > div:last-child { padding: 26px; }
 .room-showcase-card img { transition: transform .7s cubic-bezier(.22,1,.36,1); }
-.room-showcase-card a { min-height: 42px; background: var(--page); }
-.room-showcase-card a:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.room-showcase-card a, .room-showcase-card button { min-height: 42px; background: var(--page); }
+.room-showcase-card a:hover, .room-showcase-card button:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 .field, .hotel-select-trigger { border-radius: 14px; }
 .primary-button, .secondary-button { min-height: 42px; }
 @media (max-width: 639px) { .stat-card { padding: 18px; border-radius: 20px; } .room-showcase-card > div:last-child { padding: 22px; } .page-heading { padding-bottom: 20px; } }
