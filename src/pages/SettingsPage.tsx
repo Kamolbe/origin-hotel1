@@ -1,3 +1,4 @@
+import { AccountSummary } from '../components/AccountSummary';
 import { GuestSettingsPage } from './GuestSettingsPage';
 import { RolesOverview } from '../components/RolesOverview';
 import { SiteContentSettings } from '../components/SiteContentSettings';
@@ -58,6 +59,7 @@ export function SettingsPage() {
         {active === 'site' && user?.role === 'admin' && <SiteContentSettings />}
         {active === 'hotel' && user?.role === 'admin' && <HotelContactSettings />}
         {active === 'security' && <>
+          <AccountSummary />
           <Panel title="Profil va parol himoyasi" icon={LockKeyhole}><form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2"><Field label="Ism"><input name="name" defaultValue={user?.name} className="field" /></Field><Field label="Telefon"><input name="phone" defaultValue={data.users.find((item) => item.id === user?.id)?.phone ?? ''} className="field" /></Field><div className="sm:col-span-2 flex justify-end"><button className="primary-button">Profilni saqlash</button></div></form></Panel>
           {user?.role === 'admin' && <Panel title="Kiruvchilarga oid xavfsizlik" icon={ShieldCheck}><Toggle label="Kuchli parol talab qilish" checked={settings.security.requireStrongPasswords} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, requireStrongPasswords: value } }))} /><Toggle label="SSL / HTTPS majburiy" checked={settings.security.sslHttps} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, sslHttps: value } }))} /><Toggle label="Ikki bosqichli tasdiqlash" checked={settings.security.twoFactorEnabled} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, twoFactorEnabled: value } }))} /><IpBlockList value={settings.security.blockedIps} onSave={(blockedIps) => updateSettings((current) => ({ ...current, security: { ...current.security, blockedIps } }))} /></Panel>}
         </>}
