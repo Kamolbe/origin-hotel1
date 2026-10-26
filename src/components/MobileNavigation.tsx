@@ -17,7 +17,7 @@ export function MobileNavigation() {
     { to: '/', label: 'Bosh sahifa', icon: House },
     { to: '/rooms', label: 'Xonalar', icon: BedDouble },
     { to: '/contact', label: 'Aloqa', icon: Phone },
-    { to: '/app/my-stay', label: 'Kabinet', icon: UserRound },
+    { to: user?.role === 'admin' || user?.role === 'manager' ? '/app' : '/app/my-stay', label: 'Kabinet', icon: UserRound },
   ];
   return <nav aria-label="Mobil menyu" className="mobile-bottom-navigation">{links.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => isActive ? 'is-active' : ''}><Icon size={19} /><span>{label}</span></NavLink>)}</nav>;
 }
