@@ -3,15 +3,16 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { useBookingAction } from '../../hooks/useBookingAction';
 import { ArrowRight, Award, BedDouble, Headphones } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { BookingSearch } from './BookingSearch';
-import { PHOTOS } from '../../data/marketing';
+import { useSitePhotos } from '../../hooks/useSiteContent';
 import { optimizedUnsplashUrl, unsplashSrcSet } from '../../services/imageUtils';
 import { useAppData } from '../../context/AppDataContext';
 
 export function HeroSection() {
+  const PHOTOS = useSitePhotos();
   const HOTEL = useHotelContact();
-  const { t } = useTranslation();
+  const { t } = useSiteTranslation();
   const book = useBookingAction();
   const { data } = useAppData();
   const reduced = usePrefersReducedMotion();
@@ -55,11 +56,11 @@ export function HeroSection() {
           <div className="flex items-center gap-3"><Headphones size={18} className="text-champagne" /><div><dt className="text-[10px] uppercase tracking-[.16em] text-white/55">{t('landing.statSupport')}</dt><dd className="text-sm font-semibold">{HOTEL.phone}</dd></div></div>
         </dl>
       </motion.div>
-      <motion.div initial={reduced ? false : { opacity: 0, y: 45, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: .9, delay: .25 }} className="relative lg:justify-self-end w-full">
+      {data.settings.website.sections.bookingSearch && <motion.div initial={reduced ? false : { opacity: 0, y: 45, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: .9, delay: .25 }} className="relative lg:justify-self-end w-full">
         <div className="mb-4 flex items-center gap-2 text-[10px] uppercase tracking-[.2em] text-white/80"><span className="hotel-live-dot" />Sizning keyingi manzilingiz</div>
         <BookingSearch />
         <p className="mt-4 text-center text-xs text-white/65">01 — Sanani tanlang · 02 — Xonani toping · 03 — Dam oling</p>
-      </motion.div>
+      </motion.div>}
     </div>
   </section>;
 }

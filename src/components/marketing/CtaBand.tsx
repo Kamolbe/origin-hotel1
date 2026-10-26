@@ -1,12 +1,13 @@
 import { ArrowRight, Phone } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { useBookingAction } from '../../hooks/useBookingAction';
 import { useContactDialog } from '../../context/ContactDialogContext';
-import { PHOTOS } from '../../data/marketing';
+import { useSitePhotos } from '../../hooks/useSiteContent';
 import { optimizedUnsplashUrl, unsplashSrcSet } from '../../services/imageUtils';
 
 export function CtaBand() {
-  const { t } = useTranslation();
+  const PHOTOS = useSitePhotos();
+  const { t } = useSiteTranslation();
   const book = useBookingAction();
   const { openContact } = useContactDialog();
 

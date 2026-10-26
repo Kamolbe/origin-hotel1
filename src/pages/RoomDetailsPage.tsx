@@ -1,3 +1,4 @@
+import { useRoomPhotos } from '../hooks/useSiteContent';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BedDouble, Phone, Users } from 'lucide-react';
@@ -11,11 +12,12 @@ import { useBookingGate } from '../hooks/useBookingAction';
 import { readPendingSearch } from '../components/marketing/BookingSearch';
 import { MarketingNav } from '../components/MarketingNav';
 import { SiteFooter } from '../components/marketing/SiteFooter';
-import { optimizedUnsplashUrl, roomPhotoForType } from '../services/imageUtils';
+import { optimizedUnsplashUrl } from '../services/imageUtils';
 import { formatMoney } from '../services/hotelUtils';
 import type { Room } from '../types';
 
 export function RoomDetailsPage() {
+  const getRoomPhoto = useRoomPhotos();
   const { roomId } = useParams();
   const { data } = useAppData();
   const { user } = useAuth();
@@ -36,7 +38,7 @@ export function RoomDetailsPage() {
       {!room ? <section className="surface my-8 rounded-3xl p-8"><h1 className="font-display text-3xl">Xona topilmadi</h1><p className="mt-3 text-sm text-muted">Bu xona o‘chirilgan yoki ushbu brauzerda mavjud emas. Asosiy sahifadan boshqa xona tanlang.</p></section> : <>
         <div className="my-7"><p className="text-xs font-semibold uppercase tracking-[.2em] text-champagne">{hotel.name} · Xona haqida</p><h1 className="mt-3 font-display text-4xl sm:text-5xl">{room.type} · {room.number}-xona</h1><p className="mt-3 text-sm text-muted">Qulayliklar, sig‘im va bir tun uchun narx.</p></div>
         <div className="grid items-start gap-7 lg:grid-cols-[1.4fr_1fr]">
-          <div><img src={optimizedUnsplashUrl(roomPhotoForType(room.type), 1200, 80)} alt={`${room.type} xona namunasi`} width="1200" height="800" className="aspect-[3/2] w-full rounded-3xl bg-[var(--line)] object-cover" /><p className="mt-2 text-[10px] text-muted">Rasm xona turining namunaviy ko‘rinishi.</p>
+          <div><img src={optimizedUnsplashUrl(getRoomPhoto(room), 1200, 80)} alt={`${room.type} xona namunasi`} width="1200" height="800" className="aspect-[3/2] w-full rounded-3xl bg-[var(--line)] object-cover" /><p className="mt-2 text-[10px] text-muted">Rasm xona turining namunaviy ko‘rinishi.</p>
             <RoomDetailsInfo room={room} />
           </div>
           <aside className="surface rounded-3xl p-6 lg:sticky lg:top-24"><div className="flex flex-wrap gap-4 border-b border-[var(--line)] pb-5 text-xs text-muted"><span className="flex items-center gap-2"><Users size={16} />{room.capacity} mehmon</span><span className="flex items-center gap-2"><BedDouble size={16} />{room.floor}-qavat</span></div><p className="mt-6 font-display text-3xl">{formatMoney(room.pricePerNight, data.settings.currency)}</p><p className="mt-2 text-xs text-muted">Bir tun uchun · mavjudlik tanlangan sanalarga bog‘liq</p>
@@ -48,7 +50,7 @@ export function RoomDetailsPage() {
         {alternatives.length > 0 && <section className="mt-12">
           <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[.24em] text-champagne">Boshqa variantlar</p><h2 className="mt-2 font-display text-3xl">Shunga o‘xshash xonalar</h2></div><Link to="/#rooms" className="text-xs font-semibold text-champagne">Barcha xona turlari →</Link></div>
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{alternatives.map((item) => <article key={item.id} className="surface overflow-hidden rounded-3xl">
-            <img src={optimizedUnsplashUrl(roomPhotoForType(item.type), 640, 72)} alt={`${item.type} xona namunasi`} width={640} height={420} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover" />
+            <img src={optimizedUnsplashUrl(getRoomPhoto(item), 640, 72)} alt={`${item.type} xona namunasi`} width={640} height={420} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover" />
             <div className="p-5"><p className="text-[10px] font-bold uppercase tracking-[.18em] text-champagne">{item.type}</p><h3 className="mt-1 font-display text-xl">{item.number}-xona · {item.capacity} mehmon</h3><p className="mt-2 text-xs text-muted">{item.amenities.slice(0, 3).join(' · ')}</p><div className="mt-4 flex items-center justify-between border-t border-[var(--line)] pt-4"><p className="font-display text-lg">{formatMoney(item.pricePerNight, data.settings.currency)}</p><button type="button" onClick={() => setDetails(item)} className="text-xs font-semibold text-champagne">Batafsil →</button></div></div>
           </article>)}</div>
         </section>}

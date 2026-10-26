@@ -73,3 +73,18 @@ Kirish sahifasining tashqi qismi ekranga mahkamlangan; kichik ekranda uzun forma
 ## Mobil pastki menyu
 
 767 px va kichik ekranlarda pastki menyu faqat tizimga kirgan foydalanuvchiga ko‘rinadi. Kabinet (`/app/my-stay`) faqat o‘z bronlarini va profilini, Xonalar (`/rooms`) barcha xonalarni, Aloqa (`/contact`) alohida aloqa sahifasini, Bosh sahifa esa `/`ni ochadi. Faol belgi ochilgan route bilan boshqariladi. Mobil aloqa tugmalari modal emas, sahifa ochadi; kompyuterda mavjud aloqa modali va tezkor menyu saqlanadi.
+
+## Admin sayt muharriri
+
+Admin → Sozlamalar → Sayt muharriri:
+
+- Matnlar: olti tilda `landing`, `nav`, `footer` va `amenity` matnlarini alohida tahrirlash. Bo‘sh matn standart tarjimani qaytaradi; `{{count}}` kabi o‘rinbosarlarni saqlang.
+- Rasmlar va logo: asosiy va pastki bannerlar, xona turlari, mehmonxona rasmi, logo va 12 tagacha galereya havolasi. Faqat HTTP(S) yoki lokal `/…` manzillar qabul qilinadi; standart rasmga qaytish uchun maydonni bo‘sh qoldiring.
+- Sahifa bo‘limlari: bosh sahifa bloklari va bron panelini ko‘rsatish/yashirish.
+- Mehmonxona qoidalari: kelish/ketish vaqti, asosiy valyuta va qo‘shimcha xizmatlar. Valyuta almashtirish summalarni konvertatsiya qilmaydi.
+
+Admin → Sozlamalar → Menyu va interfeys: aksent, yorug‘ mavzudagi sahifa/karta/matn ranglari va shrift saytga darhol qo‘llanadi. Standart dizaynni tiklash tugmasi mavjud. SEO sarlavha, description va keywords ham hujjatga qo‘llanadi. Analytics ID, SMTP, server backup va 2FA maydonlari mustaqil server xizmatini avtomatik yoqmaydi.
+
+Admin → Xonalar: har bir xona uchun alohida rasm va tavsif qo‘shish mumkin; bu ro‘yxat, batafsil sahifa, modal va bron preview’da qo‘llanadi.
+
+Bu boshqaruv hozir lokal demo: `localStorage` va shu origin’dagi boshqa tablar bilan ishlaydi. Barcha mehmonlar/qurilmalarga yagona nashr, server darajasidagi admin ruxsatlari, umumiy bron va foydalanuvchilar bazasi hali ulanmagan. Production uchun ishonchli autentifikatsiya va backend talab qilinadi. Admin paroli va maxsus kodlar client kodida demo sifatida mavjud; haqiqiy himoya hisoblanmaydi.

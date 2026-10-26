@@ -9,6 +9,7 @@ import { roomPhotoForType } from '../services/imageUtils';
 
 /** Unsplash CDN photos used across the marketing site (all checked to resolve). */
 export const PHOTOS = {
+  deluxe: 'https://images.unsplash.com/photo-1590490360182-c33d57733427',
   exterior: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791',
   lobby: 'https://images.unsplash.com/photo-1660557989695-14fac79c086d',
   suite: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a',

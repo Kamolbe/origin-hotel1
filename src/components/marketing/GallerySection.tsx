@@ -1,13 +1,16 @@
+import { useAppData } from '../../context/AppDataContext';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { Expand } from 'lucide-react';
 import { Modal } from '../Modal';
-import { GALLERY, type GalleryItem } from '../../data/marketing';
+import { GALLERY as DEFAULT_GALLERY } from '../../data/marketing';
 import { optimizedUnsplashUrl, unsplashSrcSet } from '../../services/imageUtils';
 
 export function GallerySection() {
-  const { t } = useTranslation();
-  const [active, setActive] = useState<GalleryItem | null>(null);
+  const { data } = useAppData();
+  const GALLERY: Array<{ photo: string; wide: boolean }> = data.settings.website.gallery.length ? data.settings.website.gallery.map((photo, index) => ({ photo, wide: index % 3 === 0 })) : [...DEFAULT_GALLERY];
+  const { t } = useSiteTranslation();
+  const [active, setActive] = useState<{ photo: string; wide: boolean } | null>(null);
 
   return <section id="gallery" className="mx-auto max-w-[1440px] px-5 py-20 lg:px-10 lg:py-24">
     <div className="flex flex-wrap items-end justify-between gap-4">

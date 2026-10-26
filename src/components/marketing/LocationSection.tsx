@@ -1,12 +1,12 @@
 import { useHotelContact } from '../../hooks/useHotelContact';
 import { useContactDialog } from '../../context/ContactDialogContext';
 import { Camera, Clock, ExternalLink, Headphones, Mail, MapPin, Phone, Send, Share2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
 
 export function LocationSection() {
   const HOTEL = useHotelContact();
   const { openContact } = useContactDialog();
-  const { t } = useTranslation();
+  const { t } = useSiteTranslation();
   const socialLinks = [
     { label: 'Telegram', href: HOTEL.telegram, handle: HOTEL.telegramHandle, icon: Send },
     { label: 'Instagram', href: HOTEL.instagram, handle: HOTEL.instagramHandle, icon: Camera },

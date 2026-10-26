@@ -251,6 +251,7 @@ export function createDemoData(): AppData {
     visits: [],
     auditLog: [],
     settings: {
+      website: { texts: {}, photos: {}, sections: { stats: true, rooms: true, about: true, gallery: true, reviews: true, contact: true, planner: true, cta: true, bookingSearch: true }, gallery: [], logoUrl: '', services: ['Nonushta (07:00–10:30)', 'Aeroportdan transfer', 'Basseyn va spa', 'Bepul avtoturargoh', 'Yuvish va dazmollash', '24/7 xonaga xizmat'] },
       hotelName: "Origin Hotel",
       contact: {
         phone: '+998 71 200 20 20',

@@ -363,3 +363,4 @@ img { max-width: 100%; }
 @keyframes hotel-more-in { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
 @media (max-width: 767px) { .hotel-more-panel { max-width: none; } }
 @media (min-width: 768px) { .hotel-header-account { display: none; } }
+button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accent-on-color, #111b22); }

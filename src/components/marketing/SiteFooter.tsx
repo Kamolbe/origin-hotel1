@@ -1,7 +1,7 @@
 import { useHotelContact } from '../../hooks/useHotelContact';
 import { Link } from 'react-router-dom';
 import { Camera, Mail, MapPin, Phone, Send, Share2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { Logo } from '../Logo';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { useBookingAction } from '../../hooks/useBookingAction';
@@ -10,7 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 
 export function SiteFooter() {
   const HOTEL = useHotelContact();
-  const { t } = useTranslation();
+  const { t } = useSiteTranslation();
   const { user } = useAuth();
   const book = useBookingAction();
   const { openContact } = useContactDialog();
@@ -69,7 +69,7 @@ export function SiteFooter() {
 
     <div className="border-t border-[var(--line)]">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-3 px-5 py-6 text-[10px] text-muted sm:flex-row sm:items-center sm:justify-between lg:px-10">
-        <p>© {year} Origin Hotel · {t('footer.rights')}</p>
+        <p>© {year} {HOTEL.name} · {t('footer.rights')}</p>
         <div className="space-y-1 sm:text-right"><p className="text-balance">{t('footer.credits')}</p><p data-site-version className="font-mono">Sayt versiyasi: {import.meta.env.VITE_APP_REVISION}</p></div>
       </div>
     </div>

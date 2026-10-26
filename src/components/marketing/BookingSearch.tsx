@@ -2,7 +2,7 @@ import { Select } from '../Select';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CalendarDays, Users } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { scrollToSection } from '../../hooks/useBookingAction';
@@ -32,7 +32,7 @@ function isoDate(daysFromToday: number): string {
  * are remembered until they open a booking.
  */
 export function BookingSearch({ className = '' }: { className?: string }) {
-  const { t } = useTranslation();
+  const { t } = useSiteTranslation();
   const { user } = useAuth();
   const { success } = useToast();
   const navigate = useNavigate();

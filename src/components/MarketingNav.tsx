@@ -1,10 +1,11 @@
+import { useAppData } from '../context/AppDataContext';
 import { MobileMoreMenu } from './MobileMoreMenu';
 import { MobileAccountActions } from './MobileAccountActions';
 import { useHotelContact } from '../hooks/useHotelContact';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, CircleUserRound, Ellipsis, LogOut, Moon, Phone, Sun, X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../hooks/useSiteContent';
 import { Logo } from './Logo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTheme } from '../context/ThemeContext';
@@ -15,8 +16,9 @@ import { useAuth } from '../context/AuthContext';
  * and becomes a solid, blurred bar once the visitor scrolls.
  */
 export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
+  const { data } = useAppData();
   const HOTEL = useHotelContact();
-  const { t } = useTranslation();
+  const { t } = useSiteTranslation();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -44,7 +46,7 @@ export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
     { href: '/#about', label: t('nav.about') },
     { href: '/#reviews', label: t('landing.reviewsTitle') },
     { href: '/#contact', label: t('nav.contact') },
-  ];
+  ].filter((link) => { const section = link.href.split('#')[1]; return section === 'rooms' ? data.settings.website.sections.rooms : section === 'about' ? data.settings.website.sections.about : section === 'reviews' ? data.settings.website.sections.reviews : data.settings.website.sections.contact; });
   const accountPath = '/app';
   const iconButton = `rounded-full border p-2.5 transition ${transparent ? 'border-white/30 text-white hover:border-champagne hover:text-champagne' : 'border-[var(--line)] text-[var(--text)] hover:border-champagne hover:text-champagne'}`;
   const themeButton = <button type="button" onClick={toggleTheme} className={iconButton} aria-label={theme === 'light' ? t('nav.switchToDark') : t('nav.switchToLight')}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}</button>;

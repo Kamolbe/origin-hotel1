@@ -1,11 +1,11 @@
 import { useHotelContact } from '../../hooks/useHotelContact';
 import { Quote, Star } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { REVIEWS } from '../../data/marketing';
 
 export function ReviewsSection() {
   const HOTEL = useHotelContact();
-  const { t } = useTranslation();
+  const { t } = useSiteTranslation();
 
   return <section id="reviews" className="border-y border-[var(--line)] bg-[var(--surface)]">
     <div className="mx-auto max-w-[1440px] px-5 py-20 lg:px-10 lg:py-24">

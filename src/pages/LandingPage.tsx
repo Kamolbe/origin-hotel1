@@ -1,3 +1,4 @@
+import { useAppData } from '../context/AppDataContext';
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,8 @@ import { SiteFooter } from '../components/marketing/SiteFooter';
 import { scrollToSection } from '../hooks/useBookingAction';
 
 export function LandingPage() {
+  const { data } = useAppData();
+  const sections = data.settings.website.sections;
   const { user } = useAuth();
   const { openContact } = useContactDialog();
   const location = useLocation();
@@ -38,16 +41,16 @@ export function LandingPage() {
     <main>
       <HeroSection />
       <div className="hotel-ticker" aria-label="Mehmonxona qulayliklari">
-        <div className="hotel-ticker-track" aria-hidden="true">{[0, 1, 2, 3].map((item) => <span key={item}>ORIGIN HOTEL <i>✦</i> TOSHKENT <i>✦</i> QULAYLIK VA NAFOSAT <i>✦</i> UNUTILMAS HORDIQ <i>✦</i></span>)}</div>
+        <div className="hotel-ticker-track" aria-hidden="true">{[0, 1, 2, 3].map((item) => <span key={item}>{data.settings.hotelName.toUpperCase()} <i>✦</i> TOSHKENT <i>✦</i> QULAYLIK VA NAFOSAT <i>✦</i> UNUTILMAS HORDIQ <i>✦</i></span>)}</div>
       </div>
-      <Reveal><StatsStrip /></Reveal>
-      <Reveal><RoomsShowcase /></Reveal>
-      <Reveal><ExperienceSection /></Reveal>
-      <Reveal><GallerySection /></Reveal>
-      <Reveal><ReviewsSection /></Reveal>
-      <Reveal><LocationSection /></Reveal>
-      <Reveal><StayPlanner /></Reveal>
-      <Reveal><CtaBand /></Reveal>
+      {sections.stats && <Reveal><StatsStrip /></Reveal>}
+      {sections.rooms && <Reveal><RoomsShowcase /></Reveal>}
+      {sections.about && <Reveal><ExperienceSection /></Reveal>}
+      {sections.gallery && <Reveal><GallerySection /></Reveal>}
+      {sections.reviews && <Reveal><ReviewsSection /></Reveal>}
+      {sections.contact && <Reveal><LocationSection /></Reveal>}
+      {sections.planner && <Reveal><StayPlanner /></Reveal>}
+      {sections.cta && <Reveal><CtaBand /></Reveal>}
     </main>
     <SiteFooter />
     <nav aria-label="Tezkor safar amallari" className="hotel-quick-dock">

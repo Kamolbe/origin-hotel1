@@ -1,7 +1,7 @@
 import { useHotelContact } from '../../hooks/useHotelContact';
 import { CarFront, ConciergeBell, Dumbbell, Flower2, PlaneTakeoff, UtensilsCrossed, Waves, Wifi, type LucideIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { PHOTOS } from '../../data/marketing';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
+import { useSitePhotos } from '../../hooks/useSiteContent';
 import { optimizedUnsplashUrl, unsplashSrcSet } from '../../services/imageUtils';
 
 const AMENITIES: Array<{ icon: LucideIcon; key: string }> = [
@@ -16,8 +16,9 @@ const AMENITIES: Array<{ icon: LucideIcon; key: string }> = [
 ];
 
 export function ExperienceSection() {
+  const PHOTOS = useSitePhotos();
   const HOTEL = useHotelContact();
-  const { t } = useTranslation();
+  const { t } = useSiteTranslation();
 
   return <section id="about" className="border-y border-[var(--line)] bg-[var(--surface)]">
     <div className="mx-auto grid max-w-[1440px] items-center gap-12 px-5 py-20 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-24">

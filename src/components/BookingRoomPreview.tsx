@@ -1,14 +1,16 @@
+import { useRoomPhotos } from '../hooks/useSiteContent';
 import { useState } from 'react';
 import { BedDouble, Users } from 'lucide-react';
 import { formatMoney } from '../services/hotelUtils';
-import { optimizedUnsplashUrl, roomPhotoForType, unsplashSrcSet } from '../services/imageUtils';
+import { optimizedUnsplashUrl, unsplashSrcSet } from '../services/imageUtils';
 import type { AppSettings, Room } from '../types';
 
 export function BookingRoomPreview({ room, selected, currency }: { room?: Room; selected: boolean; currency: AppSettings['currency'] }) {
+  const getRoomPhoto = useRoomPhotos();
   const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
   const roomType = room?.type ?? 'Standard';
   const roomTitle = roomType === 'Family' ? 'Oilaviy xona' : roomType === 'Presidential' ? 'Prezident xonasi' : `${roomType} xona`;
-  const photo = roomPhotoForType(roomType);
+  const photo = getRoomPhoto(room ?? { type: roomType });
   const photoFailed = failedPhoto === photo;
 
   return <section className="min-w-0 overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--page)] lg:self-start">

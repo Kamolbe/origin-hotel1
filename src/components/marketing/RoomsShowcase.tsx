@@ -1,13 +1,14 @@
+import { useRoomPhotos } from '../../hooks/useSiteContent';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { ArrowRight, BedDouble, Users } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { useAppData } from '../../context/AppDataContext';
 import { useBookingAction } from '../../hooks/useBookingAction';
 import { RoomDetailsDialog } from '../RoomDetailsDialog';
 import { formatMoney } from '../../services/hotelUtils';
-import { optimizedUnsplashUrl, roomPhotoForType, unsplashSrcSet } from '../../services/imageUtils';
+import { optimizedUnsplashUrl, unsplashSrcSet } from '../../services/imageUtils';
 import type { Room, RoomType } from '../../types';
 
 const ROOM_ORDER: RoomType[] = ['Standard', 'Deluxe', 'Suite', 'Family', 'Presidential'];
@@ -20,8 +21,9 @@ const ROOM_LABEL_KEY: Record<RoomType, string> = {
 };
 
 export function RoomsShowcase() {
+  const getRoomPhoto = useRoomPhotos();
   const reduced = usePrefersReducedMotion();
-  const { t } = useTranslation();
+  const { t } = useSiteTranslation();
   const { data } = useAppData();
   const book = useBookingAction();
   const [details, setDetails] = useState<Room | null>(null);
@@ -38,8 +40,8 @@ export function RoomsShowcase() {
       {rooms.map(({ type, room }, index) => <motion.article initial={reduced ? false : { opacity: 0, y: 55 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .15 }} transition={{ duration: .65, delay: index % 3 * .12 }} key={type} className="surface room-showcase-card group flex flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1 hover:shadow-lift">
         <div className="relative aspect-[16/11] overflow-hidden">
           <img
-            src={optimizedUnsplashUrl(roomPhotoForType(type), 720, 74)}
-            srcSet={unsplashSrcSet(roomPhotoForType(type), [420, 600, 720, 960], 74)}
+            src={optimizedUnsplashUrl(getRoomPhoto(room ?? { type }), 720, 74)}
+            srcSet={unsplashSrcSet(getRoomPhoto(room ?? { type }), [420, 600, 720, 960], 74)}
             sizes="(min-width: 1024px) 32vw, (min-width: 640px) 46vw, 100vw"
             width={960}
             height={640}

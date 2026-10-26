@@ -45,6 +45,8 @@ export interface Room {
   capacity: number;
   pricePerNight: number;
   amenities: string[];
+  imageUrl?: string;
+  description?: string;
 }
 
 export interface Booking {
@@ -126,7 +128,18 @@ export interface Visit {
   userRole?: UserRole;
 }
 
+export type HomeSectionId = 'stats' | 'rooms' | 'about' | 'gallery' | 'reviews' | 'contact' | 'planner' | 'cta' | 'bookingSearch';
+export interface WebsiteSettings {
+  texts: Record<string, Record<string, string>>;
+  photos: Partial<Record<'exterior' | 'lobby' | 'deluxe' | 'standard' | 'suite' | 'presidential' | 'family', string>>;
+  sections: Record<HomeSectionId, boolean>;
+  gallery: string[];
+  logoUrl: string;
+  services: string[];
+}
+
 export interface AppSettings {
+  website: WebsiteSettings;
   hotelName: string;
   contact: HotelContact;
   currency: Currency;
@@ -170,6 +183,9 @@ export interface AppSettings {
   };
   interface: {
     accentColor: string;
+    pageColor?: string;
+    surfaceColor?: string;
+    textColor?: string;
     font: 'Manrope' | 'Inter' | 'Georgia';
     headerMenu: string[];
     footerMenu: string[];

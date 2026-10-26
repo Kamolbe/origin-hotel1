@@ -1,3 +1,4 @@
+import { useRoomPhotos } from '../hooks/useSiteContent';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BedDouble, Building2, Phone, Users } from 'lucide-react';
 import { Modal } from './Modal';
@@ -6,7 +7,7 @@ import { useAppData } from '../context/AppDataContext';
 import { useContactDialog } from '../context/ContactDialogContext';
 import { useHotelContact } from '../hooks/useHotelContact';
 import { formatMoney } from '../services/hotelUtils';
-import { optimizedUnsplashUrl, roomPhotoForType, unsplashSrcSet } from '../services/imageUtils';
+import { optimizedUnsplashUrl, unsplashSrcSet } from '../services/imageUtils';
 import type { Room } from '../types';
 
 /**
@@ -19,12 +20,13 @@ export function RoomDetailsDialog({ room, onClose, onBook }: {
   onClose: () => void;
   onBook: (room: Room) => void;
 }) {
+  const getRoomPhoto = useRoomPhotos();
   const { data } = useAppData();
   const hotel = useHotelContact();
   const { openContact } = useContactDialog();
   if (!room) return null;
 
-  const photo = roomPhotoForType(room.type);
+  const photo = getRoomPhoto(room);
   const facts = [
     { icon: Users, label: 'Sig‘im', value: `${room.capacity} mehmon` },
     { icon: Building2, label: 'Qavat', value: `${room.floor}-qavat` },

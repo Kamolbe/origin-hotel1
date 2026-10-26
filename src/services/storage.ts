@@ -17,6 +17,7 @@ export function loadAppData(): AppData {
       const settings = {
         ...defaults.settings,
         ...stored.settings,
+        website: { ...defaults.settings.website, ...stored.settings.website, sections: { ...defaults.settings.website.sections, ...stored.settings.website?.sections } },
         contact: { ...defaults.settings.contact, ...stored.settings.contact },
         security: { ...defaults.settings.security, ...stored.settings.security },
         roles: stored.settings.roles?.length ? stored.settings.roles : defaults.settings.roles,

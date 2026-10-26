@@ -1,3 +1,4 @@
+import { useAppData } from '../context/AppDataContext';
 import { Check } from 'lucide-react';
 import type { Room } from '../types';
 
@@ -17,8 +18,10 @@ export const ROOM_EXTRA_SERVICES = [
  * things.
  */
 export function RoomDetailsInfo({ room, variant = 'card' }: { room: Room; variant?: 'card' | 'plain' }) {
+  const { data } = useAppData();
   const block = variant === 'card' ? 'surface rounded-3xl p-6' : 'rounded-2xl border border-[var(--line)] p-5';
   return <>
+    {room.description && <section className={`${block} mt-5`}><h2 className="font-display text-2xl">Xona haqida</h2><p className="mt-4 whitespace-pre-line text-sm leading-7 text-muted">{room.description}</p></section>}
     <section className={`${block} ${variant === 'card' ? 'mt-6' : ''}`}>
       <h2 className="font-display text-2xl">Xona qulayliklari</h2>
       {room.amenities.length > 0
@@ -27,7 +30,7 @@ export function RoomDetailsInfo({ room, variant = 'card' }: { room: Room; varian
     </section>
     <section className={`${block} ${variant === 'card' ? 'mt-5' : 'mt-4'}`}>
       <h2 className="font-display text-2xl">Qo‘shimcha xizmatlar</h2>
-      <ul className="mt-5 grid gap-3 sm:grid-cols-2">{ROOM_EXTRA_SERVICES.map((item) => <li key={item} className="flex items-center gap-2 text-sm"><Check size={16} className="text-champagne" />{item}</li>)}</ul>
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2">{data.settings.website.services.map((item) => <li key={item} className="flex items-center gap-2 text-sm"><Check size={16} className="text-champagne" />{item}</li>)}</ul>
       <p className="mt-5 text-xs leading-6 text-muted">Qo‘shimcha xizmatlar narxi qabulxonada aniqlashtiriladi.</p>
     </section>
   </>;

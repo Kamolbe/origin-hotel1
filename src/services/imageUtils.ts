@@ -1,4 +1,5 @@
 export function optimizedUnsplashUrl(url: string, width: number, quality = 76): string {
+  if (!url.startsWith('https://images.unsplash.com/')) return url;
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}auto=format&fit=crop&w=${width}&q=${quality}`;
 }
