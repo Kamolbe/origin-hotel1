@@ -1,3 +1,4 @@
+import { MobileAccountActions } from './MobileAccountActions';
 import { useHotelContact } from '../hooks/useHotelContact';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -57,12 +58,12 @@ export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
         </div> : <Link to="/login" className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-xs font-semibold text-white shadow-soft transition hover:bg-ink-soft">{t('nav.login')}<ArrowUpRight size={14} /></Link>}
       </div>
       <div className="flex items-center gap-2 xl:hidden">
-        <div className="md:hidden">{themeButton}</div>
         <button type="button" aria-label={menuOpen ? 'Menyuni yopish' : 'Menyuni ochish'} onClick={() => setMenuOpen((open) => !open)} className={iconButton}>{menuOpen ? <X size={17} /> : <Menu size={17} />}</button>
       </div>
     </div>
     {menuOpen && <div className="border-t border-[var(--line)] bg-[var(--page)] px-5 py-4 xl:hidden">
       <div className="flex flex-col gap-1">{links.map((link) => <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-medium hover:bg-[var(--surface)]">{link.label}</a>)}</div>
+      <div className="mt-3 md:hidden"><MobileAccountActions onNavigate={() => setMenuOpen(false)} /></div>
       <div className="mt-3 flex items-center justify-between gap-3"><LanguageSwitcher />{user ? <Link onClick={() => setMenuOpen(false)} to={accountPath} className="rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white">{t('nav.dashboard')}</Link> : <Link onClick={() => setMenuOpen(false)} to="/login" className="rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white">{t('nav.login')}</Link>}</div>
     </div>}
   </header>;
