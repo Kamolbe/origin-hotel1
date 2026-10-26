@@ -26,7 +26,7 @@ export function loadAppData(): AppData {
         interface: { ...defaults.settings.interface, ...stored.settings.interface },
         operations: { ...defaults.settings.operations, ...stored.settings.operations },
       };
-      const migrated = { ...defaults, ...stored, settings } as AppData;
+      const migrated = { ...defaults, ...stored, visits: Array.isArray(stored.visits) ? stored.visits : [], settings } as AppData;
       saveAppData(migrated);
       return migrated;
     }

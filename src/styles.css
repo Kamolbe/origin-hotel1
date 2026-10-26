@@ -189,6 +189,11 @@ img { max-width: 100%; }
 @keyframes hotel-orbit { from { transform: translate(0, 0) scale(.9); } to { transform: translate(-50px, 45px) scale(1.15); } }
 @keyframes hotel-pulse { 50% { box-shadow: 0 0 0 9px #d5b47b08; } }
 @keyframes hotel-ticker { to { transform: translateX(-50%); } }
+/* The account entry in the public dock: the modern way back into the guest area. */
+.hotel-dock-account { background: var(--ink); color: #fff; }
+.hotel-dock-account span { color: #e0c69c; }
+.hotel-dock-account:hover { background: var(--ink-soft); color: #fff; }
+.hotel-dock-account:hover span { color: #e0c69c; }
 @media (max-width: 639px) { .hotel-quick-dock { bottom: max(12px, env(safe-area-inset-bottom)); } .hotel-quick-dock a, .hotel-quick-dock button { padding: 11px 12px; font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { .hotel-ticker-track, .hero-orbit, .hotel-live-dot { animation: none; } }
 
@@ -231,16 +236,44 @@ img { max-width: 100%; }
 .booking-search input, .booking-search .hotel-select-trigger { color: var(--text); -webkit-text-fill-color: var(--text); }
 .booking-search input::-webkit-datetime-edit { color: var(--text); }
 
-/* Keep authentication artwork independent of form height and selected tab. */
-.auth-page { height: 100dvh; min-height: 0; }
+/* Authentication keeps a fixed, tab-independent geometry: the artwork column
+   never resizes and the form is compacted on short screens so the page itself
+   never scrolls (the panel keeps `overflow-y-auto` only as a last resort for
+   very short viewports, so content is never trapped). */
+.auth-page { height: 100dvh; max-height: 100dvh; min-height: 0; }
 .auth-art { position: sticky; top: 0; height: 100dvh; }
 .auth-form-panel { overscroll-behavior: contain; scrollbar-width: thin; }
-@media (min-width: 1024px) and (max-height: 850px) {
-  .auth-content { padding-block: 10px; }
-  .auth-content h2 { font-size: 1.9rem; }
+.auth-mode-switch { transition: box-shadow .2s ease; }
+@media (max-height: 900px) {
+  .auth-content h2 { font-size: 1.85rem; }
+  .auth-content { padding-block: 4px; }
   .auth-content input { padding-block: 9px; }
-  .auth-content > .mt-5 { margin-top: 12px; }
-  .auth-content > .mt-7 { margin-top: 12px; }
+  .auth-art-quote { margin-top: 20px; padding: 16px; }
+  .auth-art-quote p.font-display { font-size: 1rem; line-height: 1.5rem; }
+}
+@media (max-height: 880px) {
+  /* Trim the vertical rhythm (not the content) so the register form fits a
+     laptop or phone viewport without an internal scroll. */
+  .auth-content > * + * { margin-top: 12px; }
+  .auth-content form > * + * { margin-top: 10px; }
+  .auth-content input { padding-block: 9px; }
+  .auth-brand { margin-bottom: 10px; }
+  .auth-notice { padding: 10px 12px; }
+  .auth-google-hint { font-size: 9px; line-height: 0.85rem; }
+}
+@media (max-height: 840px) {
+  .auth-legal { display: none; }
+  .auth-art-quote { display: none; }
+  .auth-content > * + * { margin-top: 9px; }
+  .auth-content form > * + * { margin-top: 8px; }
+  .auth-notice { font-size: 10px; line-height: 0.95rem; }
+}
+@media (max-height: 760px) {
+  .auth-art-badges { display: none; }
+  .auth-art h1 { font-size: 2.35rem; }
+  .auth-content h2 { font-size: 1.6rem; }
+  .auth-content input { padding-block: 8px; }
+  .auth-google-hint { display: none; }
 }
 
 
@@ -273,8 +306,8 @@ img { max-width: 100%; }
 .room-showcase-card { border-radius: 28px; box-shadow: 0 6px 24px #192a3210; }
 .room-showcase-card > div:last-child { padding: 26px; }
 .room-showcase-card img { transition: transform .7s cubic-bezier(.22,1,.36,1); }
-.room-showcase-card a { min-height: 42px; background: var(--page); }
-.room-showcase-card a:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.room-showcase-card a, .room-showcase-card button { min-height: 42px; background: var(--page); }
+.room-showcase-card a:hover, .room-showcase-card button:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 .field, .hotel-select-trigger { border-radius: 14px; }
 .primary-button, .secondary-button { min-height: 42px; }
 @media (max-width: 639px) { .stat-card { padding: 18px; border-radius: 20px; } .room-showcase-card > div:last-child { padding: 22px; } .page-heading { padding-bottom: 20px; } }

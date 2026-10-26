@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ArrowUp, BedDouble, Calculator, House, Phone } from 'lucide-react';
+import { useContactDialog } from '../context/ContactDialogContext';
+import { ArrowUp, BedDouble, Calculator, House, LogIn, Phone } from 'lucide-react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { Reveal } from '../components/marketing/Reveal';
 import { StayPlanner } from '../components/marketing/StayPlanner';
@@ -14,11 +16,22 @@ import { ReviewsSection } from '../components/marketing/ReviewsSection';
 import { LocationSection } from '../components/marketing/LocationSection';
 import { CtaBand } from '../components/marketing/CtaBand';
 import { SiteFooter } from '../components/marketing/SiteFooter';
+import { scrollToSection } from '../hooks/useBookingAction';
 
 export function LandingPage() {
   const { user } = useAuth();
+  const { openContact } = useContactDialog();
+  const location = useLocation();
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+
+  useEffect(() => {
+    const target = (location.state as { scrollToSection?: string } | null)?.scrollToSection;
+    if (!target) return;
+    const timer = window.setTimeout(() => scrollToSection(target), 80);
+    return () => window.clearTimeout(timer);
+  }, [location.state]);
+
   return <div className="marketing-page min-h-screen bg-[var(--page)]">
     <motion.div aria-hidden="true" style={{ scaleX: progress }} className="fixed inset-x-0 top-0 z-[80] h-1 origin-left bg-champagne" />
     <MarketingNav />
@@ -38,10 +51,12 @@ export function LandingPage() {
     </main>
     <SiteFooter />
     <nav aria-label="Tezkor safar amallari" className="hotel-quick-dock">
-      {user && <Link to="/app" aria-label="Kabinetga qaytish" className="bg-ink text-white"><House size={17} /><span className="dock-wide-label">Kabinetga qaytish</span><span className="dock-short-label">Kabinet</span></Link>}
-      <a href="#rooms"><BedDouble size={17} /><span>Xonalar</span></a>
-      <a href="#stay-planner"><Calculator size={17} /><span className="dock-wide-label">Narxni hisoblash</span><span className="dock-short-label">Hisoblash</span></a>
-      <a href="#contact"><Phone size={17} /><span>Aloqa</span></a>
+      {user
+        ? <Link to="/app" aria-label="Kabinetga qaytish" className="hotel-dock-account"><House size={17} /><span className="dock-wide-label">Kabinetga qaytish</span><span className="dock-short-label">Kabinet</span></Link>
+        : <Link to="/login" state={{ from: '/app', reason: 'account' }} className="hotel-dock-account"><LogIn size={17} /><span className="dock-wide-label">Tizimga kirish</span><span className="dock-short-label">Kirish</span></Link>}
+      <a href="#rooms" onClick={(event) => { event.preventDefault(); scrollToSection('rooms'); }}><BedDouble size={17} /><span>Xonalar</span></a>
+      <a href="#stay-planner" onClick={(event) => { event.preventDefault(); scrollToSection('stay-planner'); }}><Calculator size={17} /><span className="dock-wide-label">Narxni hisoblash</span><span className="dock-short-label">Hisoblash</span></a>
+      <button type="button" onClick={openContact}><Phone size={17} /><span>Aloqa</span></button>
       <button className="dock-top-button" type="button" aria-label="Sahifa boshiga" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}><ArrowUp size={18} /></button>
     </nav>
   </div>;
