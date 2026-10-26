@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Camera, Clock, ExternalLink, Mail, MapPin, Phone, Send, Share2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
@@ -13,7 +14,11 @@ const ContactDialogContext = createContext<ContactDialogValue | null>(null);
  */
 export function ContactDialogProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const openContact = useCallback(() => setOpen(true), []);
+  const navigate = useNavigate();
+  const openContact = useCallback(() => {
+    if (window.matchMedia('(max-width: 767px)').matches) { setOpen(false); navigate('/contact'); }
+    else setOpen(true);
+  }, [navigate]);
   const value = useMemo(() => ({ openContact }), [openContact]);
 
   return <ContactDialogContext.Provider value={value}>

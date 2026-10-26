@@ -330,3 +330,16 @@ img { max-width: 100%; }
 }
 @media (min-width: 768px) and (max-width: 1023px) { .hotel-quick-dock a, .hotel-quick-dock button { padding: 11px 12px; font-size: 11px; } }
 @media (max-width: 359px) { .hotel-quick-dock { left: 8px; right: 8px; } .booking-search { padding: 18px; } }
+
+/* Mobile navigation uses routes, not hover or a permanently selected account. */
+.mobile-bottom-navigation { display: none; }
+@media (max-width: 767px) {
+  .hotel-quick-dock { display: none; }
+  .marketing-page { padding-bottom: 0; }
+  body.has-mobile-navigation { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  .mobile-bottom-navigation { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); position: fixed; z-index: 40; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); left: 12px; right: 12px; gap: 4px; padding: 6px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); box-shadow: 0 8px 32px #111b2226; }
+  .mobile-bottom-navigation a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 54px; padding: 8px 3px; border-radius: 16px; color: var(--muted); font-size: 10px; line-height: 1.2; font-weight: 600; text-align: center; transition: background .2s, color .2s; -webkit-tap-highlight-color: transparent; }
+  .mobile-bottom-navigation a.is-active { background: var(--ink); color: #e0c69c; }
+  .mobile-bottom-navigation a:not(.is-active):hover { background: var(--page); color: var(--text); }
+  .mobile-bottom-navigation a:focus-visible { outline: 2px solid var(--champagne); outline-offset: 1px; }
+}

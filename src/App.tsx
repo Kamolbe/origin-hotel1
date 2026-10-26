@@ -1,3 +1,4 @@
+import { MobileNavigation } from './components/MobileNavigation';
 import { lazy, Suspense } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './app/ProtectedRoute';
@@ -7,6 +8,9 @@ import { useVisitLog } from './hooks/useVisitLog';
 import { UnauthorizedPage, NotFoundPage } from './pages/UtilityPages';
 import type { UserRole } from './types';
 
+const PublicRoomsPage = lazy(async () => ({ default: (await import('./pages/PublicRoomsPage')).PublicRoomsPage }));
+const ContactPage = lazy(async () => ({ default: (await import('./pages/ContactPage')).ContactPage }));
+const MyStayPage = lazy(async () => ({ default: (await import('./pages/MyStayPage')).MyStayPage }));
 const RoomDetailsPage = lazy(async () => ({ default: (await import('./pages/RoomDetailsPage')).RoomDetailsPage }));
 const LandingPage = lazy(async () => ({ default: (await import('./pages/LandingPage')).LandingPage }));
 const LoginPage = lazy(async () => ({ default: (await import('./pages/LoginPage')).LoginPage }));
@@ -30,12 +34,15 @@ function RouteFallback() {
 
 export function App() {
   useVisitLog();
-  return <Suspense fallback={<RouteFallback />}><Routes>
+  return <><Suspense fallback={<RouteFallback />}><Routes>
     <Route path="/" element={<LandingPage />} />
+    <Route path="/rooms" element={<PublicRoomsPage />} />
+    <Route path="/contact" element={<ContactPage />} />
     <Route path="/rooms/:roomId" element={<RoomDetailsPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/unauthorized" element={<UnauthorizedPage />} />
     <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route path="my-stay" element={<MyStayPage />} />
       <Route index element={<DashboardPage />} />
       <Route path="rooms" element={<RoomsPage />} />
       <Route path="guests" element={<ProtectedRoute roles={staffRoles}><GuestsPage /></ProtectedRoute>} />
@@ -47,5 +54,5 @@ export function App() {
       <Route path="users" element={<ProtectedRoute roles={['admin']}><UsersPage /></ProtectedRoute>} />
     </Route>
     <Route path="*" element={<NotFoundPage />} />
-  </Routes></Suspense>;
+  </Routes></Suspense><MobileNavigation /></>;
 }

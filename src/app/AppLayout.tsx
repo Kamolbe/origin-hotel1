@@ -72,7 +72,7 @@ export function AppLayout() {
   useEffect(() => { setMobileOpen(false); setNotificationsOpen(false); setProfileOpen(false); }, [location.pathname]);
 
   const visibleNav = navigation.filter((item) => user && item.roles.includes(user.role));
-  const title = visibleNav.find((item) => item.to === location.pathname)?.key ?? (location.pathname.endsWith('/profile') ? 'nav.profile' : 'nav.dashboard');
+  const title = location.pathname === '/app/my-stay' ? 'Shaxsiy kabinet' : visibleNav.find((item) => item.to === location.pathname)?.key ?? (location.pathname.endsWith('/profile') ? 'nav.profile' : 'nav.dashboard');
   const visibleNotifications = data.notifications.filter((item) => !item.userId || item.userId === user?.id);
   const notificationPages = Math.max(1, Math.ceil(visibleNotifications.length / notificationPageSize));
   const currentNotificationPage = Math.min(notificationPage, notificationPages - 1);

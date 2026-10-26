@@ -69,3 +69,7 @@ Admin → Sozlamalar → Mehmonxona va aloqa orqali nom, telefon, email, manzil 
 Muhim: mehmonxona ma’lumotlari hozircha `localStorage`da. Boshqa brauzer va qurilmalarga tarqatish, haqiqiy online kuzatuv, markaziy rollar va admin xavfsizligi uchun backend va server ruxsatlari kerak. Firebase Authentication Google foydalanuvchisini tekshiradi, lekin bu o‘zi umumiy mehmonxona ma’lumotlar bazasi emas. Mavjud SMTP/backup/2FA sozlamalari to‘liq server xizmatlarini yoqmaydi.
 
 Kirish sahifasining tashqi qismi ekranga mahkamlangan; kichik ekranda uzun forma ichidan aylantiriladi, maydonlar yashirilmaydi.
+
+## Mobil pastki menyu
+
+767 px va kichik ekranlarda pastki menyu faqat tizimga kirgan foydalanuvchiga ko‘rinadi. Kabinet (`/app/my-stay`) faqat o‘z bronlarini va profilini, Xonalar (`/rooms`) barcha xonalarni, Aloqa (`/contact`) alohida aloqa sahifasini, Bosh sahifa esa `/`ni ochadi. Faol belgi ochilgan route bilan boshqariladi. Mobil aloqa tugmalari modal emas, sahifa ochadi; kompyuterda mavjud aloqa modali va tezkor menyu saqlanadi.
