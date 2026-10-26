@@ -37,7 +37,7 @@ export function HeroSection() {
 
     <div aria-hidden="true" className="hero-orbit hero-orbit-one" />
     <div aria-hidden="true" className="hero-orbit hero-orbit-two" />
-    <div className="relative mx-auto grid w-full max-w-[1440px] items-center gap-12 px-5 py-20 lg:grid-cols-[1.15fr_.85fr] lg:gap-16 lg:px-10 lg:py-28">
+    <div className="relative mx-auto grid w-full max-w-[1440px] items-center gap-12 px-5 py-12 sm:py-16 lg:grid-cols-[1.15fr_.85fr] lg:gap-16 lg:px-10 lg:py-28">
       <motion.div initial={reduced ? false : { opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8 }} className="max-w-2xl">
         <p className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-[.2em] text-white/85">
           <Award size={13} className="text-champagne" />{t('landing.heroBadge')}

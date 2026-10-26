@@ -242,7 +242,7 @@ img { max-width: 100%; }
   .auth-content > .mt-5 { margin-top: 12px; }
   .auth-content > .mt-7 { margin-top: 12px; }
 }
-@media (max-width: 639px) { .hotel-quick-dock { flex-wrap: wrap; justify-content: center; width: max-content; } .hotel-quick-dock a { padding: 8px 10px; } }
+
 
 /* Quiet hotel surfaces: consistent depth, spacing and controls. */
 :root { --page: #f5f4f0; --line: #e4e3dc; --muted: #637079; }
@@ -279,3 +279,21 @@ img { max-width: 100%; }
 .primary-button, .secondary-button { min-height: 42px; }
 @media (max-width: 639px) { .stat-card { padding: 18px; border-radius: 20px; } .room-showcase-card > div:last-child { padding: 22px; } .page-heading { padding-bottom: 20px; } }
 @media (prefers-reduced-motion: reduce) { .room-showcase-card img, .hotel-dashboard tbody tr { transition: none; } }
+
+/* A single compact navigation row on phones; never a wrapping floating pill. */
+.dock-short-label { display: none; }
+.marketing-page { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); overflow-x: clip; }
+.marketing-page main, .marketing-page section, .marketing-page footer, .marketing-page .grid > * { min-width: 0; }
+.marketing-page :where(a[href^="mailto:"], a[href^="tel:"]) { overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .hotel-quick-dock { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); flex-wrap: nowrap; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); transform: none; width: auto; max-width: none; padding: 5px; gap: 3px; border-radius: 22px; background: var(--surface); }
+  .hotel-quick-dock a, .hotel-quick-dock button { min-width: 0; min-height: 54px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px 4px; border-radius: 16px; font-size: 10px; line-height: 1.2; white-space: normal; text-align: center; }
+  .hotel-quick-dock a:hover { scale: 1; }
+  .hotel-quick-dock .dock-wide-label { display: none; }
+  .hotel-quick-dock .dock-short-label { display: inline; }
+  .hotel-quick-dock .dock-top-button { display: none; }
+  .marketing-page #rooms h2, .marketing-page #about h2, .marketing-page #gallery h2, .marketing-page #reviews h2, .marketing-page #contact h2 { font-size: clamp(1.85rem, 8vw, 2.5rem); line-height: 1.15; }
+  .marketing-page #rooms, .marketing-page #gallery, .marketing-page #contact, .marketing-page #stay-planner { padding-block: 48px; }
+}
+@media (min-width: 768px) and (max-width: 1023px) { .hotel-quick-dock a, .hotel-quick-dock button { padding: 11px 12px; font-size: 11px; } }
+@media (max-width: 359px) { .hotel-quick-dock { left: 8px; right: 8px; } .booking-search { padding: 18px; } }

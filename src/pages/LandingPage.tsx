@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ArrowUp, BedDouble, Calculator } from 'lucide-react';
+import { ArrowUp, BedDouble, Calculator, House, Phone } from 'lucide-react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { Reveal } from '../components/marketing/Reveal';
 import { StayPlanner } from '../components/marketing/StayPlanner';
@@ -38,10 +38,11 @@ export function LandingPage() {
     </main>
     <SiteFooter />
     <nav aria-label="Tezkor safar amallari" className="hotel-quick-dock">
-      {user && <Link to="/app" className="bg-ink text-white"><span>Kabinetga qaytish</span></Link>}
+      {user && <Link to="/app" aria-label="Kabinetga qaytish" className="bg-ink text-white"><House size={17} /><span className="dock-wide-label">Kabinetga qaytish</span><span className="dock-short-label">Kabinet</span></Link>}
       <a href="#rooms"><BedDouble size={17} /><span>Xonalar</span></a>
-      <a href="#stay-planner"><Calculator size={17} /><span>Narxni hisoblash</span></a>
-      <button type="button" aria-label="Sahifa boshiga" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}><ArrowUp size={18} /></button>
+      <a href="#stay-planner"><Calculator size={17} /><span className="dock-wide-label">Narxni hisoblash</span><span className="dock-short-label">Hisoblash</span></a>
+      <a href="#contact"><Phone size={17} /><span>Aloqa</span></a>
+      <button className="dock-top-button" type="button" aria-label="Sahifa boshiga" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}><ArrowUp size={18} /></button>
     </nav>
   </div>;
 }
