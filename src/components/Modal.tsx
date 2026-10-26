@@ -2,13 +2,14 @@ import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
-export function Modal({ open, onClose, title, description, children, size = 'md' }: {
+export function Modal({ open, onClose, title, description, children, size = 'md', presentation = 'dialog' }: {
   open: boolean;
   onClose: () => void;
   title: string;
   description?: string;
   children: ReactNode;
   size?: 'md' | 'lg';
+  presentation?: 'dialog' | 'sheet';
 }) {
   const panel = useRef<HTMLElement>(null);
   const close = useRef(onClose);
@@ -36,8 +37,8 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
   }, [open]);
 
   if (!open) return null;
-  return createPortal(<div className="hotel-modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-    <section ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={description ? descriptionId : undefined} className={`hotel-modal-panel ${size === 'lg' ? 'max-w-3xl' : 'max-w-xl'}`}>
+  return createPortal(<div className={`hotel-modal-backdrop ${presentation === 'sheet' ? 'hotel-more-backdrop' : ''}`} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+    <section ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={description ? descriptionId : undefined} className={`hotel-modal-panel ${presentation === 'sheet' ? 'hotel-more-panel' : ''} ${size === 'lg' ? 'max-w-3xl' : 'max-w-xl'}`}>
       <header className="hotel-modal-heading">
         <div className="min-w-0"><p className="mb-2 text-[9px] font-bold uppercase tracking-[.24em] text-champagne">Origin Hotel</p><h2 id={titleId} className="font-display text-2xl sm:text-3xl">{title}</h2>{description && <p id={descriptionId} className="mt-2 text-xs leading-6 text-muted">{description}</p>}</div>
         <button type="button" onClick={onClose} aria-label="Yopish" className="hotel-modal-close"><X size={18} /></button>

@@ -1,8 +1,9 @@
+import { MobileMoreMenu } from './MobileMoreMenu';
 import { MobileAccountActions } from './MobileAccountActions';
 import { useHotelContact } from '../hooks/useHotelContact';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowUpRight, LogOut, Menu, Moon, Phone, Sun, X } from 'lucide-react';
+import { ArrowUpRight, CircleUserRound, Ellipsis, LogOut, Moon, Phone, Sun, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from './Logo';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -19,6 +20,13 @@ export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isPhone, setIsPhone] = useState(() => window.matchMedia('(max-width: 767px)').matches);
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 767px)');
+    const update = () => { setIsPhone(query.matches); setMenuOpen(false); };
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
 
@@ -58,13 +66,15 @@ export function MarketingNav({ overlay = false }: { overlay?: boolean }) {
         </div> : <Link to="/login" className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-xs font-semibold text-white shadow-soft transition hover:bg-ink-soft">{t('nav.login')}<ArrowUpRight size={14} /></Link>}
       </div>
       <div className="flex items-center gap-2 xl:hidden">
-        <button type="button" aria-label={menuOpen ? 'Menyuni yopish' : 'Menyuni ochish'} onClick={() => setMenuOpen((open) => !open)} className={iconButton}>{menuOpen ? <X size={17} /> : <Menu size={17} />}</button>
+        <Link to={user ? user.role === 'user' ? '/app/my-stay' : '/app' : '/login'} aria-label={user ? 'Shaxsiy kabinet' : 'Kirish yoki ro‘yxatdan o‘tish'} className="hotel-header-account md:hidden"><CircleUserRound size={25} strokeWidth={1.5} />{!user && <span aria-hidden="true" className="hotel-account-dot" />}</Link>
+        <button type="button" aria-label={menuOpen ? 'Menyuni yopish' : 'Menyuni ochish'} onClick={() => setMenuOpen((open) => !open)} className={iconButton}>{menuOpen ? <X size={17} /> : <Ellipsis size={22} />}</button>
       </div>
     </div>
-    {menuOpen && <div className="border-t border-[var(--line)] bg-[var(--page)] px-5 py-4 xl:hidden">
+    {menuOpen && !isPhone && <div className="border-t border-[var(--line)] bg-[var(--page)] px-5 py-4 xl:hidden">
       <div className="flex flex-col gap-1">{links.map((link) => <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-medium hover:bg-[var(--surface)]">{link.label}</a>)}</div>
       <div className="mt-3 md:hidden"><MobileAccountActions onNavigate={() => setMenuOpen(false)} /></div>
       <div className="mt-3 flex items-center justify-between gap-3"><LanguageSwitcher />{user ? <Link onClick={() => setMenuOpen(false)} to={accountPath} className="rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white">{t('nav.dashboard')}</Link> : <Link onClick={() => setMenuOpen(false)} to="/login" className="rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white">{t('nav.login')}</Link>}</div>
     </div>}
+    <MobileMoreMenu open={menuOpen && isPhone} onClose={() => setMenuOpen(false)} />
   </header>;
 }
