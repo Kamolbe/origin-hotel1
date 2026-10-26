@@ -27,7 +27,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const requested = (location.state as { from?: string } | null)?.from;
   const reason = (location.state as { reason?: string } | null)?.reason;
-  const destination = requested?.startsWith('/app') ? requested : '/app';
+  const destination = requested?.startsWith('/app') ? requested : window.matchMedia('(max-width: 767px)').matches ? '/' : '/app';
   // Arriving here from a protected page is explained instead of feeling like a bounce.
   const notice = reason === 'booking'
     ? 'Bronni yakunlash uchun tizimga kiring yoki bir necha qadamda hisob yarating. Tanlagan sanalaringiz saqlanadi.'

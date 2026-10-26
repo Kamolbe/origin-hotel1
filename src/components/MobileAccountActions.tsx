@@ -23,12 +23,12 @@ export function MobileAccountActions({ onNavigate }: { onNavigate?: () => void }
   const pages = Math.max(1, Math.ceil(notifications.length / 2));
   const current = Math.min(page, pages - 1);
   const unread = notifications.filter((item) => !item.read).length;
-  const control = 'flex min-h-12 items-center gap-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-3 py-3 text-left text-xs font-semibold';
+  const control = 'flex min-w-0 min-h-12 items-center gap-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-3 py-3 text-left text-xs font-semibold';
   return <section aria-label="Hisob amallari" className="mb-4 rounded-2xl bg-[var(--page)] p-3"><div className="grid grid-cols-2 gap-2">
     <Link to="/" onClick={onNavigate} className={control}><House size={17} className="shrink-0 text-champagne" />Bosh sahifa</Link>
     <button type="button" onClick={toggleTheme} className={control}>{theme === 'light' ? <Moon size={17} className="text-champagne" /> : <Sun size={17} className="text-champagne" />}{theme === 'light' ? 'Tungi mavzu' : 'Kunduzgi mavzu'}</button>
     <button type="button" aria-expanded={panel === 'search'} onClick={() => setPanel(panel === 'search' ? null : 'search')} className={control}><Search size={17} className="text-champagne" />Qidiruv</button>
-    {user && <button type="button" aria-expanded={panel === 'notifications'} onClick={() => setPanel(panel === 'notifications' ? null : 'notifications')} className={control}><Bell size={17} className="shrink-0 text-champagne" /><span>Bildirishnomalar{unread > 0 ? ` (${unread})` : ''}</span></button>}
+    {user && <button type="button" aria-expanded={panel === 'notifications'} onClick={() => setPanel(panel === 'notifications' ? null : 'notifications')} className={control}><Bell size={17} className="shrink-0 text-champagne" /><span className="min-w-0 break-words [overflow-wrap:anywhere]">Bildirishnomalar{unread > 0 ? ` (${unread})` : ''}</span></button>}
     {user && <Link to="/app/profile" onClick={onNavigate} className={`${control} col-span-2`}><UserRound size={17} className="text-champagne" /><span className="min-w-0 truncate">{user.name} · Profil</span></Link>}
   </div>
     {panel === 'search' && <div className="mt-3"><label className="block text-xs font-semibold">Sahifa qidirish<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Xona, bron, profil…" className="field mt-2" /></label><div className="mt-2 grid grid-cols-2 gap-2">{routes.filter(([, label]) => label.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())).map(([to, label]) => <Link key={to} to={to} onClick={onNavigate} className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-3 text-xs">{label}</Link>)}</div>{!routes.some(([, label]) => label.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())) && <p className="py-3 text-xs text-muted">Natija topilmadi.</p>}</div>}

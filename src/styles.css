@@ -343,3 +343,4 @@ img { max-width: 100%; }
   .mobile-bottom-navigation a:not(.is-active):hover { background: var(--page); color: var(--text); }
   .mobile-bottom-navigation a:focus-visible { outline: 2px solid var(--champagne); outline-offset: 1px; }
 }
+.guest-stay-hero { position: relative; overflow: hidden; background: radial-gradient(ellipse at 100% 0%, #b99a6838, transparent 60%), linear-gradient(130deg, #152a31, #29454b); color: #fff; box-shadow: 0 12px 35px #172d321c; }
