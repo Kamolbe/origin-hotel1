@@ -23,7 +23,7 @@ export function GoogleSignInButton({ onProfile, onError }: {
     <button type="button" onClick={signIn} disabled={busy} aria-busy={busy} className="flex w-full items-center justify-center gap-3 rounded-full border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-xs font-semibold text-[var(--text)] transition hover:border-champagne disabled:cursor-wait disabled:opacity-60">
       {busy ? <LoaderCircle size={16} className="animate-spin" /> : <GoogleGlyph />}{busy ? 'Google bilan ulanmoqda…' : t('auth.google')}
     </button>
-    <p className="mt-2 text-center text-[10px] text-muted">{t('auth.googleTrust')}</p>
+    <p className="auth-google-hint mt-2 text-center text-[10px] text-muted">{t('auth.googleTrust')}</p>
   </div>;
 }
 

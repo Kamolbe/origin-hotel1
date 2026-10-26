@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, BedDouble, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../context/AppDataContext';
+import { useBookingAction } from '../../hooks/useBookingAction';
 import { formatMoney } from '../../services/hotelUtils';
 import { optimizedUnsplashUrl, roomPhotoForType, unsplashSrcSet } from '../../services/imageUtils';
 import type { RoomType } from '../../types';
@@ -21,6 +22,7 @@ export function RoomsShowcase() {
   const reduced = usePrefersReducedMotion();
   const { t } = useTranslation();
   const { data } = useAppData();
+  const book = useBookingAction();
   const rooms = ROOM_ORDER.map((type) => ({ type, room: data.rooms.find((item) => item.type === type) })).filter((entry) => entry.room);
 
   return <section id="rooms" className="mx-auto max-w-[1440px] px-5 py-20 lg:px-10 lg:py-24">
@@ -42,7 +44,7 @@ export function RoomsShowcase() {
             alt={t(`${ROOM_LABEL_KEY[type]}`)}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+            className="h-full w-full bg-[var(--line)] object-cover transition duration-500 group-hover:scale-[1.04]"
           />
           <span className="absolute left-4 top-4 rounded-full bg-white/92 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-ink">{t(ROOM_LABEL_KEY[type])}</span>
         </div>
@@ -64,7 +66,7 @@ export function RoomsShowcase() {
           <h3 className="mt-5 font-display text-2xl">{t('landing.allRoomsTitle')}</h3>
           <p className="mt-3 text-xs leading-6 text-muted">{t('landing.allRoomsText')}</p>
         </div>
-        <Link to="/app/rooms" className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('landing.allRoomsAction')}<ArrowRight size={14} /></Link>
+        <button type="button" onClick={() => book()} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft">{t('landing.allRoomsAction')}<ArrowRight size={14} /></button>
       </article>
     </div>
   </section>;

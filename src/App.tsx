@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './app/ProtectedRoute';
 import { AppLayout } from './app/AppLayout';
+import { DashboardRouteSkeleton, MarketingRouteSkeleton } from './components/RouteSkeleton';
+import { useVisitLog } from './hooks/useVisitLog';
 import { UnauthorizedPage, NotFoundPage } from './pages/UtilityPages';
 import type { UserRole } from './types';
 
@@ -19,11 +21,15 @@ const ProfilePage = lazy(async () => ({ default: (await import('./pages/ProfileP
 const UsersPage = lazy(async () => ({ default: (await import('./pages/UsersPage')).UsersPage }));
 
 const staffRoles: UserRole[] = ['admin', 'manager'];
+
+/** The loading placeholder follows the shell the visitor is waiting for. */
 function RouteFallback() {
-  return <main role="status" aria-busy="true" className="mx-auto min-h-[55vh] w-full max-w-5xl bg-[var(--page)] px-5 py-12"><span className="sr-only">Sahifa yuklanmoqda</span><section className="surface animate-pulse rounded-3xl p-6 sm:p-8"><div className="skeleton h-2.5 w-24 rounded-full"/><div className="skeleton mt-5 h-8 w-56 rounded-lg"/><div className="skeleton mt-3 h-3 w-72 max-w-full rounded-full"/><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[0,1,2].map((item)=><div key={item} className="rounded-2xl border border-[var(--line)] p-4"><div className="skeleton h-28 rounded-xl"/><div className="skeleton mt-4 h-3 w-3/4 rounded-full"/><div className="skeleton mt-3 h-2 w-1/2 rounded-full"/></div>)}</div></section></main>;
+  const { pathname } = useLocation();
+  return pathname.startsWith('/app') ? <DashboardRouteSkeleton /> : <MarketingRouteSkeleton />;
 }
 
 export function App() {
+  useVisitLog();
   return <Suspense fallback={<RouteFallback />}><Routes>
     <Route path="/" element={<LandingPage />} />
     <Route path="/rooms/:roomId" element={<RoomDetailsPage />} />

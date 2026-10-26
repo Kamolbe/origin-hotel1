@@ -42,7 +42,7 @@ export function GallerySection() {
     </div>
 
     <Modal open={active !== null} onClose={() => setActive(null)} title={t('landing.galleryTitle')} description={t('landing.galleryHint')} size="lg">
-      {active && <div className="skeleton aspect-[3/2] w-full overflow-hidden rounded-2xl">
+      {active && <div className="aspect-[3/2] w-full overflow-hidden rounded-2xl bg-[var(--line)]">
         <img
           src={optimizedUnsplashUrl(active.photo, 1400, 82)}
           srcSet={unsplashSrcSet(active.photo, [720, 1080, 1400], 82)}

@@ -1,7 +1,7 @@
 import { useHotelContact } from '../../hooks/useHotelContact';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
-import { Link } from 'react-router-dom';
+import { useBookingAction } from '../../hooks/useBookingAction';
 import { ArrowRight, Award, BedDouble, Headphones } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BookingSearch } from './BookingSearch';
@@ -12,6 +12,7 @@ import { useAppData } from '../../context/AppDataContext';
 export function HeroSection() {
   const HOTEL = useHotelContact();
   const { t } = useTranslation();
+  const book = useBookingAction();
   const { data } = useAppData();
   const reduced = usePrefersReducedMotion();
   const pointerX = useMotionValue(0);
@@ -45,7 +46,7 @@ export function HeroSection() {
         <h1 className="mt-6 font-display text-[2.6rem] leading-[1.05] sm:text-6xl lg:text-[4.2rem]">{t('landing.headline')}</h1>
         <p className="mt-6 max-w-xl text-sm leading-7 text-white/80 sm:text-base">{t('landing.description')}</p>
         <div className="mt-9 flex flex-wrap gap-3">
-          <Link to="/app/rooms" className="inline-flex items-center gap-2 rounded-full bg-champagne px-6 py-3.5 text-xs font-bold text-ink transition hover:bg-white">{t('landing.book')}<ArrowRight size={14} /></Link>
+          <button type="button" onClick={() => book()} className="inline-flex items-center gap-2 rounded-full bg-champagne px-6 py-3.5 text-xs font-bold text-ink transition hover:bg-white">{t('landing.book')}<ArrowRight size={14} /></button>
           <a href="#rooms" className="inline-flex items-center gap-2 rounded-full border border-white/35 px-6 py-3.5 text-xs font-bold text-white transition hover:border-champagne hover:text-champagne">{t('landing.roomsTitle')}</a>
         </div>
         <dl className="mt-10 flex flex-wrap gap-x-8 gap-y-5 border-t border-white/15 pt-7">

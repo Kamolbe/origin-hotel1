@@ -6,6 +6,7 @@ import './styles.css';
 import { App } from './App';
 import { AppDataProvider } from './context/AppDataContext';
 import { AuthProvider } from './context/AuthContext';
+import { ContactDialogProvider } from './context/ContactDialogContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 
@@ -19,7 +20,9 @@ createRoot(root).render(
         <AuthProvider>
           <ThemeProvider>
             <ToastProvider>
-              <App />
+              <ContactDialogProvider>
+                <App />
+              </ContactDialogProvider>
             </ToastProvider>
           </ThemeProvider>
         </AuthProvider>

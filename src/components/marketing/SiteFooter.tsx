@@ -1,13 +1,19 @@
 import { useHotelContact } from '../../hooks/useHotelContact';
 import { Link } from 'react-router-dom';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Camera, Mail, MapPin, Phone, Send, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '../Logo';
 import { LanguageSwitcher } from '../LanguageSwitcher';
+import { useBookingAction } from '../../hooks/useBookingAction';
+import { useContactDialog } from '../../context/ContactDialogContext';
+import { useAuth } from '../../context/AuthContext';
 
 export function SiteFooter() {
   const HOTEL = useHotelContact();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const book = useBookingAction();
+  const { openContact } = useContactDialog();
   const year = new Date().getFullYear();
 
   const explore = [
@@ -17,12 +23,11 @@ export function SiteFooter() {
     { href: '/#reviews', label: t('landing.reviewsTitle') },
     { href: '/#contact', label: t('nav.contact') },
   ];
-  const services = [
-    { to: '/app/rooms', label: t('landing.book') },
-    { to: '/app/rooms', label: t('nav.rooms') },
-    { to: '/app/bookings', label: t('nav.bookings') },
-    { to: '/app/profile', label: t('nav.profile') },
-  ];
+  const socials = [
+    { label: 'Telegram', href: HOTEL.telegram, handle: HOTEL.telegramHandle, icon: Send },
+    { label: 'Instagram', href: HOTEL.instagram, handle: HOTEL.instagramHandle, icon: Camera },
+    { label: 'Facebook', href: HOTEL.facebook, handle: HOTEL.facebookHandle, icon: Share2 },
+  ].filter((item) => item.href);
 
   return <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
     <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.3fr] lg:px-10">
@@ -39,7 +44,15 @@ export function SiteFooter() {
 
       <nav aria-label={t('footer.services')}>
         <p className="text-[10px] font-bold uppercase tracking-[.2em] text-champagne">{t('footer.services')}</p>
-        <ul className="mt-4 space-y-2.5">{services.map((item) => <li key={item.to}><Link to={item.to} className="text-xs text-muted transition hover:text-champagne">{item.label}</Link></li>)}</ul>
+        <ul className="mt-4 space-y-2.5">
+          <li><button type="button" onClick={() => book()} className="text-xs text-muted transition hover:text-champagne">{t('landing.book')}</button></li>
+          <li><a href="/#rooms" className="text-xs text-muted transition hover:text-champagne">{t('nav.rooms')}</a></li>
+          <li><a href="/#stay-planner" className="text-xs text-muted transition hover:text-champagne">Safarni rejalashtirish</a></li>
+          <li><button type="button" onClick={openContact} className="text-xs text-muted transition hover:text-champagne">Administrator bilan bog‘lanish</button></li>
+          <li>{user
+            ? <Link to="/app" className="text-xs font-semibold text-champagne">{t('nav.dashboard')} ↗</Link>
+            : <Link to="/login" state={{ from: '/app', reason: 'account' }} className="text-xs font-semibold text-champagne">{t('nav.login')}</Link>}</li>
+        </ul>
       </nav>
 
       <div>
@@ -49,6 +62,7 @@ export function SiteFooter() {
           <li className="flex gap-3"><Phone size={15} className="mt-0.5 shrink-0 text-champagne" /><a href={HOTEL.phoneHref} className="transition hover:text-champagne">{HOTEL.phone}</a></li>
           <li className="flex gap-3"><Mail size={15} className="mt-0.5 shrink-0 text-champagne" /><a href={`mailto:${HOTEL.email}`} className="transition hover:text-champagne">{HOTEL.email}</a></li>
         </ul>
+        {socials.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{socials.map(({ label, href, handle, icon: Icon }) => <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={`${label} ${handle}`} className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-3.5 py-2 text-[11px] font-semibold text-muted transition hover:border-champagne hover:text-champagne"><Icon size={14} />{handle}</a>)}</div>}
         <div className="mt-5"><LanguageSwitcher /></div>
       </div>
     </div>
