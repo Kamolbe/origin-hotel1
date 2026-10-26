@@ -1,3 +1,4 @@
+import { MobileCabinetMenu } from '../components/MobileCabinetMenu';
 import { AccountSummary } from '../components/AccountSummary';
 import { Activity, BedDouble, CalendarCheck2, CircleDollarSign, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -26,8 +27,9 @@ export function DashboardPage() {
   const revenue = data.finance.filter((item) => item.type === 'income').reduce((sum, item) => sum + item.amount, 0);
 
   return <div><PageHeader eyebrow="Origin Hotel · Boshqaruv" title={staff ? 'Boshqaruv paneli' : 'Mehmonlar paneli'} description={`Xush kelibsiz, ${user?.name}.`} action={<Link to="/app/bookings" className="rounded-full bg-ink px-5 py-3 text-xs font-semibold text-white">Bron qilish</Link>} />
+    <MobileCabinetMenu />
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><StatCard label="Jami xonalar" value={data.rooms.length} icon={BedDouble} accent /><StatCard label="Band xonalar" value={occupied} icon={CalendarCheck2} /><StatCard label="Bo‘sh xonalar" value={available} icon={BedDouble} /><StatCard label={staff ? 'Mehmonlar' : 'Mening bronlarim'} value={staff ? data.guests.length : visibleBookings.length} icon={staff ? Users : CircleDollarSign} /></div>
-    {staff && <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_.75fr]"><section className="surface rounded-3xl p-5 sm:p-7"><p className="text-[10px] font-bold uppercase tracking-[.18em] text-champagne">Moliya</p><h2 className="mt-2 font-display text-3xl">{formatMoney(revenue, data.settings.currency)}</h2><p className="mt-2 text-xs text-muted">Jami tushum</p></section><section className="surface rounded-3xl p-5 sm:p-7"><p className="text-[10px] font-bold uppercase tracking-[.18em] text-champagne">Tezkor havolalar</p><div className="mt-4 flex flex-col gap-2">{tools.map(([to, label]) => <Link key={to} className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm transition hover:border-champagne" to={to}>{label}</Link>)}</div></section></div>}
+    {staff && <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_.75fr]"><section className="surface rounded-3xl p-5 sm:p-7"><p className="text-[10px] font-bold uppercase tracking-[.18em] text-champagne">Moliya</p><h2 className="mt-2 font-display text-3xl">{formatMoney(revenue, data.settings.currency)}</h2><p className="mt-2 text-xs text-muted">Jami tushum</p></section><section className="surface hidden rounded-3xl p-5 sm:p-7 md:block"><p className="text-[10px] font-bold uppercase tracking-[.18em] text-champagne">Tezkor havolalar</p><div className="mt-4 flex flex-col gap-2">{tools.map(([to, label]) => <Link key={to} className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm transition hover:border-champagne" to={to}>{label}</Link>)}</div></section></div>}
     <div className="mt-5"><AccountSummary /></div>
     {staff && <section className="surface mt-5 rounded-3xl p-5 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
