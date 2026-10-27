@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Camera, Mail, MapPin, Phone, Send, Share2 } from 'lucide-react';
 import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { Logo } from '../Logo';
-import { LanguageSwitcher } from '../LanguageSwitcher';
 import { useBookingAction } from '../../hooks/useBookingAction';
 import { useContactDialog } from '../../context/ContactDialogContext';
 import { useAuth } from '../../context/AuthContext';
@@ -63,7 +62,6 @@ export function SiteFooter() {
           <li className="flex gap-3"><Mail size={15} className="mt-0.5 shrink-0 text-champagne" /><a href={`mailto:${HOTEL.email}`} className="transition hover:text-champagne">{HOTEL.email}</a></li>
         </ul>
         {socials.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{socials.map(({ label, href, handle, icon: Icon }) => <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={`${label} ${handle}`} className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-3.5 py-2 text-[11px] font-semibold text-muted transition hover:border-champagne hover:text-champagne"><Icon size={14} />{handle}</a>)}</div>}
-        <div className="mt-5"><LanguageSwitcher /></div>
       </div>
     </div>
 
