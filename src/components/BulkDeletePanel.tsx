@@ -1,0 +1,21 @@
+import { useState } from 'react';
+import { CheckCheck, Trash2 } from 'lucide-react';
+import { Modal } from './Modal';
+
+type Item = { id: string; label: string };
+export function BulkDeletePanel({ items, subject, note, onDelete }: { items: Item[]; subject: string; note?: string; onDelete: (ids: string[]) => void }) {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [review, setReview] = useState(false);
+  const [page, setPage] = useState(0);
+  const selectedItems = items.filter((item) => selected.includes(item.id));
+  const pages = Math.max(1, Math.ceil(items.length / 10));
+  const currentPage = Math.min(page, pages - 1);
+  function show(all: boolean) { setSelected(all ? items.map((item) => item.id) : []); setReview(false); setPage(0); setOpen(true); }
+  return <div className="my-4 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-3 sm:p-4"><div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-muted">O‘chirish mumkin: <b className="text-[var(--text)]">{items.length} {subject}</b></p><div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto"><button type="button" disabled={!items.length} onClick={() => show(true)} className="secondary-button min-w-0 gap-1.5 !px-2 !text-[10px] disabled:opacity-35 sm:!px-4 sm:!text-xs"><CheckCheck size={14} className="shrink-0" />Barchasini belgilash</button><button type="button" disabled={!items.length} onClick={() => show(false)} className="secondary-button min-w-0 gap-1.5 !px-2 !text-[10px] disabled:opacity-35 sm:!px-4 sm:!text-xs"><Trash2 size={14} className="shrink-0" />Belgilab o‘chirish</button></div></div>{note && <p className="mt-2 text-[11px] leading-5 text-muted">{note}</p>}
+    <Modal open={open} onClose={() => setOpen(false)} title={review ? 'O‘chirishni tasdiqlang' : 'O‘chiriladiganlarni belgilang'} description={`${selectedItems.length} / ${items.length} ${subject} belgilangan.`}>
+      {review ? <p className="text-sm leading-7 text-muted">{selectedItems.length} {subject} o‘chiriladi. Bu amalni qaytarib bo‘lmaydi.{note ? ` ${note}` : ''}</p> : <><label className="flex min-h-11 items-center gap-3 rounded-xl bg-[var(--page)] px-3 text-xs font-semibold"><input type="checkbox" checked={items.length > 0 && selectedItems.length === items.length} onChange={(event) => setSelected(event.target.checked ? items.map((item) => item.id) : [])} className="h-5 w-5 accent-[var(--champagne)]" />Barchasini belgilash</label><div className="mt-3 space-y-2">{items.slice(currentPage * 10, currentPage * 10 + 10).map((item) => <label key={item.id} className="flex min-h-11 items-center gap-3 rounded-xl border border-[var(--line)] p-3 text-xs"><input type="checkbox" checked={selected.includes(item.id)} onChange={(event) => setSelected((ids) => event.target.checked ? [...ids, item.id] : ids.filter((id) => id !== item.id))} className="h-5 w-5 shrink-0 accent-[var(--champagne)]" /><span className="min-w-0 break-words">{item.label}</span></label>)}</div>{pages > 1 && <div className="mt-3 flex items-center justify-between gap-2"><button type="button" disabled={currentPage === 0} className="secondary-button disabled:opacity-35" onClick={() => setPage(currentPage - 1)}>Oldingi</button><span className="text-xs text-muted">{currentPage + 1} / {pages}</span><button type="button" disabled={currentPage + 1 >= pages} className="secondary-button disabled:opacity-35" onClick={() => setPage(currentPage + 1)}>Keyingi</button></div>}</>}
+      <div className="mt-5 flex flex-wrap justify-end gap-2"><button type="button" className="secondary-button" onClick={() => review ? setReview(false) : setOpen(false)}>{review ? 'Orqaga' : 'Bekor qilish'}</button><button type="button" disabled={!selectedItems.length} onClick={() => { if (!review) { setReview(true); return; } onDelete(selectedItems.map((item) => item.id)); setOpen(false); setSelected([]); }} className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-3 text-xs font-semibold text-white disabled:opacity-35"><Trash2 size={14} />{review ? 'Ha, o‘chirish' : 'O‘chirish'} ({selectedItems.length})</button></div>
+    </Modal>
+  </div>;
+}

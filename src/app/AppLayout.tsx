@@ -1,3 +1,4 @@
+import { CloudSaveStatus } from '../components/CloudStorageSettings';
 import { PageTrail } from '../components/PageTrail';
 import { MobileManagementNav } from '../components/MobileManagementNav';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
@@ -141,7 +142,7 @@ export function AppLayout() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-[1600px] px-4 py-7 sm:px-7 sm:py-9"><PageTrail /><Outlet /></main>
+      <main className="mx-auto max-w-[1600px] px-4 py-7 sm:px-7 sm:py-9"><CloudSaveStatus compact /><PageTrail /><Outlet /></main>
     </div>
 
     <AnimatePresence>{searchOpen && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) { setSearchOpen(false); setQuery(''); } }} className="fixed inset-0 z-[90] flex items-start justify-center bg-ink/50 px-4 pt-[14vh] backdrop-blur-sm">

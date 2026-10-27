@@ -87,10 +87,33 @@ Admin → Sozlamalar → Menyu va interfeys: aksent, yorug‘ mavzudagi sahifa/k
 
 Admin → Xonalar: har bir xona uchun alohida rasm va tavsif qo‘shish mumkin; bu ro‘yxat, batafsil sahifa, modal va bron preview’da qo‘llanadi.
 
-Bu boshqaruv hozir lokal demo: `localStorage` va shu origin’dagi boshqa tablar bilan ishlaydi. Barcha mehmonlar/qurilmalarga yagona nashr, server darajasidagi admin ruxsatlari, umumiy bron va foydalanuvchilar bazasi hali ulanmagan. Production uchun ishonchli autentifikatsiya va backend talab qilinadi. Admin paroli va maxsus kodlar client kodida demo sifatida mavjud; haqiqiy himoya hisoblanmaydi.
+Server sozlamalari kiritilmasa boshqaruv lokal demo: `localStorage` va shu origin’dagi boshqa tablar bilan ishlaydi. Pastdagi “Firebase orqali doimiy saqlash” adapterini sozlab admin nusxalarini saqlash va ommaviy sayt ma’lumotlarini nashr qilish mumkin. Oddiy mehmonlarning umumiy bron oqimi va email/parol autentifikatsiyasi esa hali lokal demo; to‘liq production uchun ishonchli foydalanuvchi autentifikatsiyasi va bron backend talab qilinadi. Admin paroli va maxsus kodlar client kodida demo sifatida mavjud; haqiqiy himoya hisoblanmaydi.
 
 ## Mehmonning shaxsiy sozlamalari
 
 Oddiy foydalanuvchi/manager → Sozlamalar ichida profil, shaxsiy tanlovlar, ma’lumotlar va yordam bo‘limlari bor. Til, mavzu, kamroq animatsiya, odatiy mehmonlar soni, afzal xona turi va bron izohi hisobning `preferences` maydonida saqlanadi. Mehmonlar soni yangi qidiruv/bron shakliga, xona turi xona ro‘yxati filtriga, izoh esa bron shakliga boshlang‘ich qiymat bo‘lib o‘tadi; aniq tanlangan bron parametrlari ustun turadi. Hisob emaili bu shakldan almashtirilmaydi.
 
 Shaxsiy ma’lumotlarni JSON eksport qilish faqat joriy foydalanuvchining profili, tanlovlari va bronlarini oladi; autentifikatsiya paroli/maxsus kodlarini eksport qilmaydi. Bu sozlamalar ham umumiy backend emas, shu brauzerdagi hisobga tegishli lokal ma’lumotlardir. Xabar/email yuborish yoki boshqa qurilmalarga sinxronlash qo‘shilmagan.
+
+## Firebase orqali doimiy saqlash
+
+Kodda Vercel server API va Firebase Firestore saqlash adapteri bor. **Bu ulanish server environment variables kiritilmaguncha faol emas.** Faqat `npm run dev` Vercel API funksiyalarini ishga tushirmaydi; lokal to‘liq tekshiruv uchun `vercel dev` yoki Vercel deploy kerak. Oddiy lokal sayt API ulanmaganida ishlashda davom etadi.
+
+1. Firebase Console → `origin-hotel` → Firestore Database’da bazani yarating. Ushbu imkoniyat Firebase Authentication’dan alohida. `firestore.rules` server snapshotlarini brauzerdan o‘qish/yozishni taqiqlaydi. Mavjud boshqa collection qoidalarini almashtirmasdan, shu uchta collection uchun qoidalarni qo‘shing va ochiq umumiy wildcard qoida ularga ruxsat bermayotganini tekshiring.
+2. Firebase Project settings → Service accounts → Firebase Admin SDK’dan server kaliti yarating. JSON fayl tarkibini Vercel → Project → Settings → Environment Variables’da **`FIREBASE_SERVICE_ACCOUNT`** nomi bilan saqlang. Kalitni GitHub, frontend, chat yoki `VITE_…` o‘zgaruvchisiga kiritmang. Service account’ga Firestore uchun kerakli server huquqi bo‘lsin.
+3. Serverdagi **`HOTEL_ADMIN_EMAIL`** ni hozircha `admin@admin.com` qiling. Emailni keyin shu environment variable’dan almashtiring. Ushbu server kirishi Google emailining egasi bo‘lishni talab qilmaydi; u alohida server paroli bilan tekshiriladi.
+4. `node scripts/create-cloud-password.mjs` buyrug‘ini ishga tushiring. Kamida 12 belgili yangi bulut parolini kiriting; chiqqan hash’ni **`HOTEL_ADMIN_PASSWORD_HASH`** environment variable’iga qo‘ying. Parolning o‘zini environment variable yoki GitHub’ga yozmang. Bu parol frontenddagi demo admin parolidan mustaqil.
+5. `node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"` bilan tasodifiy qiymat yarating; uni **`HOTEL_SESSION_SECRET`** ga qo‘ying. Uni ham faqat serverda saqlang. Keyin Vercel’da qayta deploy qiling.
+6. Admin → Sozlamalar → **Bulutda saqlash**: email va yuqorida tanlangan bulut paroli bilan ulaning. Bulutda avval saqlangan nusxa bo‘lsa yuklanadi; bo‘lmasa joriy nusxa birinchi marta saqlanadi. Keyingi admin o‘zgarishlari avtomatik yuboriladi. **“Bulutga saqlandi”** holatini kuting. Brauzerni saqlanayotgan paytda yopmang. Xato chiqsa mahalliy o‘zgarishni yo‘qotmasdan qayta saqlash yoki bulutdan qayta yuklash mumkin.
+
+API server parolini tekshiradi, 2 soatlik imzolangan sessiya beradi va xato parollar uchun tezlik cheklovini qo‘llaydi. Firestore snapshotlar siqilgan bo‘laklarda, oldingi versiyalar bilan saqlanadi. Bir vaqtda ikki admin nusxasi o‘zgartirilsa eski nusxa yangisini ustidan yozmaydi (`409`); avval bulutdagi nusxani qayta yuklash kerak. Oddiy foydalanuvchilar API orqali faqat e’lon qilingan xona va sayt sozlamalarini oladi; mehmonlar, moliya, foydalanuvchilar va ichki audit ochilmaydi. Saytning boshqa qurilmalari e’lon qilingan ma’lumotni ochilganda va har 30 soniyada oladi.
+
+Bu adapter **admin qilgan o‘zgarishlarni** va uning ichki holatini saqlaydi. Oddiy foydalanuvchilarning email/parol autentifikatsiyasi hamda yangi bron so‘rovlarini qurilmalararo uzatish hali lokal demo oqimidir. Demo foydalanuvchi parollari va accessCode bulutga yuborilmaydi; boshqa qurilmada mahalliy parol bilan yangi hisobga kirish alohida ishonchli auth backend talab qiladi. Yuboriladigan snapshot 3.5 MB dan oshsa UI xato ko‘rsatadi; ko‘p rasmlar uchun tashqi rasm havolalaridan foydalaning yoki alohida media storage ulang.
+
+Firebase loyihasi, hisob va billing faol bo‘lishi hamda zaxira nusxalar yuritilishi kerak. “Butun umr” kafolati berilmaydi; brauzerni tozalash e’lon qilingan server nusxasini o‘chirmaydi. “Ulanishni uzish” server ma’lumotini o‘chirmaydi. Server environment variables va ishlaydigan Firestore ulanmaguncha faqat lokal saqlash mavjud.
+
+Server/API testlari: `node --test tests/cloud-api.test.mjs` (Node 24 tavsiya etiladi). Testda Firestore tarmoq adapteri xotiradagi baza bilan almashtirilgan; production Firebase credentials sinovdan o‘tganini anglatmaydi.
+
+## Guruhlab o‘chirish
+
+Xonalar, mehmonlar, moliya, foydalanuvchilar va galereyada “Barchasini belgilash” / “Belgilab o‘chirish” oynasi bor. Tanlash joriy qidiruv/filtrga tegishli; o‘chirish alohida tasdiqlanadi. Bron tarixi bor xonalar, faol bronli mehmonlar, o‘z hisobingiz va adminlar guruhlab o‘chirilmaydi. Tugatilgan bronlarning avvalgi guruhlab o‘chirish amali saqlangan.

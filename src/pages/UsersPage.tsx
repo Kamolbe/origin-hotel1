@@ -1,3 +1,4 @@
+import { BulkDeletePanel } from '../components/BulkDeletePanel';
 import { ResponsiveTable } from '../components/ResponsiveTable';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Activity, Download, Monitor, Plus, ShieldCheck, Smartphone, Tablet, Trash2, UserPlus, Users } from 'lucide-react';
@@ -99,6 +100,7 @@ export function UsersPage() {
         <h2 className="flex items-center gap-2 font-display text-2xl"><Users size={18} className="text-champagne" />Hisoblar</h2>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ism yoki email bo‘yicha qidirish" className="field sm:max-w-xs" />
       </div>
+    {user?.role === 'admin' && <BulkDeletePanel subject="ta foydalanuvchi" items={users.filter((item) => item.id !== user.id && item.role !== 'admin').map((item) => ({ id: item.id, label: `${item.name} · ${item.email}` }))} note="O‘z hisobingiz va administratorlar guruhlab o‘chirilmaydi. Joriy qidiruv natijalari belgilanadi." onDelete={(ids) => { if (user.role !== 'admin') return; updateData((current) => ({ ...current, users: current.users.filter((item) => !ids.includes(item.id) || item.id === user.id || item.role === 'admin'), auditLog: recordAudit(current, 'Belgilangan foydalanuvchilar o‘chirildi', 'user', ids.join(','), user.id).slice(0, 500) })); success('Belgilangan foydalanuvchilar o‘chirildi.'); }} />}
       <ResponsiveTable><table className="w-full min-w-[880px] text-left"><thead className="bg-[var(--page)] text-[10px] uppercase text-muted"><tr>{['Foydalanuvchi', 'Rol', 'Holat', 'Ro‘yxatdan o‘tgan', 'Oxirgi kirish', 'Amallar'].map((label) => <th key={label} className="px-4 py-3">{label}</th>)}</tr></thead><tbody>{users.map((item) => <tr key={item.id} className="border-t border-[var(--line)] text-xs">
         <td className="px-4 py-4 font-semibold">{item.name}<span className="block text-[10px] font-normal text-muted">{item.email}</span></td>
         <td className="px-4 py-4"><span className="inline-flex items-center gap-1.5"><ShieldCheck size={14} />{roleLabels[item.role]}</span></td>
