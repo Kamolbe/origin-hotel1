@@ -1,3 +1,5 @@
+import { ImageUploadField } from '../components/ImageUploadField';
+import { isSupportedImage } from '../services/imageUtils';
 import { DatePicker } from '../components/DatePicker';
 import { useUserPreferences } from '../hooks/useUserPreferences';
 import { useRoomPhotos } from '../hooks/useSiteContent';
@@ -72,7 +74,7 @@ export function RoomsPage() {
   function saveRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isAdmin) { error('Xonalarni faqat administrator boshqaradi.'); return; }
-    if (mode !== 'assign' && form.imageUrl.trim() && !/^(https?:\/\/|\/(?!\/))/i.test(form.imageUrl.trim())) { error('Rasm uchun http/https yoki / bilan boshlanuvchi manzil kiriting.'); return; }
+    if (mode !== 'assign' && form.imageUrl.trim() && !isSupportedImage(form.imageUrl.trim())) { error('Rasm uchun http/https yoki / bilan boshlanuvchi manzil kiriting.'); return; }
     if (mode !== 'assign' && (!form.number.trim() || !Number.isInteger(Number(form.floor)) || Number(form.floor) < 1 || !Number.isInteger(Number(form.capacity)) || Number(form.capacity) < 1 || !Number.isFinite(Number(form.pricePerNight)) || Number(form.pricePerNight) <= 0)) { error('Xona raqami, qavat, sig‘im va narxni to‘g‘ri kiriting.'); return; }
     if (mode !== 'assign' && data.rooms.some((room) => room.number === form.number.trim() && room.id !== activeRoom?.id)) { error('Bu xona raqami allaqachon mavjud.'); return; }
     if (mode === 'assign' && activeRoom) {
@@ -141,7 +143,7 @@ export function RoomsPage() {
           <FilterField label="Holat" type="select" value={form.status} onChange={(value) => setForm({ ...form, status: value as RoomStatus })} options={Object.entries(statusLabel).map(([value,label]): [string, string] => [value,label])} />
           <InputField label="Sig‘im" type="number" min="1" max="8" value={form.capacity} onChange={(value) => setForm({ ...form, capacity: value })} required />
           <InputField label="Narx / tun (UZS)" type="number" min="1" value={form.pricePerNight} onChange={(value) => setForm({ ...form, pricePerNight: value })} required />
-          <div className="sm:col-span-2"><InputField label="Xona rasmi havolasi" value={form.imageUrl} onChange={(value) => setForm({ ...form, imageUrl: value })} /></div><label className="text-xs font-semibold sm:col-span-2">Xona tavsifi<textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="field mt-2 min-h-24" /></label>
+          <div className="sm:col-span-2"><ImageUploadField label="Xona rasmi" value={form.imageUrl} onChange={(value) => setForm((current) => ({ ...current, imageUrl: value }))} /></div><label className="text-xs font-semibold sm:col-span-2">Xona tavsifi<textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="field mt-2 min-h-24" /></label>
           <div className="sm:col-span-2"><InputField label="Qulayliklar (vergul bilan)" value={form.amenities} onChange={(value) => setForm({ ...form, amenities: value })} /></div>
         </>}
         <div className="flex justify-end gap-2 pt-2 sm:col-span-2"><button type="button" onClick={() => { setModalOpen(false); setActiveRoom(null); }} className="rounded-full border border-[var(--line)] px-4 py-2.5 text-xs font-semibold">Bekor qilish</button><button className="rounded-full bg-ink px-5 py-2.5 text-xs font-bold text-white">{mode === 'assign' ? 'Joylashtirish' : mode === 'edit' ? 'Saqlash' : 'Xona qo‘shish'}</button></div>
