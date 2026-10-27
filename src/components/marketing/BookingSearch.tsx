@@ -1,3 +1,4 @@
+import { DatePicker } from '../DatePicker';
 import { useUserPreferences } from '../../hooks/useUserPreferences';
 import { Select } from '../Select';
 import { useState, type FormEvent } from 'react';
@@ -67,11 +68,11 @@ export function BookingSearch({ className = '' }: { className?: string }) {
     <div className="mt-5 grid gap-3 sm:grid-cols-2">
       <label className="block">
         <span className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-muted"><CalendarDays size={12} className="text-champagne" />{t('landing.checkIn')}</span>
-        <input type="date" required value={checkIn} min={isoDate(0)} onChange={(event) => { setCheckIn(event.target.value); setError(''); }} className={fieldClass} />
+        <DatePicker label={t('landing.checkIn')} required value={checkIn} min={isoDate(0)} onChange={(value) => { setCheckIn(value); setError(''); }} />
       </label>
       <label className="block">
         <span className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-muted"><CalendarDays size={12} className="text-champagne" />{t('landing.checkOut')}</span>
-        <input type="date" required value={checkOut} min={checkIn} onChange={(event) => { setCheckOut(event.target.value); setError(''); }} className={fieldClass} />
+        <DatePicker label={t('landing.checkOut')} required value={checkOut} min={checkIn} onChange={(value) => { setCheckOut(value); setError(''); }} />
       </label>
     </div>
     <label className="mt-3 block">

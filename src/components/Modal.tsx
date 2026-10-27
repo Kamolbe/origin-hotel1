@@ -2,6 +2,9 @@ import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
+const modalStack: symbol[] = [];
+let originalBodyOverflow = '';
+
 export function Modal({ open, onClose, title, description, children, size = 'md', presentation = 'dialog' }: {
   open: boolean;
   onClose: () => void;
@@ -20,10 +23,14 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
+    const token = Symbol('modal');
+    if (!modalStack.length) originalBodyOverflow = document.body.style.overflow;
+    modalStack.push(token);
+    if (panel.current?.parentElement) panel.current.parentElement.style.zIndex = String(100 + modalStack.length * 10);
     document.body.style.overflow = 'hidden';
     const frame = requestAnimationFrame(() => panel.current?.focus());
     const keyboard = (event: KeyboardEvent) => {
+      if (modalStack.at(-1) !== token) return;
       if (event.key === 'Escape') { event.preventDefault(); close.current(); }
       if (event.key !== 'Tab') return;
       const items = Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex="0"]') ?? []).filter((item) => item.tabIndex >= 0 && item.getClientRects().length > 0);
@@ -33,7 +40,7 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
       else if (!event.shiftKey && (document.activeElement === last || document.activeElement === panel.current)) { event.preventDefault(); first.focus(); }
     };
     window.addEventListener('keydown', keyboard);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener('keydown', keyboard); document.body.style.overflow = previousOverflow; if (previous?.isConnected) previous.focus(); };
+    return () => { cancelAnimationFrame(frame); window.removeEventListener('keydown', keyboard); const index = modalStack.indexOf(token); if (index !== -1) modalStack.splice(index, 1); if (!modalStack.length) document.body.style.overflow = originalBodyOverflow; if (previous?.isConnected) previous.focus(); };
   }, [open]);
 
   if (!open) return null;
