@@ -1,3 +1,4 @@
+import { SettingsIdentity } from '../components/SettingsIdentity';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AccountSummary } from '../components/AccountSummary';
 import { GuestSettingsPage } from './GuestSettingsPage';
@@ -52,7 +53,7 @@ export function SettingsPage() {
 
   if (user?.role !== 'admin') return <GuestSettingsPage />;
   if ((section && !selectedSection) || (editorTab && section !== 'site')) return <Navigate to="/app/settings" replace />;
-  if (!section) return <div className="animate-rise-in"><PageHeader eyebrow="Tizim boshqaruvi" title="Sozlamalar" description="Boshqarmoqchi bo‘lgan bo‘limingizni tanlang." /><nav aria-label="Admin sozlama bo‘limlari" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{sections.map(({ id, title, icon: Icon }) => <Link key={id} to={`/app/settings/${id}`} className="surface flex min-h-28 items-center gap-4 rounded-2xl p-5 transition hover:border-champagne"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-champagne/10 text-champagne"><Icon size={21} /></span><span className="text-sm font-semibold">{title}</span></Link>)}</nav></div>;
+  if (!section) return <div className="animate-rise-in"><PageHeader eyebrow="Tizim boshqaruvi" title="Sozlamalar" description="Hisobingiz va boshqaruv sozlamalarini bir joydan boshqaring." /><SettingsIdentity /><nav aria-label="Admin sozlama bo‘limlari" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{sections.map(({ id, title, icon: Icon }) => <Link key={id} to={`/app/settings/${id}`} className="surface flex min-h-28 items-center gap-4 rounded-2xl p-5 transition hover:border-champagne"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-champagne/10 text-champagne"><Icon size={21} /></span><span className="text-sm font-semibold">{title}</span></Link>)}</nav></div>;
 
   return <div className="animate-rise-in">
     <PageHeader eyebrow="Tizim boshqaruvi" title={selectedSection?.title ?? 'Sozlamalar'} description="O‘zgarishlarni shu bo‘limdan boshqaring." />
