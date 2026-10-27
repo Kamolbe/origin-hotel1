@@ -61,7 +61,7 @@ export function SiteFooter() {
           <li className="flex gap-3"><Phone size={15} className="mt-0.5 shrink-0 text-champagne" /><a href={HOTEL.phoneHref} className="transition hover:text-champagne">{HOTEL.phone}</a></li>
           <li className="flex gap-3"><Mail size={15} className="mt-0.5 shrink-0 text-champagne" /><a href={`mailto:${HOTEL.email}`} className="transition hover:text-champagne">{HOTEL.email}</a></li>
         </ul>
-        {socials.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{socials.map(({ label, href, handle, icon: Icon }) => <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={`${label} ${handle}`} className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-3.5 py-2 text-[11px] font-semibold text-muted transition hover:border-champagne hover:text-champagne"><Icon size={14} />{handle}</a>)}</div>}
+        {socials.length > 0 && <div className="mt-5 grid gap-2">{socials.map(({ label, href, handle, icon: Icon }) => <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={`${label} ${handle}`} className="flex min-w-0 items-center gap-3 rounded-2xl border border-[var(--line)] px-3.5 py-3 text-muted transition hover:border-champagne hover:text-champagne"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-champagne/10 text-champagne"><Icon size={17} /></span><span className="min-w-0"><span className="block text-xs font-semibold text-[var(--text)]">{label}</span><span className="mt-0.5 block break-all text-[11px]">{handle}</span></span></a>)}</div>}
       </div>
     </div>
 
