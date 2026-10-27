@@ -52,7 +52,7 @@ export function ExperienceSection() {
         <h2 className="mt-3 font-display text-4xl lg:text-5xl">{t('landing.aboutHeadline')}</h2>
         <p className="mt-5 text-sm leading-7 text-muted">{t('landing.aboutText')}</p>
         <div className="mt-9 grid gap-4 sm:grid-cols-2">
-          {AMENITIES.map(({ icon: Icon, key }) => <div key={key} className="flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-[var(--page)] px-4 py-3.5">
+          {AMENITIES.map(({ icon: Icon, key }) => <div key={key} data-amenity-card className="flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-[var(--page)] px-4 py-3.5">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-champagne/15 text-champagne"><Icon size={18} /></span>
             <span className="text-xs font-semibold">{t(key)}</span>
           </div>)}

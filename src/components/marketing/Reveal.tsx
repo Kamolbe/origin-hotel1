@@ -6,7 +6,7 @@ export function Reveal({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
   useEffect(() => {
-    const items = Array.from(root.current?.querySelectorAll<HTMLElement>('h2, h3, figure, section img, #gallery button, #about .grid > div, #stay-planner > div, [data-reveal-item]') ?? []);
+    const items = Array.from(root.current?.querySelectorAll<HTMLElement>('h2, h3, figure, section img, #gallery button, #about [data-amenity-card], #stay-planner > div, [data-reveal-item]') ?? []);
     if (reduced) { items.forEach((item) => item.removeAttribute('data-scroll-reveal')); return; }
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => { if (entry.isIntersecting) { (entry.target as HTMLElement).dataset.scrollReveal = 'visible'; observer.unobserve(entry.target); } });

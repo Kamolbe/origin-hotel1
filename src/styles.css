@@ -227,8 +227,8 @@ img { max-width: 100%; }
 .marketing-page :where(a, button) { transition: background-color .2s, color .2s, box-shadow .2s, border-color .2s, scale .2s; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .marketing-page :where(a, button):hover { scale: 1.025; }
-  .marketing-page figure, .marketing-page #about .grid > div { transition: translate .3s, box-shadow .3s, border-color .3s; }
-  .marketing-page figure:hover, .marketing-page #about .grid > div:hover { translate: 0 -6px; box-shadow: 0 16px 35px #111b2212; border-color: var(--champagne); }
+  .marketing-page figure, .marketing-page #about [data-amenity-card] { transition: opacity .75s ease var(--reveal-delay, 0ms), translate .3s, box-shadow .3s, border-color .3s; }
+  .marketing-page figure:hover, .marketing-page #about [data-amenity-card]:hover { translate: 0 -6px; box-shadow: 0 16px 35px #111b2212; border-color: var(--champagne); }
 }
 @media (prefers-reduced-motion: reduce) { [data-scroll-reveal] { opacity: 1; translate: none; transition: none; } }
 
