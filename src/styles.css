@@ -422,3 +422,18 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
   .image-upload-actions > .secondary-button { min-width: 0; min-height: 44px; padding: 8px; gap: 5px; font-size: 10px; text-align: center; }
   .image-upload-actions > .secondary-button svg { flex-shrink: 0; }
 }
+
+/* Keep management filters readable even on the narrowest phone widths. */
+@media (max-width: 767px) {
+  .room-management-filters { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+  .room-management-filters > label { grid-column: 1 / -1; width: 100%; min-width: 0; flex: none; }
+  .room-management-filters > label > span:first-child { min-height: 16px; line-height: 1.5; }
+  .room-management-filters .hotel-select-root { display: block; width: 100%; min-width: 0; }
+  .room-management-filters .hotel-select-trigger { width: 100%; min-width: 0; min-height: 48px; }
+  .room-management-filters > span { width: 100%; }
+}
+@media (min-width: 480px) and (max-width: 767px) {
+  .room-management-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .room-management-filters > label { grid-column: auto; }
+  .room-management-filters > label:first-child { grid-column: 1 / -1; }
+}
