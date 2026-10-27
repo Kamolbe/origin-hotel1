@@ -1,3 +1,4 @@
+import { PageTrail } from '../components/PageTrail';
 import { MobileManagementNav } from '../components/MobileManagementNav';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useHotelContact } from '../hooks/useHotelContact';
@@ -74,10 +75,10 @@ export function AppLayout() {
     return () => window.removeEventListener('pointerdown', closeOnOutside);
   }, []);
 
-  useEffect(() => { setMobileOpen(false); setNotificationsOpen(false); setProfileOpen(false); }, [location.pathname]);
+  useEffect(() => { setMobileOpen(false); setNotificationsOpen(false); setProfileOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); }, [location.pathname]);
 
   const visibleNav = navigation.filter((item) => user && item.roles.includes(user.role));
-  const title = location.pathname === '/app/my-stay' ? 'Shaxsiy kabinet' : visibleNav.find((item) => item.to === location.pathname)?.key ?? (location.pathname.endsWith('/profile') ? 'nav.profile' : 'nav.dashboard');
+  const title = location.pathname === '/app/my-stay' ? 'Shaxsiy kabinet' : visibleNav.find((item) => item.to === location.pathname || (item.to !== '/app' && location.pathname.startsWith(`${item.to}/`)))?.key ?? (location.pathname.endsWith('/profile') ? 'nav.profile' : 'nav.dashboard');
   const visibleNotifications = data.notifications.filter((item) => !item.userId || item.userId === user?.id);
   const notificationPages = Math.max(1, Math.ceil(visibleNotifications.length / notificationPageSize));
   const currentNotificationPage = Math.min(notificationPage, notificationPages - 1);
@@ -140,7 +141,7 @@ export function AppLayout() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-[1600px] px-4 py-7 sm:px-7 sm:py-9"><Outlet /></main>
+      <main className="mx-auto max-w-[1600px] px-4 py-7 sm:px-7 sm:py-9"><PageTrail /><Outlet /></main>
     </div>
 
     <AnimatePresence>{searchOpen && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) { setSearchOpen(false); setQuery(''); } }} className="fixed inset-0 z-[90] flex items-start justify-center bg-ink/50 px-4 pt-[14vh] backdrop-blur-sm">

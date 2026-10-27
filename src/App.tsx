@@ -52,6 +52,8 @@ export function App() {
       <Route path="finance" element={<ProtectedRoute roles={staffRoles}><FinancePage /></ProtectedRoute>} />
       <Route path="reports" element={<ProtectedRoute roles={staffRoles}><ReportsPage /></ProtectedRoute>} />
       <Route path="settings" element={<SettingsPage />} />
+      <Route path="settings/:section" element={<SettingsPage />} />
+      <Route path="settings/:section/:editorTab" element={<SettingsPage />} />
       <Route path="profile" element={<ProfilePage />} />
       <Route path="users" element={<ProtectedRoute roles={['admin']}><UsersPage /></ProtectedRoute>} />
     </Route>
