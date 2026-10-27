@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 export function MobileNavigation() {
   const { user } = useAuth();
   const { pathname } = useLocation();
+  const staff = user?.role === 'admin' || user?.role === 'manager';
   const visible = Boolean(user) && pathname !== '/login';
   useEffect(() => {
     document.body.classList.toggle('has-mobile-navigation', visible);
@@ -15,9 +16,9 @@ export function MobileNavigation() {
   if (!visible) return null;
   const links = [
     { to: '/', label: 'Bosh sahifa', icon: House },
-    { to: '/rooms', label: 'Xonalar', icon: BedDouble },
+    { to: staff ? '/app/rooms' : '/rooms', label: 'Xonalar', icon: BedDouble },
     { to: '/contact', label: 'Aloqa', icon: Phone },
-    { to: user?.role === 'admin' || user?.role === 'manager' ? '/app' : '/app/my-stay', label: 'Kabinet', icon: UserRound },
+    { to: staff ? '/app' : '/app/my-stay', label: 'Kabinet', icon: UserRound },
   ];
-  return <nav aria-label="Mobil menyu" className="mobile-bottom-navigation">{links.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => isActive ? 'is-active' : ''}><Icon size={19} /><span>{label}</span></NavLink>)}</nav>;
+  return <nav aria-label="Mobil menyu" className="mobile-bottom-navigation">{links.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => isActive && !(staff && to === '/app' && pathname.startsWith('/app/rooms')) ? 'is-active' : ''}><Icon size={19} /><span>{label}</span></NavLink>)}</nav>;
 }

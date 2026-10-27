@@ -1,3 +1,4 @@
+import { MobileManagementNav } from '../components/MobileManagementNav';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useHotelContact } from '../hooks/useHotelContact';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -118,6 +119,7 @@ export function AppLayout() {
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[244px] border-r border-[var(--line)] bg-[var(--surface)] xl:block">{sidebar}</aside>
     <AnimatePresence>{mobileOpen && <><motion.button aria-label="Menyuni yopish" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="fixed inset-0 z-40 hidden bg-ink/50 md:block xl:hidden" /><motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ duration: .22 }} className="fixed inset-y-0 left-0 z-50 w-[280px] overflow-y-auto overscroll-contain bg-[var(--surface)] hidden md:block xl:hidden"><div className="px-4 pt-4 sm:hidden"><LanguageSwitcher /></div>{sidebar}<button onClick={() => setMobileOpen(false)} className="absolute right-3 top-3 rounded-full p-2 xl:hidden" aria-label="Menyuni yopish"><X size={17} /></button></motion.aside></>}</AnimatePresence>
     <div className="xl:pl-[244px]">
+      <MobileManagementNav />
       <header className="hidden md:block sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--page)]/90 backdrop-blur-xl">
         <div className="flex h-[72px] items-center justify-between gap-3 px-4 sm:px-7">
           <div className="flex min-w-0 items-center gap-3"><button onClick={() => setMobileOpen(true)} className="rounded-xl border border-[var(--line)] p-2.5 hidden md:inline-flex xl:hidden" aria-label="Menyuni ochish"><Menu size={17} /></button><div className="hidden sm:block"><p className="text-[9px] font-bold uppercase tracking-[.2em] text-muted">Origin Hotel</p><h1 className="mt-0.5 truncate text-sm font-semibold">{title.startsWith('nav.') ? t(title) : title}</h1></div></div>

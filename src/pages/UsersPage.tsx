@@ -1,3 +1,4 @@
+import { ResponsiveTable } from '../components/ResponsiveTable';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Activity, Download, Monitor, Plus, ShieldCheck, Smartphone, Tablet, Trash2, UserPlus, Users } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
@@ -98,7 +99,7 @@ export function UsersPage() {
         <h2 className="flex items-center gap-2 font-display text-2xl"><Users size={18} className="text-champagne" />Hisoblar</h2>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ism yoki email bo‘yicha qidirish" className="field sm:max-w-xs" />
       </div>
-      <div className="overflow-x-auto"><table className="w-full min-w-[880px] text-left"><thead className="bg-[var(--page)] text-[10px] uppercase text-muted"><tr>{['Foydalanuvchi', 'Rol', 'Holat', 'Ro‘yxatdan o‘tgan', 'Oxirgi kirish', 'Amallar'].map((label) => <th key={label} className="px-4 py-3">{label}</th>)}</tr></thead><tbody>{users.map((item) => <tr key={item.id} className="border-t border-[var(--line)] text-xs">
+      <ResponsiveTable><table className="w-full min-w-[880px] text-left"><thead className="bg-[var(--page)] text-[10px] uppercase text-muted"><tr>{['Foydalanuvchi', 'Rol', 'Holat', 'Ro‘yxatdan o‘tgan', 'Oxirgi kirish', 'Amallar'].map((label) => <th key={label} className="px-4 py-3">{label}</th>)}</tr></thead><tbody>{users.map((item) => <tr key={item.id} className="border-t border-[var(--line)] text-xs">
         <td className="px-4 py-4 font-semibold">{item.name}<span className="block text-[10px] font-normal text-muted">{item.email}</span></td>
         <td className="px-4 py-4"><span className="inline-flex items-center gap-1.5"><ShieldCheck size={14} />{roleLabels[item.role]}</span></td>
         <td className="px-4 py-4">{item.isActive ? 'Faol' : 'Bloklangan'}</td>
@@ -108,7 +109,7 @@ export function UsersPage() {
           <button disabled={item.id === user?.id} onClick={() => toggleActive(item.id)} className="secondary-button disabled:opacity-40">{item.isActive ? 'Bloklash' : 'Faollashtirish'}</button>
           {user?.role === 'admin' && <button disabled={item.id === user.id} onClick={() => setRemoveTarget(item)} title="O‘chirish" className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"><Trash2 size={15} /></button>}
         </div></td>
-      </tr>)}</tbody></table>{!users.length && <p className="p-6 text-center text-sm text-muted">Hisob topilmadi.</p>}</div>
+      </tr>)}</tbody></table>{!users.length && <p className="p-6 text-center text-sm text-muted">Hisob topilmadi.</p>}</ResponsiveTable>
     </section>
 
     <section className="surface mt-6 rounded-3xl p-5">

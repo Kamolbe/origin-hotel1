@@ -386,3 +386,21 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
 @media (max-width: 767px) { .role-card { grid-template-columns: minmax(0,1fr); gap: 16px; padding: 16px; } .role-permissions { border-top: 1px solid var(--line); padding-top: 13px; } }
 :root[data-reduce-motion="true"] { scroll-behavior: auto; }
 :root[data-reduce-motion="true"] *, :root[data-reduce-motion="true"] *::before, :root[data-reduce-motion="true"] *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+
+/* All management columns and actions remain available without sideways scrolling. */
+@media (max-width: 767px) {
+  .responsive-admin-table { overflow: visible; padding: 12px; }
+  .responsive-admin-table table { display: block; width: 100%; min-width: 0; }
+  .responsive-admin-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .responsive-admin-table tbody { display: grid; gap: 12px; }
+  .responsive-admin-table tbody tr { display: block; min-width: 0; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); padding: 8px 14px; }
+  .responsive-admin-table td { display: block; min-width: 0; padding: 10px 0; text-align: left; overflow-wrap: anywhere; }
+  .responsive-admin-table td + td { border-top: 1px solid var(--line); }
+  .responsive-admin-table td::before { content: attr(data-column-label); display: block; margin-bottom: 6px; font-size: 9px; line-height: 1.5; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .responsive-admin-table td > .flex { flex-wrap: wrap; justify-content: flex-start; }
+  .responsive-admin-table td button { min-height: 40px; min-width: 40px; }
+  .responsive-admin-table td input[type="checkbox"] { width: 20px; height: 20px; }
+  .hotel-dashboard main { min-width: 0; }
+  .hotel-dashboard .page-heading > div { min-width: 0; }
+  .hotel-dashboard .page-heading button { min-height: 44px; }
+}
