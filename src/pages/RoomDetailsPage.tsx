@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useContactDialog } from '../context/ContactDialogContext';
 import { useHotelContact } from '../hooks/useHotelContact';
 import { useBookingGate } from '../hooks/useBookingAction';
-import { readPendingSearch } from '../components/marketing/BookingSearch';
+import { readPendingSearch } from '../services/bookingSearch';
 import { MarketingNav } from '../components/MarketingNav';
 import { SiteFooter } from '../components/marketing/SiteFooter';
 import { optimizedUnsplashUrl } from '../services/imageUtils';
