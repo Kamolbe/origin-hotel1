@@ -29,6 +29,7 @@ export interface User extends DemoUserCredentials {
   isActive: boolean;
   createdAt: string;
   phone?: string;
+  nationality?: string;
   avatarUrl?: string;
   lastLoginAt?: string;
   twoFactorEnabled?: boolean;

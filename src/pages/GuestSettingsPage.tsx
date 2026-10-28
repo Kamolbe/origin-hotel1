@@ -29,7 +29,7 @@ export function GuestSettingsPage() {
   function exportData() {
     const guestIds = new Set(data.guests.filter((guest) => guest.email.toLowerCase() === user?.email.toLowerCase()).map((guest) => guest.id));
     const bookings = data.bookings.filter((booking) => booking.userId ? booking.userId === user?.id : guestIds.has(booking.guestId));
-    const payload = { profile: { name: user?.name, email: user?.email, phone: account?.phone ?? '', createdAt: account?.createdAt }, preferences, bookings };
+    const payload = { profile: { name: user?.name, email: user?.email, phone: account?.phone ?? '', nationality: account?.nationality ?? '', createdAt: account?.createdAt }, preferences, bookings };
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
     const link = document.createElement('a'); link.href = url; link.download = 'mening-mehmonxona-malumotlarim.json'; link.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }

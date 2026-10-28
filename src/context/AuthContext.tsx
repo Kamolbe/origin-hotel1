@@ -6,7 +6,7 @@ import type { User, UserRole } from '../types';
 import { useAppData } from './AppDataContext';
 
 type SessionUser = Pick<User, 'id' | 'name' | 'email' | 'role'>;
-type ProfileUpdate = Partial<Pick<User, 'name' | 'email' | 'phone' | 'avatarUrl' | 'password' | 'twoFactorEnabled'>>;
+type ProfileUpdate = Partial<Pick<User, 'name' | 'email' | 'phone' | 'nationality' | 'avatarUrl' | 'password' | 'twoFactorEnabled'>>;
 type AuthResult = { ok: boolean; error?: 'credentials' | 'code' | 'duplicate' | 'email' };
 type AuthContextValue = {
   user: SessionUser | null;
@@ -119,8 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (email && data.users.some((item) => item.id !== user.id && item.email.toLowerCase() === email)) return false;
     const current = data.users.find((item) => item.id === user.id);
     if (!current) return false;
-    const nextRecord = { ...current, ...updates, email: email ?? current.email };
-    updateData((state) => ({ ...state, users: state.users.map((item) => item.id === user.id ? nextRecord : item) }));
+    const nationality = updates.nationality?.trim();
+    if (nationality !== undefined && nationality.length > 80) return false;
+    const nextRecord = { ...current, ...updates, ...(nationality !== undefined ? { nationality } : {}), email: email ?? current.email };
+    updateData((state) => ({ ...state, users: state.users.map((item) => item.id === user.id ? nextRecord : item), guests: nationality === undefined ? state.guests : state.guests.map((guest) => guest.email.toLowerCase() === current.email.toLowerCase() ? { ...guest, nationality } : guest) }));
     establishSession(nextRecord);
     return true;
   }, [user, data.users, updateData, establishSession]);

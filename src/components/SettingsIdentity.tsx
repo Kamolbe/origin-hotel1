@@ -18,14 +18,14 @@ export function SettingsIdentity({ withProfile = false }: { withProfile?: boolea
   const formatDate = (value?: string) => value ? new Date(value).toLocaleString('uz-UZ') : 'Qayd etilmagan';
   const fields = [
     ['Telefon', account?.phone || guest?.phone || 'Kiritilmagan'],
-    ['Fuqarolik', guest?.nationality || 'Kiritilmagan'],
+    ['Fuqarolik', account?.nationality || guest?.nationality || 'Kiritilmagan'],
     ['Ro‘yxatdan o‘tgan', formatDate(account?.createdAt)],
     ['Oxirgi kirish', formatDate(account?.lastLoginAt)],
   ];
   function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    if (updateProfile({ name: String(form.get('name') ?? '').trim(), phone: String(form.get('phone') ?? '').trim() })) {
+    if (updateProfile({ name: String(form.get('name') ?? '').trim(), phone: String(form.get('phone') ?? '').trim(), nationality: String(form.get('nationality') ?? '').trim() })) {
       success('Shaxsiy ma’lumotlaringiz saqlandi.');
       setEditing(false);
     }
@@ -43,7 +43,7 @@ export function SettingsIdentity({ withProfile = false }: { withProfile?: boolea
       </div>
     </div>
     {withProfile && <div className="mt-5 border-t border-[var(--line)] pt-5">
-      {editing ? <form id="settings-profile-editor" aria-label="Hisob ma’lumotlarini tahrirlash" onSubmit={save} className="grid gap-4 sm:grid-cols-2"><label className="text-xs font-semibold">Ism va familiya<input name="name" required minLength={2} maxLength={100} defaultValue={user.name} className="field mt-2" /></label><label className="text-xs font-semibold">Telefon raqamingiz<input name="phone" type="tel" maxLength={30} defaultValue={account?.phone || guest?.phone || ''} className="field mt-2" placeholder="+998…" /></label><p className="text-[11px] leading-6 text-muted sm:col-span-2">Email kirish hisobingizga bog‘langan: {user.email}</p><div className="grid grid-cols-2 gap-2 sm:col-span-2 sm:flex sm:justify-end"><button type="button" onClick={() => setEditing(false)} className="secondary-button">Bekor qilish</button><button className="primary-button gap-2"><Check size={14} />Saqlash</button></div></form> : <dl className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-4">{fields.map(([label, value]) => <div key={label} className="min-w-0 rounded-2xl bg-[var(--page)] p-3 sm:p-4"><dt className="text-[9px] font-semibold uppercase tracking-wider text-muted">{label}</dt><dd className="mt-2 break-words text-xs leading-6">{value}</dd></div>)}</dl>}
+      {editing ? <form id="settings-profile-editor" aria-label="Hisob ma’lumotlarini tahrirlash" onSubmit={save} className="grid gap-4 sm:grid-cols-2"><label className="text-xs font-semibold">Ism va familiya<input name="name" required minLength={2} maxLength={100} defaultValue={user.name} className="field mt-2" /></label><label className="text-xs font-semibold">Telefon raqamingiz<input name="phone" type="tel" maxLength={30} defaultValue={account?.phone || guest?.phone || ''} className="field mt-2" placeholder="+998…" /></label><label className="text-xs font-semibold sm:col-span-2">Fuqarolik<input name="nationality" aria-label="Fuqarolik" autoComplete="country-name" maxLength={80} defaultValue={account?.nationality || guest?.nationality || ''} className="field mt-2" placeholder="Masalan, O‘zbekiston" /><span className="mt-2 block text-[11px] font-normal leading-5 text-muted">Fuqaroligingizni kiriting va Saqlash tugmasi bilan tasdiqlang.</span></label><p className="text-[11px] leading-6 text-muted sm:col-span-2">Email kirish hisobingizga bog‘langan: {user.email}</p><div className="grid grid-cols-2 gap-2 sm:col-span-2 sm:flex sm:justify-end"><button type="button" onClick={() => setEditing(false)} className="secondary-button">Bekor qilish</button><button className="primary-button gap-2"><Check size={14} />Saqlash</button></div></form> : <dl className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-4">{fields.map(([label, value]) => <div key={label} className="min-w-0 rounded-2xl bg-[var(--page)] p-3 sm:p-4"><dt className="text-[9px] font-semibold uppercase tracking-wider text-muted">{label}</dt><dd className="mt-2 break-words text-xs leading-6">{value}</dd></div>)}</dl>}
     </div>}
     {!withProfile && account?.lastLoginAt && <p className="mt-4 border-t border-[var(--line)] pt-4 text-[11px] text-muted">Oxirgi kirish: {formatDate(account.lastLoginAt)}</p>}
   </section>;

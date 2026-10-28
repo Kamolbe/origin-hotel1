@@ -71,7 +71,7 @@ export function BookingsPage() {
     if (existing) return existing;
     if (!user) return undefined;
     const nameParts = user.name.split(' ');
-    return { id: makeId('guest'), firstName: nameParts[0] || user.name, lastName: nameParts.slice(1).join(' '), email: user.email, phone: '', nationality: 'Uzbekistan', createdAt: new Date().toISOString() };
+    return { id: makeId('guest'), firstName: nameParts[0] || user.name, lastName: nameParts.slice(1).join(' '), email: user.email, phone: data.users.find((item) => item.id === user.id)?.phone ?? '', nationality: data.users.find((item) => item.id === user.id)?.nationality || 'Kiritilmagan', createdAt: new Date().toISOString() };
   }
 
   function createBooking(event: FormEvent<HTMLFormElement>) {
