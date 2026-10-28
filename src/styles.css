@@ -469,3 +469,15 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
 .portal-room-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); transition: translate .2s, box-shadow .2s; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) { .portal-quick-action:hover, .portal-room-card:hover { translate: 0 -3px; border-color: color-mix(in srgb, #4f80ef 45%, var(--line)); box-shadow: 0 8px 24px #4f80ef0b; } }
 @media (max-width: 767px) { .portal-panel { padding: 16px; border-radius: 18px; }.portal-metric { padding: 16px; }.portal-guest-hero { min-height: 320px; border-radius: 20px; }.portal-hero-shade { background: linear-gradient(90deg, #0c1725e8, #0c17258c); }.portal-segment button { padding-inline: 10px; }.portal-overview-banner { padding: 12px; }.portal-donut { width: 144px; height: 144px; }.portal-donut > div { width: 110px; height: 110px; } }
+
+/* Rounded controls keep an accessible focus indicator without a square double outline. */
+:where(input:not([type="checkbox"]):not([type="radio"]), textarea, select):focus-visible {
+  outline: none; border-color: var(--champagne); box-shadow: 0 0 0 3px color-mix(in srgb, var(--champagne) 18%, transparent);
+}
+.search-field { display: flex; min-width: 0; align-items: center; gap: 9px; height: 44px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--page); color: var(--muted); transition: border-color .18s, box-shadow .18s; }
+.search-field:focus-within { border-color: var(--champagne); box-shadow: 0 0 0 3px color-mix(in srgb, var(--champagne) 18%, transparent); }
+.search-field > svg { flex-shrink: 0; }
+.search-field input { width: 100%; min-width: 0; height: 100%; padding: 0; border: 0; border-radius: inherit; outline: none; box-shadow: none; background: transparent; color: var(--text); font: inherit; font-size: 12px; }
+.search-field input:focus-visible { border: 0; outline: none; box-shadow: none; }
+.search-field input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.search-field button { display: grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; border-radius: 50%; }

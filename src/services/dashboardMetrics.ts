@@ -1,3 +1,4 @@
+import { legacyBookingEmail } from './bookingNotes.ts';
 import type { AppData, Booking, User } from '../types';
 
 const MONTHS = ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyn', 'Iyl', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'];
@@ -17,7 +18,7 @@ export function hotelToday(timeZone = 'Asia/Tashkent', now = new Date()): string
 export function ownBookings(data: AppData, user: Pick<User, 'id' | 'email'> | null): Booking[] {
   if (!user) return [];
   const guestIds = new Set(data.guests.filter((guest) => guest.email.toLowerCase() === user.email.toLowerCase()).map((guest) => guest.id));
-  return data.bookings.filter((booking) => booking.userId ? booking.userId === user.id : guestIds.has(booking.guestId));
+  return data.bookings.filter((booking) => booking.userId ? booking.userId === user.id : guestIds.has(booking.guestId) || legacyBookingEmail(booking) === user.email.toLowerCase());
 }
 export function dashboardMetrics(data: AppData, today: string) {
   const active = data.bookings.filter((booking) => booking.status === 'confirmed' && booking.checkIn <= today && booking.checkOut > today);

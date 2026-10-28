@@ -76,6 +76,7 @@ export interface Booking {
   source: 'website' | 'phone' | 'walk_in' | 'travel_partner';
   createdAt: string;
   notes?: string;
+  guestNote?: string;
 }
 
 export interface FinanceEntry {

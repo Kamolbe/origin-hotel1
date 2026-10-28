@@ -1,3 +1,4 @@
+import { ownBookings } from '../services/dashboardMetrics';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CalendarCheck2, Mail, Phone, Settings, ShieldCheck, UserRound } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
@@ -10,7 +11,7 @@ export function ProfilePage() {
   const { user } = useAuth();
   const { data } = useAppData();
   const account = data.users.find((item) => item.id === user?.id);
-  const bookings = data.bookings.filter((item) => item.userId === user?.id || item.notes?.includes(user?.email ?? '__none__')).sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+  const bookings = ownBookings(data, user).sort((a,b) => b.createdAt.localeCompare(a.createdAt));
   const initials = user?.name.split(' ').map((part) => part[0]).slice(0,2).join('').toUpperCase();
   return <div className="animate-rise-in"><PageHeader eyebrow="Hisob ma’lumotlari" title="Profil" description="Shaxsiy ma’lumotlaringiz va bronlar tarixi." action={<Link to="/app/settings" className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white"><Settings size={14} />Profilni tahrirlash</Link>} />
     <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">

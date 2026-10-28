@@ -1,3 +1,4 @@
+import { SearchField } from '../components/SearchField';
 import { BulkDeletePanel } from '../components/BulkDeletePanel';
 import { ResponsiveTable } from '../components/ResponsiveTable';
 import { ImageUploadField } from '../components/ImageUploadField';
@@ -122,7 +123,7 @@ export function RoomsPage() {
       <FilterField label="Narxgacha (UZS)" value={maxPrice} type="number" onChange={setMaxPrice} placeholder="Istalgan" />
       <button onClick={() => { if (!available.length) error('Bizda bo‘sh o‘rinlar qolmagan'); }} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-champagne px-5 text-xs font-bold text-ink hover:bg-[#c8aa76]"><Search size={14} />Qidirish</button>
     </div> : <div className="room-management-filters surface mb-6 grid grid-cols-2 items-end gap-3 rounded-3xl p-4 sm:p-5 xl:flex xl:flex-wrap">
-      <label className="col-span-2 min-w-0 xl:min-w-[180px] xl:flex-1"><span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted">Qidiruv</span><span className="relative block"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Xona raqami yoki turi..." className="h-12 w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--page)] py-2.5 pl-9 pr-3 text-xs outline-none focus:border-champagne" /></span></label>
+      <label className="col-span-2 min-w-0 xl:min-w-[180px] xl:flex-1"><span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted">Qidiruv</span><SearchField value={query} onChange={setQuery} label="Xonalarni qidirish" placeholder="Xona raqami yoki turi..." className="!h-12" /></label>
       <FilterField label="Qavat" value={floor} type="select" onChange={setFloor} options={[["all","Barcha qavatlar"],...[1,2,3,4,5].map((value): [string,string] => [String(value),`${value}-qavat`])]} />
       <FilterField label="Holat" value={status} type="select" onChange={setStatus} options={[["all","Barcha holatlar"],["available","Bo‘sh"],["occupied","Band"],["cleaning","Tozalanmoqda"],["maintenance","Ta’mirda"]]} />
       <FilterField label="Xona turi" value={type} type="select" onChange={setType} options={[["all","Barcha turlar"],...roomTypeOptions.map((value): [string,string] => [value,value])]} />
