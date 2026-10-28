@@ -78,7 +78,7 @@ export function AppLayout() {
 
   useEffect(() => { setMobileOpen(false); setNotificationsOpen(false); setProfileOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); }, [location.pathname]);
 
-  const visibleNav = navigation.filter((item) => user && item.roles.includes(user.role));
+  const visibleNav = navigation.filter((item) => user && item.roles.includes(user.role)).map((item) => user?.role === 'user' && item.to === '/app' ? { ...item, to: '/app/my-stay', key: 'Shaxsiy kabinet' } : item);
   const title = location.pathname === '/app/my-stay' ? 'Shaxsiy kabinet' : visibleNav.find((item) => item.to === location.pathname || (item.to !== '/app' && location.pathname.startsWith(`${item.to}/`)))?.key ?? (location.pathname.endsWith('/profile') ? 'nav.profile' : 'nav.dashboard');
   const visibleNotifications = data.notifications.filter((item) => !item.userId || item.userId === user?.id);
   const notificationPages = Math.max(1, Math.ceil(visibleNotifications.length / notificationPageSize));
@@ -105,7 +105,7 @@ export function AppLayout() {
 
   const sidebar = <div className="flex h-full flex-col px-4 pb-5 pt-6">
     <div className="px-3"><Logo to="/app" /></div>
-    <div className="mb-3 mt-9 px-3 text-[9px] font-bold uppercase tracking-[.2em] text-muted">Mehmonxona boshqaruvi</div>
+    <div className="mb-3 mt-9 px-3 text-[9px] font-bold uppercase tracking-[.2em] text-muted">{user?.role === 'user' ? 'Mening kabinetim' : 'Mehmonxona boshqaruvi'}</div>
     <nav className="flex-1 space-y-1" aria-label="Boshqaruv menyusi">{visibleNav.map(({ to, key, icon: Icon }) => <NavLink key={to} to={to} end={to === '/app'} className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-3 text-[12px] font-semibold transition ${isActive ? 'bg-ink text-white shadow-soft' : 'text-muted hover:bg-[var(--page)] hover:text-[var(--text)]'}`}>
       {({ isActive }) => <><Icon size={17} className={isActive ? 'text-champagne' : 'text-muted group-hover:text-champagne'} /><span>{key.startsWith('nav.') ? t(key) : key}</span>{to === '/app/bookings' && data.bookings.some((item) => item.status === 'pending') && user?.role === 'admin' && <span className="ml-auto h-2 w-2 rounded-full bg-champagne" />}</>}
     </NavLink>)}</nav>

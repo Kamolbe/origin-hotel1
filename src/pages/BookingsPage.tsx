@@ -34,12 +34,12 @@ export function BookingsPage() {
   const location = useLocation();
   const staff = user?.role === 'admin' || user?.role === 'manager';
   const isAdmin = user?.role === 'admin';
-  const routeState = location.state as { selectedRoomId?: string; bookingSearch?: { checkIn?: string; checkOut?: string; guests?: string } } | null;
+  const routeState = location.state as { selectedRoomId?: string; createBooking?: boolean; bookingSearch?: { checkIn?: string; checkOut?: string; guests?: string } } | null;
   const [statusFilter, setStatusFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteIds, setDeleteIds] = useState<string[]>([]);
-  const [createOpen, setCreateOpen] = useState(Boolean(routeState?.selectedRoomId));
+  const [createOpen, setCreateOpen] = useState(Boolean(routeState?.selectedRoomId || routeState?.createBooking));
   const [form, setForm] = useState(() => ({ guestId: '', roomId: routeState?.selectedRoomId ?? '', checkIn: routeState?.bookingSearch?.checkIn || localDateAfter(1), checkOut: routeState?.bookingSearch?.checkOut || localDateAfter(2), adults: routeState?.bookingSearch?.guests || (staff ? '1' : String(preferences.defaultGuests)), children: '0', note: staff ? '' : preferences.bookingNote }));
 
   const matchingBookings = useMemo(() => [...data.bookings]
