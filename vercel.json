@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/hotel-api/:path*",
-      "destination": "https://origin-hotel1.onrender.com/hotel-api/:path*"
+      "destination": "https://origin-hotel1-1.onrender.com/hotel-api/:path*"
     },
     {
       "source": "/((?!api/|hotel-api/).*)",

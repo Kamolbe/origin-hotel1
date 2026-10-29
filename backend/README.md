@@ -105,7 +105,7 @@ Server environment: `DJANGO_DEBUG=0`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS
 
 Vercel frontend alohida qolsa: `VITE_HOTEL_SERVER=django` build environment, `/hotel-api/:path*` uchun haqiqiy Python backendning `/hotel-api/:path*` manziliga rewrite, SPA fallbackdan oldin. Django’da `DJANGO_CSRF_TRUSTED_ORIGINS=https://haqiqiy-vercel-domen` va kerakli ALLOWED_HOSTS bo‘lishi kerak. API cookie’lari frontendning bir xil origin’i orqali olinishi uchun proxy ishlatiladi; frontend API’ni brauzerdan to‘g‘ridan-to‘g‘ri boshqa origin’ga yubormaydi. Haqiqiy domenlar ma’lum bo‘lmaguncha soxta production URL yozilmadi.
 
-## origin-hotel1.onrender.com va strix-user.vercel.app uchun tayyor sozlama
+## origin-hotel1-1.onrender.com va strix-user.vercel.app uchun tayyor sozlama
 
 [RENDER_DEPLOY.md](./RENDER_DEPLOY.md) aniq build/start buyruqlari, Environment, doimiy baza, birinchi admin va Vercel redeploy tartibini beradi. Vercel API’ni Render’ga rewrite qiladi va server readiness tekshiruvisiz yangi frontendni nashr qilmaydi. Render’da disk borligi tasdiqlanmagan: DATABASE_URL orqali doimiy PostgreSQL varianti ham qo‘shilgan. SQLite lokal demo va haqiqiy Render persistent disk uchun saqlangan. PostgreSQL bilan ham barcha hotel yozishlari umumiy tranzaksiya/row lock ostida ketma-ket tekshiriladi; Django admin/formalar va API bir xil qoidani ishlatadi.
 

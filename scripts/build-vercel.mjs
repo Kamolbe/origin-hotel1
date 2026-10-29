@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 
-export const BACKEND_URL = 'https://origin-hotel1.onrender.com';
+export const BACKEND_URL = 'https://origin-hotel1-1.onrender.com';
 export async function verifyHotelBackend({ fetchImpl = fetch, attempts = 3, wait = (ms) => new Promise((done) => setTimeout(done, ms)), timeoutMs = 20000 } = {}) {
   let lastError;
   for (let attempt = 0; attempt < attempts; attempt++) {

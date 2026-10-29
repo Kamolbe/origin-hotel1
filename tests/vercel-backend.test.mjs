@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { BACKEND_URL, verifyHotelBackend } from '../scripts/build-vercel.mjs';
 const ready = { service:'origin-hotel',apiVersion:1,ready:true,trustedFrontend:true,durableStorage:true };
 test('Vercel routes the shared API to the exact checked Render service before the SPA',async()=>{
+  assert.equal(BACKEND_URL,'https://origin-hotel1-1.onrender.com');
   const config=JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'));
   assert.equal(config.buildCommand,'npm run build:vercel');
   assert.equal(config.rewrites[0].source,'/hotel-api/:path*');

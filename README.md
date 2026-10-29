@@ -134,4 +134,4 @@ Bu rejimda parollar browserga yuborilmaydi, server ruxsatlari/CSRF tekshiriladi 
 
 ## Sizning Render + Vercel manzillaringiz
 
-Frontend `https://strix-user.vercel.app`, backend `https://origin-hotel1.onrender.com`. API rewrite va himoyalangan Vercel build script sozlangan. Render’da doimiy baza, maxfiy kalit va birinchi admin tayyor bo‘lmaguncha frontend build to‘xtaydi va oldingi Vercel deployment qoladi. Bajariladigan panel sozlamalari: [backend/RENDER_DEPLOY.md](./backend/RENDER_DEPLOY.md). PostgreSQL uchun DATABASE_URL yoki Render Persistent Disk’dagi SQLite qo‘llanadi; vaqtinchalik Render diski doimiy saqlash deb belgilanmaydi.
+Frontend `https://strix-user.vercel.app`, backend `https://origin-hotel1-1.onrender.com`. API rewrite va himoyalangan Vercel build script sozlangan. Render’da doimiy baza, maxfiy kalit va birinchi admin tayyor bo‘lmaguncha frontend build to‘xtaydi va oldingi Vercel deployment qoladi. Bajariladigan panel sozlamalari: [backend/RENDER_DEPLOY.md](./backend/RENDER_DEPLOY.md). PostgreSQL uchun DATABASE_URL yoki Render Persistent Disk’dagi SQLite qo‘llanadi; vaqtinchalik Render diski doimiy saqlash deb belgilanmaydi.

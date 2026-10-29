@@ -1,6 +1,6 @@
-# origin-hotel1.onrender.com → strix-user.vercel.app
+# origin-hotel1-1.onrender.com → strix-user.vercel.app
 
-Bu repositorydagi Vercel sozlamasi **`/hotel-api/...`ni `https://origin-hotel1.onrender.com/hotel-api/...`ga proxy qiladi.** Brauzer bir xil Vercel origin’ida ishlaydi; server sessiya/CSRF cookie’lari shu proxy orqali o‘tadi. API, ma’lumotlar va birinchi admin tayyor bo‘lmaguncha `build:vercel` to‘xtaydi; ishlayotgan eski Vercel deployment almashtirilmaydi.
+Bu repositorydagi Vercel sozlamasi **`/hotel-api/...`ni `https://origin-hotel1-1.onrender.com/hotel-api/...`ga proxy qiladi.** Brauzer bir xil Vercel origin’ida ishlaydi; server sessiya/CSRF cookie’lari shu proxy orqali o‘tadi. API, ma’lumotlar va birinchi admin tayyor bo‘lmaguncha `build:vercel` to‘xtaydi; ishlayotgan eski Vercel deployment almashtirilmaydi.
 
 Ushbu hujjat Render/Vercel dashboard sozlamalari amalga oshirilganini anglatmaydi. Chatdagi vositalarda bu hosting hisoblarini boshqarish huquqi yo‘q; quyidagi sozlamalar Render panelida bajariladi. Parol, DATABASE_URL yoki secret key’ni chatga/GitHub’ga yozmang.
 
@@ -20,8 +20,8 @@ Ushbu hujjat Render/Vercel dashboard sozlamalari amalga oshirilganini anglatmayd
 |---|---|
 | `DJANGO_DEBUG` | `0` |
 | `DJANGO_SECRET_KEY` | Render’da yangi kuchli tasodifiy maxfiy qiymat yarating; oshkor qilmang |
-| `DJANGO_ALLOWED_HOSTS` | `origin-hotel1.onrender.com,strix-user.vercel.app` |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://strix-user.vercel.app,https://origin-hotel1.onrender.com` |
+| `DJANGO_ALLOWED_HOSTS` | `origin-hotel1-1.onrender.com,strix-user.vercel.app` |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://strix-user.vercel.app,https://origin-hotel1-1.onrender.com` |
 | `DJANGO_TRUST_PROXY` | `1` |
 | `HOTEL_FRONTEND_URL` | `https://strix-user.vercel.app` |
 | `FIREBASE_PROJECT_ID` | `origin-hotel` (Google login ishlatilsa) |
@@ -54,8 +54,8 @@ Sinov xonalari kerak bo‘lsa va Shell mavjud bo‘lsa `HOTEL_DEMO_PASSWORD`ni v
 
 ## 5. Tekshirish va Vercel’ni qayta deploy qilish
 
-1. `https://origin-hotel1.onrender.com/hotel-api/live/` JSON qaytarsin.
-2. `https://origin-hotel1.onrender.com/hotel-api/health/` HTTP 200 bilan `service=origin-hotel`, `apiVersion=1`, `ready=true`, `trustedFrontend=true`, `durableStorage=true` qaytarsin. 503 bo‘lsa avval baza/admin/originni tuzating; frontend himoya tekshiruvini o‘chirmang.
+1. `https://origin-hotel1-1.onrender.com/hotel-api/live/` JSON qaytarsin.
+2. `https://origin-hotel1-1.onrender.com/hotel-api/health/` HTTP 200 bilan `service=origin-hotel`, `apiVersion=1`, `ready=true`, `trustedFrontend=true`, `durableStorage=true` qaytarsin. 503 bo‘lsa avval baza/admin/originni tuzating; frontend himoya tekshiruvini o‘chirmang.
 3. Vercel → `strix-user` → Deployments → oxirgi commit → Redeploy. `vercel.json` build command’ni `npm run build:vercel` qiladi va script `VITE_HOTEL_SERVER=django` bilan React’ni yig‘adi; alohida Vite environment flag kiritish talab qilinmaydi.
 4. `https://strix-user.vercel.app/hotel-api/session/` HTML emas, JSON qaytarsin. Foydalanuvchi va admin uchun ikkita alohida brauzer sessiyasida bron/izoh → tasdiqlash → check-in/outni tekshiring.
 5. Yangi yozuv qo‘shing, Render qayta deploy/restartidan keyin yozuv saqlanganini tekshiring. Bu tekshiruv real doimiy storage’ni tasdiqlash uchun kerak.
