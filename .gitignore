@@ -5,3 +5,10 @@ dist/
 !.env.example
 .DS_Store
 npm-debug.log*
+
+# Django demo: runtime data and secrets are never committed.
+backend/.venv/
+backend/*.sqlite3*
+backend/staticfiles/
+__pycache__/
+*.pyc

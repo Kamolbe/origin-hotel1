@@ -23,7 +23,7 @@ Email `@admin.com` yoki `@manager.com` bilan tugaganda maxsus kod maydoni paydo 
 
 ## Demo cheklovlari
 
-Loyiha server yoki ma’lumotlar bazasi o‘rniga brauzer `localStorage`’idan foydalanadi. Ma’lumotlar joriy brauzer profilida saqlanadi va qurilmalar o‘rtasida sinxronlanmaydi. “Google bilan kirish” Google Identity Services orqali ishlaydi va faqat `VITE_GOOGLE_CLIENT_ID` berilganda faollashadi (quyida “Google bilan kirish” bo‘limiga qarang); client ID berilmasa tugma buning sababini ko‘rsatadi va email orqali kirish ishlashda davom etadi. Email/push bildirishnomalari, ikki bosqichli himoya va faol sessiyalar haqidagi boshqaruvlar namoyish uchun berilgan. Valyuta kurslari taxminiy. Demo muhitiga haqiqiy parol yoki shaxsiy ma’lumot kiritmang.
+Loyiha server yoki ma’lumotlar bazasi o‘rniga brauzer `localStorage`’idan foydalanadi. Ma’lumotlar joriy brauzer profilida saqlanadi va qurilmalar o‘rtasida sinxronlanmaydi. “Google bilan kirish” Firebase Authentication orqali ishlaydi (quyida sozlamalari bor). Email/push bildirishnomalari, ikki bosqichli himoya va faol sessiyalar haqidagi boshqaruvlar namoyish uchun berilgan. Valyuta kurslari taxminiy. Demo muhitiga haqiqiy parol yoki shaxsiy ma’lumot kiritmang.
 
 Mehmonxonaning haqiqiy manzili berilmagani uchun sahifada Toshkentdagi taxminiy demo joylashuvi ko‘rsatiladi. Joylashuv bo‘limidagi yengil xarita sxemasi taxminiy; “Xaritani ochish” havolasi OpenStreetMap’ning interaktiv xaritasiga olib boradi. Foto manbalari [ASSET_SOURCES.md](./ASSET_SOURCES.md) faylida keltirilgan.
 
@@ -117,3 +117,11 @@ Server/API testlari: `node --test tests/cloud-api.test.mjs` (Node 24 tavsiya eti
 ## Guruhlab o‘chirish
 
 Xonalar, mehmonlar, moliya, foydalanuvchilar va galereyada “Barchasini belgilash” / “Belgilab o‘chirish” oynasi bor. Tanlash joriy qidiruv/filtrga tegishli; o‘chirish alohida tasdiqlanadi. Bron tarixi bor xonalar, faol bronli mehmonlar, o‘z hisobingiz va adminlar guruhlab o‘chirilmaydi. Tugatilgan bronlarning avvalgi guruhlab o‘chirish amali saqlangan.
+
+## 20 ish kunlik PDF talablariga qo‘shimchalar
+
+Talablarning to‘liq bandma-band xaritasi, model sxemasi, QA va demo ssenariysi: [docs/HOTEL_DEMO_REQUIREMENTS.md](./docs/HOTEL_DEMO_REQUIREMENTS.md).
+
+Reactda: alohida Check-in/Check-out, haqiqiy kirish/chiqish vaqtlari, check-outda tozalash holati, moliya tahriri, 5 tadan kirim/chiqim kategoriyasi, ixtiyoriy sun’iy test pasport maydoni va dashboardda sana oralig‘i qo‘shildi. Hisobotning oxirgi kuni va checkout xona-tun hisobi tuzatildi. Guruhlab tanlash va tasdiqlash endi sahifa ichida, modal emas.
+
+PDFdagi **Python + Django + SQLite + HTML/CSS + Bootstrap** uchun [backend/](./backend/README.md) server demo qo‘shildi: bazada saqlanadigan Room/Guest/Booking/Finance, server login/rollar/CSRF, admin, CRUD, qidiruv, 15 tadan ro‘yxatlar, transactional check-in/out va hisobot. Bu alohida `/management/` interfeys; mavjud React localStorage yoki Vercel/Firebase oqimi bilan avtomatik ulanmagan. Vercelga `git push` qilish Django serverni ishga tushirmaydi; backend README bo‘yicha Python server kerak. Buni tayyor production integratsiyasi deb hisoblamang.

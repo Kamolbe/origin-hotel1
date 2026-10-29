@@ -1,5 +1,7 @@
 import type { AppData, AuditEntry, Booking, Currency, Room } from '../types';
 
+import { validStayDates } from './hotelOperations.ts';
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function formatMoney(amount: number, currency: Currency): string {
@@ -11,7 +13,7 @@ export function formatMoney(amount: number, currency: Currency): string {
 }
 
 export function dayDifference(start: string, end: string): number {
-  if (!start || !end) return 0;
+  if (!validStayDates(start.slice(0, 10), end.slice(0, 10))) return 0;
   const startDate = new Date(`${start.slice(0, 10)}T00:00:00`).getTime();
   const endDate = new Date(`${end.slice(0, 10)}T00:00:00`).getTime();
   if (!Number.isFinite(startDate) || !Number.isFinite(endDate)) return 0;

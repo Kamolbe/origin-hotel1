@@ -3,7 +3,7 @@ export type RoomType = 'Standard' | 'Deluxe' | 'Suite' | 'Family' | 'Presidentia
 export type RoomStatus = 'available' | 'occupied' | 'cleaning' | 'maintenance';
 export type BookingStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed';
 export type FinanceType = 'income' | 'expense';
-export type FinanceCategory = 'room_revenue' | 'food_and_beverage' | 'housekeeping' | 'utilities' | 'maintenance' | 'payroll' | 'supplies' | 'marketing' | 'other';
+export type FinanceCategory = 'room_revenue' | 'additional_services' | 'rental' | 'food_and_beverage' | 'housekeeping' | 'utilities' | 'maintenance' | 'payroll' | 'supplies' | 'marketing' | 'other';
 export type FinancePaymentMethod = 'cash' | 'card' | 'bank_transfer' | 'online';
 export type Currency = 'UZS' | 'USD' | 'EUR';
 
@@ -43,6 +43,8 @@ export interface Guest {
   email: string;
   phone: string;
   nationality: string;
+  /** Synthetic demo identifiers only; never collect real passport data in this demo. */
+  passportNumber?: string;
   createdAt: string;
   notes?: string;
 }
@@ -77,6 +79,8 @@ export interface Booking {
   createdAt: string;
   notes?: string;
   guestNote?: string;
+  checkedInAt?: string;
+  checkedOutAt?: string;
 }
 
 export interface FinanceEntry {

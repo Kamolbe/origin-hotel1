@@ -1,3 +1,4 @@
+import { validStayDates } from '../services/hotelOperations';
 import { SearchField } from '../components/SearchField';
 import { BulkDeletePanel } from '../components/BulkDeletePanel';
 import { RoomInventoryCard } from '../components/RoomInventoryCard';
@@ -59,9 +60,8 @@ export function RoomsPage() {
 
   const available = useMemo(() => availableRooms(data, checkIn, checkOut, Number(capacity)), [data, checkIn, checkOut, capacity]);
   const guestCounts = useMemo(() => {
-    const today = new Date().toISOString().slice(0,10);
     return data.bookings.reduce((counts, booking) => {
-      if (booking.status === 'confirmed' && booking.checkIn <= today && booking.checkOut > today) counts.set(booking.roomId, (counts.get(booking.roomId) ?? 0) + booking.adults + booking.children);
+      if (booking.status === 'confirmed' && booking.checkedInAt && !booking.checkedOutAt) counts.set(booking.roomId, (counts.get(booking.roomId) ?? 0) + booking.adults + booking.children);
       return counts;
     }, new Map<string,number>());
   }, [data.bookings]);
@@ -82,12 +82,12 @@ export function RoomsPage() {
     if (mode !== 'assign' && data.rooms.some((room) => room.number === form.number.trim() && room.id !== activeRoom?.id)) { error('Bu xona raqami allaqachon mavjud.'); return; }
     if (mode === 'assign' && activeRoom) {
       if (!form.guestId) { error('Avval mehmon tanlang.'); return; }
-      if (form.checkOut <= form.checkIn) { error('Ketish sanasi kelish sanasidan keyin bo‘lishi kerak.'); return; }
+      if (!validStayDates(form.checkIn, form.checkOut)) { error('Ketish sanasi kelish sanasidan keyin bo‘lishi kerak.'); return; }
       const occupied = data.bookings.some((booking) => booking.roomId === activeRoom.id && ['pending', 'confirmed'].includes(booking.status) && booking.checkIn < form.checkOut && booking.checkOut > form.checkIn);
       if (occupied) { error('Tanlangan sanalarda xona band.'); return; }
       const booking: Booking = { id: makeId('booking'), bookingNumber: `OR-${new Date().getFullYear()}-${String(data.bookings.length + 1).padStart(4, '0')}`, guestId: form.guestId, roomId: activeRoom.id, checkIn: form.checkIn, checkOut: form.checkOut, status: 'confirmed', adults: 1, children: 0, totalAmount: activeRoom.pricePerNight * dayDifference(form.checkIn, form.checkOut), paidAmount: 0, source: 'walk_in', createdAt: new Date().toISOString(), notes: `Admin tomonidan joylashtirildi · ${user?.email ?? ''}` };
-      updateData((current) => ({ ...current, bookings: [booking, ...current.bookings], rooms: current.rooms.map((room) => room.id === activeRoom.id && form.checkIn <= new Date().toISOString().slice(0, 10) ? { ...room, status: 'occupied' } : room), auditLog: recordAudit(current, 'Xonaga mehmon joylashtirildi', 'room', activeRoom.id, user?.id, { bookingId: booking.id, guestId: form.guestId, checkIn: form.checkIn, checkOut: form.checkOut }) }));
-      success(`${activeRoom.number}-xonaga mehmon joylashtirildi.`); setActiveRoom(null); setModalOpen(false); return;
+      updateData((current) => ({ ...current, bookings: [booking, ...current.bookings], auditLog: recordAudit(current, 'Xonaga mehmon joylashtirildi', 'room', activeRoom.id, user?.id, { bookingId: booking.id, guestId: form.guestId, checkIn: form.checkIn, checkOut: form.checkOut }) }));
+      success(`${activeRoom.number}-xona bron qilindi. Kelganda Bronlar bo‘limida Check-in bosing.`); setActiveRoom(null); setModalOpen(false); return;
     }
     if (mode === 'edit' && activeRoom) {
       updateData((current) => ({ ...current, rooms: current.rooms.map((room) => room.id === activeRoom.id ? { ...room, number: form.number.trim(), floor: Number(form.floor), type: form.type, status: form.status, capacity: Number(form.capacity), pricePerNight: Number(form.pricePerNight), imageUrl: form.imageUrl.trim(), description: form.description.trim(), amenities: form.amenities.split(',').map((item) => item.trim()).filter(Boolean) } : room), auditLog: recordAudit(current, 'Xona tahrirlandi', 'room', activeRoom.id, user?.id) }));

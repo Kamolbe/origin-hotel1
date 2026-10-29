@@ -21,7 +21,7 @@ export function ownBookings(data: AppData, user: Pick<User, 'id' | 'email'> | nu
   return data.bookings.filter((booking) => booking.userId ? booking.userId === user.id : guestIds.has(booking.guestId) || legacyBookingEmail(booking) === user.email.toLowerCase());
 }
 export function dashboardMetrics(data: AppData, today: string) {
-  const active = data.bookings.filter((booking) => booking.status === 'confirmed' && booking.checkIn <= today && booking.checkOut > today);
+  const active = data.bookings.filter((booking) => booking.status === 'confirmed' && Boolean(booking.checkedInAt) && !booking.checkedOutAt);
   const occupiedIds = new Set(active.map((booking) => booking.roomId));
   const rooms = { available: 0, occupied: 0, cleaning: 0, maintenance: 0 };
   const availableIds: string[] = [];
@@ -39,8 +39,8 @@ export function dashboardMetrics(data: AppData, today: string) {
   return {
     today, rooms, availableIds, totalRooms: data.rooms.length, freePercent: percent(rooms.available), occupiedPercent: percent(rooms.occupied),
     pending: data.bookings.filter((booking) => booking.status === 'pending').length,
-    arrivals: data.bookings.filter((booking) => booking.status === 'confirmed' && booking.checkIn === today),
-    departures: data.bookings.filter((booking) => booking.status === 'confirmed' && booking.checkOut === today),
+    arrivals: data.bookings.filter((booking) => booking.status === 'confirmed' && booking.checkIn === today && !booking.checkedInAt),
+    departures: data.bookings.filter((booking) => booking.status === 'confirmed' && booking.checkOut === today && Boolean(booking.checkedInAt)),
     stayingGuests: active.filter((booking) => data.rooms.some((room) => room.id === booking.roomId)).reduce((sum, booking) => sum + booking.adults + booking.children, 0),
     monthIncome: income(month), previousIncome: income(previousMonth),
     monthExpenses: data.finance.filter((entry) => entry.type === 'expense' && entry.date.startsWith(month)).reduce((sum, entry) => sum + entry.amount, 0),

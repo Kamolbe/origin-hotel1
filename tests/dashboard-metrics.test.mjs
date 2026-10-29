@@ -7,9 +7,9 @@ test('room percentages count each room once, respect cleaning and maintenance, a
   const data = blank();
   data.rooms = ['available', 'occupied', 'cleaning', 'maintenance', 'available', 'available'].map((status, index) => ({ id: `r${index}`, status }));
   data.bookings = [
-    { roomId: 'r0', status: 'confirmed', checkIn: '2026-10-28', checkOut: '2026-10-30', adults: 2, children: 0, createdAt: '2026-10-01' },
-    { roomId: 'r0', status: 'confirmed', checkIn: '2026-10-28', checkOut: '2026-10-30', adults: 1, children: 0, createdAt: '2026-10-02' },
-    { roomId: 'r4', status: 'confirmed', checkIn: '2026-10-27', checkOut: '2026-10-28', adults: 1, children: 0, createdAt: '2026-10-03' },
+    { roomId: 'r0', status: 'confirmed', checkedInAt: '2026-10-28T08:00:00Z', checkIn: '2026-10-28', checkOut: '2026-10-30', adults: 2, children: 0, createdAt: '2026-10-01' },
+    { roomId: 'r0', status: 'confirmed', checkedInAt: '2026-10-28T08:00:00Z', checkIn: '2026-10-28', checkOut: '2026-10-30', adults: 1, children: 0, createdAt: '2026-10-02' },
+    { roomId: 'r4', status: 'confirmed', checkedInAt: '2026-10-27T08:00:00Z', checkedOutAt: '2026-10-28T08:00:00Z', checkIn: '2026-10-27', checkOut: '2026-10-28', adults: 1, children: 0, createdAt: '2026-10-03' },
     { roomId: 'r5', status: 'pending', checkIn: '2026-10-28', checkOut: '2026-10-30', adults: 1, children: 0, createdAt: '2026-10-04' },
   ];
   const stats = dashboardMetrics(data, '2026-10-28');
