@@ -523,3 +523,22 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
 @media (min-width: 1280px) { .inventory-room-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) { .inventory-room-card:hover { border-color: color-mix(in srgb, var(--champagne) 60%, var(--line)); box-shadow: 0 12px 32px #111b2210; } .inventory-room-card:hover .inventory-room-photo > img { transform: scale(1.035); } }
 @media (prefers-reduced-motion: reduce) { .inventory-room-card, .inventory-room-photo > img, .inventory-room-actions button { transition: none; } }
+
+/* Guest dashboard: two balanced rows instead of one stretched empty booking panel. */
+.guest-stay-grid { display: grid; min-width: 0; gap: 20px; align-items: start; }
+.guest-stay-grid > * { min-width: 0; }
+.guest-bookings-panel .portal-empty { padding: 20px 12px; }
+.guest-availability-panel > .portal-panel { height: 100%; }
+@media (min-width: 1280px) {
+  .guest-stay-grid { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: stretch; }
+  .guest-bookings-panel { grid-column: 1; grid-row: 1; }
+  .guest-availability-panel { grid-column: 2; grid-row: 1; }
+  .guest-stay-planner { grid-column: 1; grid-row: 2; }
+  .guest-preparation-panel { grid-column: 2; grid-row: 2; }
+}
+@media (max-width: 1279px) {
+  .guest-bookings-panel { order: 1; }
+  .guest-stay-planner { order: 2; }
+  .guest-availability-panel { order: 3; }
+  .guest-preparation-panel { order: 4; }
+}
