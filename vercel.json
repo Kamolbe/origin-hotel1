@@ -1,13 +1,21 @@
 {
-  "rewrites": [
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "dist",
+  "routes": [
     {
-      "source": "/hotel-api/:path*",
-      "destination": "https://origin-hotel1-1.onrender.com/hotel-api/:path*"
+      "src": "^/hotel-api/(live|health|session|state|visit)/?$",
+      "dest": "https://origin-hotel1-1.onrender.com/hotel-api/$1/"
     },
     {
-      "source": "/((?!api/|hotel-api/).*)",
-      "destination": "/index.html"
+      "src": "^/hotel-api/auth/(login|logout|register|google)/?$",
+      "dest": "https://origin-hotel1-1.onrender.com/hotel-api/auth/$1/"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "^/(?!api(?:/|$)|hotel-api(?:/|$)).*$",
+      "dest": "/index.html"
     }
-  ],
-  "buildCommand": "npm run build:vercel"
+  ]
 }
