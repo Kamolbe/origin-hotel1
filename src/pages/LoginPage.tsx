@@ -1,3 +1,4 @@
+import { usesHotelServer } from '../services/hotelServer';
 import { useCallback, useMemo, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, ShieldCheck, Sparkles, Star } from 'lucide-react';
@@ -44,25 +45,30 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
-  const specialDomain = useMemo(() => /@(admin|manager)\.com$/i.test(email.trim()), [email]);
+  const [submitting, setSubmitting] = useState(false);
+  const specialDomain = useMemo(() => !usesHotelServer() && /@(admin|manager)\.com$/i.test(email.trim()), [email]);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError('');
-    const result = mode === 'login'
-      ? login({ email, password, accessCode, name: `${firstName} ${lastName}`.trim() })
-      : register({ firstName, lastName, email, password, accessCode });
-    if (!result.ok) {
-      const message = result.error === 'code' ? t('auth.invalidCode') : result.error === 'duplicate' ? 'Bu email bilan hisob mavjud.' : result.error === 'email' ? 'Maydonlarni to‘g‘ri to‘ldiring. Parol kamida 6 belgidan iborat bo‘lsin.' : t('auth.invalidCredentials');
-      setError(message); return;
-    }
-    success(mode === 'register' ? 'Hisobingiz yaratildi.' : 'Tizimga muvaffaqiyatli kirdingiz.');
-    navigate(destination, { replace: true, state: forwardedState });
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true); setError('');
+    try {
+      const result = mode === 'login'
+        ? await login({ email, password, accessCode, name: `${firstName} ${lastName}`.trim() })
+        : await register({ firstName, lastName, email, password, accessCode });
+      if (!result.ok) {
+        const message = result.error === 'code' ? t('auth.invalidCode') : result.error === 'duplicate' ? 'Bu email bilan hisob mavjud.' : result.error === 'email' ? 'Maydonlarni to‘g‘ri to‘ldiring. Parol kamida 6 belgidan iborat bo‘lsin.' : t('auth.invalidCredentials');
+        setError(result.message ?? message); return;
+      }
+      success(mode === 'register' ? 'Hisobingiz yaratildi.' : 'Tizimga muvaffaqiyatli kirdingiz.');
+      navigate(destination, { replace: true, state: forwardedState });
+    } finally { setSubmitting(false); }
   }
 
-  const handleGoogleProfile = useCallback((profile: GoogleProfile) => {
-    const result = signInWithGoogle(profile);
+  const handleGoogleProfile = useCallback(async (profile: GoogleProfile) => {
+    const result = await signInWithGoogle(profile);
     if (!result.ok) {
-      setError(result.error === 'code' ? t('auth.invalidCode') : result.error === 'email' ? 'Google hisobidagi email manzil yaroqsiz.' : t('auth.invalidCredentials'));
+      setError(result.message ?? (result.error === 'code' ? t('auth.invalidCode') : result.error === 'email' ? 'Google hisobidagi email manzil yaroqsiz.' : t('auth.invalidCredentials')));
       return;
     }
     setError('');
@@ -103,10 +109,10 @@ export function LoginPage() {
           <label className="block"><span className="mb-1.5 block text-xs font-semibold">{t('auth.password')}</span><span className="relative block"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={mode === 'register' ? 6 : undefined} placeholder="••••••••" className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 pr-11 text-sm outline-none transition focus:border-champagne" /><button type="button" aria-label="Parolni ko‘rsatish" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition hover:text-champagne">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
           {specialDomain && <label className="block animate-rise-in"><span className="mb-1.5 flex items-center gap-2 text-xs font-semibold"><KeyRound size={13} className="text-champagne" />{t('auth.specialCode')}</span><input type="password" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} required autoComplete="off" placeholder="••••••••" className="w-full rounded-xl border border-champagne/50 bg-[var(--surface)] px-4 py-3 text-sm outline-none transition focus:border-champagne" /></label>}
           {error && <p role="alert" className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-xs text-danger">{error}</p>}
-          <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-bold text-white transition hover:bg-ink-soft">{mode === 'login' ? t('auth.signIn') : t('auth.register')}<ArrowRight size={14} /></button>
+          <button type="submit" disabled={submitting} aria-busy={submitting} className="flex w-full disabled:opacity-50 items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-bold text-white transition hover:bg-ink-soft">{mode === 'login' ? t('auth.signIn') : t('auth.register')}<ArrowRight size={14} /></button>
         </form>
-        <button type="button" onClick={() => setShowDemo((open) => !open)} className="mt-5 flex items-center gap-2 text-[10px] font-semibold text-muted transition hover:text-champagne"><ShieldCheck size={14} />Demo kirish ma’lumotlari <span>{showDemo ? '−' : '+'}</span></button>
-        {showDemo && <div className="mt-3 grid gap-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-3 text-[10px] leading-5 text-muted sm:grid-cols-3 sm:p-4">{demoAccounts.map((account) => <p key={account.role}><b className="text-[var(--text)]">{account.role}</b><span className="mt-0.5 block break-words">{account.email}<br />{account.password}{account.code && <><br />kod {account.code}</>}</span></p>)}</div>}
+        {!usesHotelServer() && <button type="button" onClick={() => setShowDemo((open) => !open)} className="mt-5 flex items-center gap-2 text-[10px] font-semibold text-muted transition hover:text-champagne"><ShieldCheck size={14} />Demo kirish ma’lumotlari <span>{showDemo ? '−' : '+'}</span></button>}
+        {!usesHotelServer() && showDemo && <div className="mt-3 grid gap-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-3 text-[10px] leading-5 text-muted sm:grid-cols-3 sm:p-4">{demoAccounts.map((account) => <p key={account.role}><b className="text-[var(--text)]">{account.role}</b><span className="mt-0.5 block break-words">{account.email}<br />{account.password}{account.code && <><br />kod {account.code}</>}</span></p>)}</div>}
         <p className="auth-legal mt-3 text-center text-[10px] leading-5 text-muted">Kirish orqali Origin Hotel demo hisobidan foydalanishga rozilik bildirasiz.</p>
       </div>
       <div className="mx-auto flex w-full max-w-md items-center justify-between pb-2 text-[9px] text-muted"><span>© {new Date().getFullYear()} Origin Hotel</span><Link to="/" className="hover:text-champagne">OriginHotel.uz</Link></div>

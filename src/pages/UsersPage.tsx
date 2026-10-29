@@ -1,3 +1,4 @@
+import { usesHotelServer } from '../services/hotelServer';
 import { SearchField } from '../components/SearchField';
 import { BulkDeletePanel } from '../components/BulkDeletePanel';
 import { ResponsiveTable } from '../components/ResponsiveTable';
@@ -74,7 +75,7 @@ export function UsersPage() {
   }
 
   return <div className="animate-rise-in">
-    <PageHeader eyebrow="Kiruvchilar boshqaruvi" title="Foydalanuvchilar" description="Hisoblar, sayt tashriflari va faoliyat tarixi. Tashriflar shu brauzerda qayd etiladi." action={user?.role === 'admin' ? <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white hover:bg-ink-soft"><Plus size={14} />Foydalanuvchi qo‘shish</button> : undefined} />
+    <PageHeader eyebrow="Kiruvchilar boshqaruvi" title="Foydalanuvchilar" description={usesHotelServer() ? 'Hisoblar, serverda qayd etilgan sayt tashriflari va faoliyat tarixi.' : 'Hisoblar, sayt tashriflari va faoliyat tarixi. Tashriflar shu brauzerda qayd etiladi.'} action={user?.role === 'admin' ? <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white hover:bg-ink-soft"><Plus size={14} />Foydalanuvchi qo‘shish</button> : undefined} />
 
     <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
       {[['Hisoblar', data.users.length], ['Faol hisoblar', data.users.filter((item) => item.isActive).length], ['Kirgan hisoblar', data.users.filter((item) => item.lastLoginAt).length], ['7 kunlik tashrif', weeklyVisits.length]].map(([label, value]) => <div key={label} className="surface rounded-2xl p-4"><p className="text-xs text-muted">{label}</p><p className="mt-2 text-2xl font-semibold">{value}</p></div>)}
@@ -129,7 +130,7 @@ export function UsersPage() {
           <label className="block"><span className="mb-1.5 block text-[10px] font-semibold text-muted">Parol (kamida 6 belgi)</span><input type="text" minLength={6} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required className="field" placeholder="••••••" /></label>
         </div>
         <label className="block"><span className="mb-1.5 block text-[10px] font-semibold text-muted">Rol</span><Select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value as UserRole })} className="field">{roleOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></label>
-        <p className="flex gap-2 rounded-xl bg-[var(--page)] p-3 text-[10px] leading-5 text-muted"><UserPlus size={13} className="mt-0.5 shrink-0 text-champagne" />Administrator va menejer hisoblari uchun demo kirish kodlari ishlatiladi (admin1234 / manager1234).</p>
+        {!usesHotelServer() && <p className="flex gap-2 rounded-xl bg-[var(--page)] p-3 text-[10px] leading-5 text-muted"><UserPlus size={13} className="mt-0.5 shrink-0 text-champagne" />Administrator va menejer hisoblari uchun demo kirish kodlari ishlatiladi (admin1234 / manager1234).</p>}
         <div className="flex justify-end gap-2"><button type="button" onClick={() => setAddOpen(false)} className="secondary-button">Bekor qilish</button><button className="primary-button">Hisob qo‘shish</button></div>
       </form>
     </Modal>

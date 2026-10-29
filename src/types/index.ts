@@ -37,6 +37,7 @@ export interface User extends DemoUserCredentials {
 }
 
 export interface Guest {
+  archived?: boolean;
   id: string;
   firstName: string;
   lastName: string;
@@ -216,6 +217,8 @@ export interface AppSettings {
 }
 
 export interface AppData {
+  serverPermissions?: string[];
+  unavailableStays?: Array<{ roomId: string; checkIn: string; checkOut: string }>;
   rooms: Room[];
   guests: Guest[];
   bookings: Booking[];

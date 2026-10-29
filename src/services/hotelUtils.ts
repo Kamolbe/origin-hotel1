@@ -24,6 +24,7 @@ export function availableRooms(data: AppData, checkIn: string, checkOut: string,
   if (!checkIn || !checkOut || dayDifference(checkIn, checkOut) <= 0) return [];
   return data.rooms.filter((room) => {
     if (room.status !== 'available' || room.capacity < guests) return false;
+    if (data.unavailableStays?.some((booking) => booking.roomId === room.id && checkIn < booking.checkOut && checkOut > booking.checkIn)) return false;
     return !data.bookings.some((booking) =>
       booking.roomId === room.id
       && ['pending', 'confirmed'].includes(booking.status)

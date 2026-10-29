@@ -4,7 +4,7 @@ import { LoaderCircle } from 'lucide-react';
 import { googleSignInError, signInWithFirebaseGoogle, type GoogleProfile } from '../services/googleAuth';
 
 export function GoogleSignInButton({ onProfile, onError }: {
-  onProfile: (profile: GoogleProfile) => void;
+  onProfile: (profile: GoogleProfile) => void | Promise<void>;
   onError: (message: string) => void;
 }) {
   const { t } = useTranslation();
@@ -15,7 +15,7 @@ export function GoogleSignInButton({ onProfile, onError }: {
     pending.current = true;
     setBusy(true);
     onError('');
-    try { onProfile(await signInWithFirebaseGoogle()); }
+    try { await onProfile(await signInWithFirebaseGoogle()); }
     catch (error) { onError(googleSignInError(error)); }
     finally { pending.current = false; setBusy(false); }
   }

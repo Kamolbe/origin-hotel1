@@ -1,3 +1,4 @@
+import { ServerSyncStatus } from './components/ServerSyncStatus';
 import { UserPreferenceSync } from './components/UserPreferenceSync';
 import { SiteAppearance } from './components/SiteAppearance';
 import { MobileNavigation } from './components/MobileNavigation';
@@ -36,7 +37,7 @@ function RouteFallback() {
 
 export function App() {
   useVisitLog();
-  return <><UserPreferenceSync /><SiteAppearance /><Suspense fallback={<RouteFallback />}><Routes>
+  return <><ServerSyncStatus /><UserPreferenceSync /><SiteAppearance /><Suspense fallback={<RouteFallback />}><Routes>
     <Route path="/" element={<LandingPage />} />
     <Route path="/rooms" element={<PublicRoomsPage />} />
     <Route path="/contact" element={<ContactPage />} />

@@ -1,3 +1,4 @@
+import { initializeHotelServer } from './services/hotelServer';
 import { CloudSyncProvider } from './context/CloudSyncContext';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -14,7 +15,13 @@ import { ToastProvider } from './context/ToastContext';
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element #root was not found');
 
-createRoot(root).render(
+async function start() {
+try { await initializeHotelServer(); } catch {
+  const message = document.createElement("p"); message.textContent = "Serverga ulanib bo‘lmadi. Django serverni ishga tushiring va sahifani yangilang.";
+  const retry = document.createElement("button"); retry.textContent = "Qayta urinish"; retry.onclick = () => window.location.reload();
+  root!.replaceChildren(message, retry); return;
+}
+createRoot(root!).render(
   <React.StrictMode>
     <BrowserRouter>
       <AppDataProvider>
@@ -31,3 +38,6 @@ createRoot(root).render(
     </BrowserRouter>
   </React.StrictMode>,
 );
+
+}
+void start();

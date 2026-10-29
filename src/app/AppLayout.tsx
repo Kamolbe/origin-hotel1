@@ -76,7 +76,7 @@ export function AppLayout() {
 
   useEffect(() => { setMobileOpen(false); setNotificationsOpen(false); setProfileOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); }, [location.pathname]);
 
-  const visibleNav = navigation.filter((item) => user && item.roles.includes(user.role)).map((item) => user?.role === 'user' && item.to === '/app' ? { ...item, to: '/app/my-stay', key: 'Shaxsiy kabinet' } : item);
+  const visibleNav = navigation.filter((item) => user && item.roles.includes(user.role) && (!data.serverPermissions || !['/app/finance','/app/reports'].includes(item.to) || data.serverPermissions.includes('hotel.view_financeentry'))).map((item) => user?.role === 'user' && item.to === '/app' ? { ...item, to: '/app/my-stay', key: 'Shaxsiy kabinet' } : item);
   const title = location.pathname === '/app/my-stay' ? 'Shaxsiy kabinet' : visibleNav.find((item) => item.to === location.pathname || (item.to !== '/app' && location.pathname.startsWith(`${item.to}/`)))?.key ?? (location.pathname.endsWith('/profile') ? 'nav.profile' : 'nav.dashboard');
   const visibleNotifications = data.notifications.filter((item) => !item.userId || item.userId === user?.id);
   const notificationPages = Math.max(1, Math.ceil(visibleNotifications.length / notificationPageSize));

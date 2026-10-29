@@ -1,0 +1,323 @@
+import json
+from uuid import uuid4
+from decimal import Decimal, InvalidOperation
+from functools import wraps
+from pathlib import Path
+from django.conf import settings
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.models import Group
+from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import IntegrityError, OperationalError, transaction
+from django.http import FileResponse, HttpResponse, JsonResponse
+from django.middleware.csrf import get_token
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.views.decorators.csrf import ensure_csrf_cookie
+from .models import SiteState, Room, Guest, Booking, FinanceEntry, AuditEntry
+from .services import transition_booking, audit
+
+MODELS = {'rooms': Room, 'guests': Guest, 'bookings': Booking, 'finance': FinanceEntry}
+PUBLIC_SETTINGS = ['website','hotelName','contact','currency','timeZone','dateFormat','checkInTime','checkOutTime','taxRate','serviceFeeRate','seo','interface']
+
+def role(user):
+    return 'admin' if user.is_superuser else 'manager' if user.has_perm('hotel.view_room') else 'user'
+
+def staff(user): return user.is_authenticated and role(user) in ['admin','manager']
+
+def key_for(state, kind, pk):
+    ids = state.payload.get('ids', {}).get(kind, {})
+    return next((key for key, value in ids.items() if value == pk), f'{kind.rstrip("s")}-{pk}')
+
+def find_record(state, kind, key):
+    model = get_user_model() if kind == 'users' else MODELS[kind]
+    pk = state.payload.get('ids', {}).get(kind, {}).get(key)
+    if pk is None:
+        prefix = f'{kind.rstrip("s")}-'
+        if not key.startswith(prefix) or not key[len(prefix):].isdigit(): return None
+        pk = int(key[len(prefix):])
+    return model.objects.filter(pk=pk).first()
+
+def extras(state, kind, key): return state.payload.get('extras', {}).get(kind, {}).get(key, {})
+
+def iso(value): return value.isoformat() if value else None
+
+def account(state, user):
+    key = key_for(state, 'users', user.pk)
+    extra = {name:value for name,value in extras(state,'users',key).items() if name not in ['password','accessCode']}
+    return {**extra, 'id': key, 'name': user.get_full_name() or user.username, 'email': user.email or user.username, 'role': role(user), 'password': '', 'isActive': user.is_active, 'createdAt': iso(user.date_joined), 'lastLoginAt': iso(user.last_login)}
+
+def snapshot(state, user):
+    rooms, guests, bookings, finance = [], [], [], []
+    for room in Room.objects.all():
+        key = key_for(state,'rooms',room.pk)
+        rooms.append({**extras(state,'rooms',key), 'id':key,'number':room.number,'type':room.room_type,'floor':room.floor,'capacity':room.capacity,'status':room.status,'pricePerNight':float(room.price),'amenities':extras(state,'rooms',key).get('amenities',[])})
+    all_bookings = Booking.objects.select_related('guest','room').all()
+    own_ids = set()
+    for booking in all_bookings:
+        key = key_for(state,'bookings',booking.pk)
+        extra = extras(state,'bookings',key)
+        owner = extra.get('userId')
+        mine = user.is_authenticated and (owner == key_for(state,'users',user.pk) if owner else booking.guest.email.lower() == user.email.lower())
+        if not staff(user) and not mine: continue
+        own_ids.add(booking.guest_id)
+        bookings.append({**extra,'id':key,'bookingNumber':extra.get('bookingNumber',f'BR-{booking.pk:05}'),'guestId':key_for(state,'guests',booking.guest_id),'roomId':key_for(state,'rooms',booking.room_id),'checkIn':str(booking.check_in),'checkOut':str(booking.check_out),'status':booking.status,'adults':booking.adults,'children':booking.children,'totalAmount':float(booking.total_amount),'paidAmount':extra.get('paidAmount',0),'source':extra.get('source','walk_in'),'createdAt':iso(booking.created_at),'notes':booking.notes,'guestNote':booking.notes if owner else extra.get('guestNote'),'checkedInAt':iso(booking.checked_in_at),'checkedOutAt':iso(booking.checked_out_at)})
+    for guest in Guest.objects.all():
+        if not staff(user) and not (user.is_authenticated and (guest.pk in own_ids or guest.email.lower() == user.email.lower())): continue
+        key = key_for(state,'guests',guest.pk)
+        guests.append({'id':key,'archived':guest.archived,'firstName':guest.first_name,'lastName':guest.last_name,'email':guest.email,'phone':guest.phone,'nationality':guest.nationality,'passportNumber':guest.passport_number,'notes':guest.notes,'createdAt':iso(guest.created_at)})
+    if user.is_authenticated and user.has_perm('hotel.view_financeentry'):
+        for entry in FinanceEntry.objects.all():
+            key = key_for(state,'finance',entry.pk)
+            finance.append({**extras(state,'finance',key),'id':key,'type':entry.entry_type,'category':entry.category,'amount':float(entry.amount),'date':str(entry.date),'description':entry.description,'paymentMethod':extras(state,'finance',key).get('paymentMethod','cash'),'bookingId':key_for(state,'bookings',entry.booking_id) if entry.booking_id else None})
+    users = [account(state,item) for item in (get_user_model().objects.all() if user.is_authenticated and role(user)=='admin' else [user] if user.is_authenticated else [])]
+    config = state.payload.get('settings',{})
+    if not user.is_authenticated or role(user) != 'admin': config = {key:value for key,value in config.items() if key in PUBLIC_SETTINGS}
+    notifications = [note for note in state.payload.get('notifications',[]) if staff(user) and not note.get('userId') or user.is_authenticated and note.get('userId') == key_for(state,'users',user.pk)]
+    logs = [{'id':str(item.pk),'action':item.action,'entityType':{'financeentry':'finance'}.get(item.entity,item.entity),'entityId':item.entity_id,'userId':key_for(state,'users',item.actor_id) if item.actor_id else None,'createdAt':iso(item.created_at)} for item in AuditEntry.objects.all()[:500]] if staff(user) else []
+    return {'serverPermissions':list(user.get_all_permissions()) if user.is_authenticated else [],'rooms':rooms,'guests':guests,'bookings':bookings,'finance':finance,'users':users,'settings':config,'notifications':notifications,'visits':state.payload.get('visits',[]) if user.is_authenticated and role(user)=='admin' else [],'auditLog':logs,'unavailableStays':[{'roomId':key_for(state,'rooms',b.room_id),'checkIn':str(b.check_in),'checkOut':str(b.check_out)} for b in all_bookings if b.status in ['pending','confirmed']]}
+
+def response(request,state):
+    return JsonResponse({'data':snapshot(state,request.user),'user':account(state,request.user) if request.user.is_authenticated else None,'revision':state.revision,'csrfToken':get_token(request)},headers={'Cache-Control':'no-store, private'})
+
+def endpoint(view):
+    @wraps(view)
+    def wrapped(request,*args,**kwargs):
+        try: return view(request,*args,**kwargs)
+        except PermissionDenied: return JsonResponse({'message':'Bu amal uchun server ruxsati yo‘q.'},status=403)
+        except (ValidationError,ValueError,TypeError,KeyError,IntegrityError,InvalidOperation) as exc:
+            message = '; '.join(exc.messages) if isinstance(exc,ValidationError) else 'Kiritilgan ma’lumotlarni tekshiring.'
+            return JsonResponse({'message':message},status=400)
+        except OperationalError: return JsonResponse({'message':'Baza band. Qayta urinib ko‘ring.'},status=409)
+    return wrapped
+
+def body(request):
+    if len(request.body)>4500000: raise ValidationError('Ma’lumot hajmi 4.5 MB dan oshdi.')
+    value = json.loads(request.body or '{}')
+    if not isinstance(value,dict): raise ValidationError('JSON obyekt kerak.')
+    return value
+
+def notification(state,title,message,owner=None):
+    notes = state.payload.setdefault('notifications',[])
+    notes.insert(0,{'id':f'notification-{uuid4()}','userId':owner,'type':'booking','title':title,'message':message,'read':False,'createdAt':iso(timezone.now())})
+    state.payload['notifications']=notes[:500]
+
+@ensure_csrf_cookie
+@endpoint
+def session(request):
+    if request.method != 'GET': return JsonResponse({},status=405)
+    state,_=SiteState.objects.get_or_create(pk=1)
+    return response(request,state)
+
+@endpoint
+def auth(request, action):
+    if request.method != 'POST': return JsonResponse({},status=405)
+    values=body(request)
+    if action == 'logout': logout(request)
+    elif action in ['login','register','google']:
+        throttle=f'hotel-login:{request.META.get("REMOTE_ADDR","")}'
+        if cache.get(throttle,0)>=20: return JsonResponse({'message':'Ko‘p urinish. Birozdan keyin qayta urinib ko‘ring.'},status=429)
+        email=str(values.get('email','')).strip().lower()
+        if action == 'google':
+            from google.oauth2.id_token import verify_firebase_token
+            from google.auth.transport.requests import Request
+            try: profile=verify_firebase_token(str(values.get('idToken','')),Request(),audience=settings.FIREBASE_PROJECT_ID)
+            except Exception: return JsonResponse({'message':'Google hisobini server tasdiqlay olmadi.'},status=401)
+            if profile.get('email_verified') is not True or profile.get('iss') != f'https://securetoken.google.com/{settings.FIREBASE_PROJECT_ID}' or not profile.get('sub'): raise PermissionDenied
+            email=str(profile.get('email','')).lower()
+            user=get_user_model().objects.filter(email__iexact=email).first()
+            if user and (staff(user) or not user.is_active): raise PermissionDenied
+            if not user:
+                user=get_user_model()(username=email,email=email,first_name=str(profile.get('name','Mehmon'))[:150]);user.set_unusable_password();user.full_clean();user.save()
+        elif action == 'register':
+            if get_user_model().objects.filter(Q_EMAIL(email)).exists(): return JsonResponse({'message':'Bu email bilan hisob mavjud.','error':'duplicate'},status=400)
+            user=get_user_model()(username=email,email=email,first_name=str(values.get('firstName','')).strip(),last_name=str(values.get('lastName','')).strip())
+            if not user.first_name or not user.last_name: raise ValidationError('Ism va familiya majburiy.')
+            validate_password(values.get('password',''),user);user.set_password(values['password']);user.full_clean();user.save()
+        else:
+            matched=get_user_model().objects.filter(Q_EMAIL(email)).first()
+            user=authenticate(request,username=matched.username if matched else email,password=values.get('password',''))
+            if not user:
+                cache.set(throttle,cache.get(throttle,0)+1,600)
+                return JsonResponse({'message':'Email yoki parol noto‘g‘ri.','error':'credentials'},status=401)
+        cache.delete(throttle)
+        login(request,user,backend='django.contrib.auth.backends.ModelBackend')
+    else: return JsonResponse({},status=404)
+    state,_=SiteState.objects.get_or_create(pk=1)
+    return response(request,state)
+
+def Q_EMAIL(email):
+    from django.db.models import Q
+    return Q(email__iexact=email)|Q(username__iexact=email)
+
+
+def check_permission(user,kind,action):
+    name=MODELS[kind]._meta.model_name
+    if not user.has_perm(f'hotel.{action}_{name}'): raise PermissionDenied
+
+def save_extra(state,kind,key,after,fields):
+    destination=state.payload.setdefault('extras',{}).setdefault(kind,{})
+    destination[key]={name:after[name] for name in fields if name in after}
+
+
+def mutate(state,user,kind,key,after):
+    admin=role(user)=='admin'
+    if kind=='settings':
+        if not admin or not isinstance(after,dict): raise PermissionDenied
+        state.payload['settings']=after
+        return
+    if kind=='notifications':
+        for note in state.payload.get('notifications',[]):
+            if note['id']==key and after and (admin or staff(user) and not note.get('userId') or note.get('userId')==key_for(state,'users',user.pk)): note['read']=bool(after.get('read'))
+        return
+    if kind=='users':
+        obj=find_record(state,kind,key)
+        if not admin and (not obj or obj.pk!=user.pk): raise PermissionDenied
+        if after is None:
+            if not obj or obj.pk==user.pk or obj.is_superuser: raise PermissionDenied
+            audit(user,'delete',obj);obj.delete();return
+        if obj is None:
+            obj=get_user_model()(username=after['email'].strip().lower(),email=after['email'].strip().lower())
+            validate_password(after.get('password',''),obj);obj.set_password(after['password'])
+        if not admin and (after.get('role')!=role(obj) or after.get('email')!=obj.email or after.get('isActive')!=obj.is_active): raise PermissionDenied
+        if admin and obj.pk==user.pk and (after.get('role')!='admin' or not after.get('isActive')): raise PermissionDenied
+        name=after.get('name','').strip()
+        if not name: raise ValidationError('Ism majburiy.')
+        obj.first_name=name[:150];obj.last_name=''
+        if admin: obj.email=after['email'].strip().lower();obj.username=obj.email;obj.is_active=bool(after.get('isActive',True))
+        if obj.pk and after.get('password'): validate_password(after['password'],obj);obj.set_password(after['password'])
+        if get_user_model().objects.filter(email__iexact=obj.email).exclude(pk=obj.pk).exists(): raise ValidationError('Bu email bilan hisob mavjud.')
+        obj.full_clean();obj.save()
+        if admin:
+            newrole=after.get('role','user')
+            if newrole not in ['admin','manager','user']: raise ValidationError('Rol noto‘g‘ri.')
+            obj.is_superuser=newrole=='admin';obj.is_staff=newrole=='admin';obj.save(update_fields=['is_superuser','is_staff'])
+            obj.groups.clear()
+            if newrole=='manager':
+                from django.contrib.auth.models import Permission
+                group,_=Group.objects.get_or_create(name='Manager')
+                group.permissions.set(Permission.objects.filter(content_type__app_label='hotel').exclude(content_type__model='auditentry').exclude(codename__in=['add_room','change_room','delete_room','delete_booking','delete_guest']))
+                obj.groups.add(group)
+        state.payload.setdefault('ids',{}).setdefault(kind,{})[key]=obj.pk
+        save_extra(state,kind,key,after,['phone','nationality','avatarUrl','preferences','twoFactorEnabled'])
+        audit(user,'profile',obj)
+        return
+    if kind not in MODELS: raise ValidationError('Noma’lum kolleksiya.')
+    obj=find_record(state,kind,key)
+    if after is None:
+        check_permission(user,kind,'delete')
+        if obj is None: return
+        if kind=='rooms' and obj.booking_set.exists() or kind=='guests' and obj.booking_set.filter(status__in=['pending','confirmed']).exists() or kind=='bookings' and obj.status not in ['completed','cancelled']: raise ValidationError('Faol yoki tarixli yozuvni o‘chirib bo‘lmaydi.')
+        audit(user,'delete',obj)
+        if kind=='guests': obj.archived=True;obj.save(update_fields=['archived'])
+        else: obj.delete()
+        return
+    if after.get('id')!=key: raise ValidationError('ID noto‘g‘ri.')
+    if kind=='rooms':
+        check_permission(user,kind,'change' if obj else 'add')
+        obj=obj or Room()
+        if obj.pk and obj.booking_set.filter(checked_in_at__isnull=False,checked_out_at__isnull=True,status='confirmed').exists() and after['status']!='occupied': raise ValidationError('Avval Check-out bajaring.')
+        if not isinstance(after.get('amenities',[]),list) or any(not isinstance(value,str) for value in after.get('amenities',[])): raise ValidationError('Qulayliklar ro‘yxati noto‘g‘ri.')
+        obj.number=after['number'].strip();obj.room_type=after['type'];obj.floor=int(after['floor']);obj.capacity=int(after['capacity']);obj.price=Decimal(str(after['pricePerNight']));obj.status=after['status']
+        save_extra(state,kind,key,after,['amenities','imageUrl','description'])
+    elif kind=='guests':
+        mine=(obj.email.lower()==user.email.lower() if obj else after.get('email','').lower()==user.email.lower())
+        if not staff(user) and not mine: raise PermissionDenied
+        if staff(user): check_permission(user,kind,'change' if obj else 'add')
+        obj=obj or Guest()
+        if not staff(user) and after.get('email','').lower()!=user.email.lower(): raise PermissionDenied
+        obj.first_name=after['firstName'].strip();obj.last_name=after.get('lastName','').strip();obj.email=after.get('email','');obj.phone=after.get('phone','');obj.nationality=after.get('nationality','');obj.passport_number=after.get('passportNumber') or '';obj.notes=after.get('notes') or ''
+        # Some Google accounts have one display name; preserve a valid guest record.
+        if not obj.last_name: obj.last_name='—'
+    elif kind=='bookings':
+        room=find_record(state,'rooms',after['roomId']);guest=find_record(state,'guests',after['guestId'])
+        if not room or not guest: raise ValidationError('Xona yoki mehmon topilmadi.')
+        own=obj and (extras(state,kind,key).get('userId')==key_for(state,'users',user.pk) or not extras(state,kind,key).get('userId') and obj.guest.email.lower()==user.email.lower())
+        if not staff(user):
+            if obj:
+                if not own or obj.checked_in_at or after['status']!='cancelled': raise PermissionDenied
+                frozen={'roomId':key_for(state,'rooms',obj.room_id),'guestId':key_for(state,'guests',obj.guest_id),'checkIn':str(obj.check_in),'checkOut':str(obj.check_out),'totalAmount':float(obj.total_amount),'adults':obj.adults,'children':obj.children}
+                if any(after.get(name)!=value for name,value in frozen.items()): raise PermissionDenied
+            elif guest.email.lower()!=user.email.lower() or after.get('status')!='pending': raise PermissionDenied
+        else: check_permission(user,kind,'change' if obj else 'add')
+        if obj and (after.get('checkedInAt') and not obj.checked_in_at or after.get('checkedOutAt') and not obj.checked_out_at):
+            frozen={'roomId':key_for(state,'rooms',obj.room_id),'guestId':key_for(state,'guests',obj.guest_id),'checkIn':str(obj.check_in),'checkOut':str(obj.check_out),'totalAmount':float(obj.total_amount),'adults':obj.adults,'children':obj.children}
+            if any(after.get(name)!=value for name,value in frozen.items()): raise ValidationError('Check-in/out paytida bron tafsilotlarini almashtirib bo‘lmaydi.')
+            transition_booking(user,obj.pk,'check_out' if after.get('checkedOutAt') else 'check_in')
+            return
+        if obj and obj.checked_in_at: raise ValidationError('Joylashtirilgan bron tahrirlanmaydi. Check-out bajaring.')
+        if obj and after['status']!=obj.status and staff(user) and not admin: raise PermissionDenied
+        new=obj is None;obj=obj or Booking()
+        obj.room=room;obj.guest=guest;obj.check_in=parse_date(after['checkIn']);obj.check_out=parse_date(after['checkOut']);obj.status=after['status'];obj.adults=int(after['adults']);obj.children=int(after['children'])
+        if not obj.check_in or not obj.check_out: raise ValidationError('Sanalarni to‘g‘ri kiriting.')
+        if new and (room.status in ['cleaning','maintenance'] or obj.check_in<timezone.localdate()): raise ValidationError('Xona yoki sana bronlashga tayyor emas.')
+        if new and (after.get('checkedInAt') or after.get('checkedOutAt')): raise PermissionDenied
+        obj.total_amount=room.price*(obj.check_out-obj.check_in).days if new else Decimal(str(after['totalAmount']))
+        obj.notes=after.get('guestNote') if after.get('guestNote') is not None else after.get('notes') or ''
+        metadata={**after}
+        if not staff(user): metadata['userId']=key_for(state,'users',user.pk);metadata['paidAmount']=0 if new else extras(state,kind,key).get('paidAmount',0)
+        save_extra(state,kind,key,metadata,['bookingNumber','userId','source','paidAmount','guestNote'])
+        notification(state,'Yangi bron' if new else 'Bron holati yangilandi',f'{guest.first_name} · {room.number}-xona',None if new else extras(state,kind,key).get('userId'))
+    else:
+        check_permission(user,kind,'change' if obj else 'add')
+        obj=obj or FinanceEntry();obj.entry_type=after['type'];obj.category=after['category'];obj.amount=Decimal(str(after['amount']));obj.date=parse_date(after['date'][:10]);obj.description=after['description'];obj.booking=find_record(state,'bookings',after['bookingId']) if after.get('bookingId') else None
+        save_extra(state,kind,key,after,['paymentMethod'])
+    obj.full_clean();obj.save()
+    state.payload.setdefault('ids',{}).setdefault(kind,{})[key]=obj.pk
+    audit(user,'save',obj)
+
+@endpoint
+@transaction.atomic
+def patch(request):
+    if request.method!='PATCH': return JsonResponse({},status=405)
+    if not request.user.is_authenticated: raise PermissionDenied
+    values=body(request)
+    state,_=SiteState.objects.get_or_create(pk=1)
+    if values.get('revision')!=state.revision: return JsonResponse({'message':'Boshqa qurilmada ma’lumot yangilandi. Server nusxasi qayta yuklanadi.'},status=409)
+    changes=values.get('changes',[])
+    if not isinstance(changes,list) or len(changes)>2000 or any(not isinstance(item,dict) or item.get('after') is not None and not isinstance(item.get('after'),dict) for item in changes): raise ValidationError('O‘zgarishlar ro‘yxati noto‘g‘ri.')
+    # Booking arrivals/departures update the associated room on the server. The matching
+    # UI room patch is redundant and must never grant a manager general room-edit rights.
+    movement_rooms=set()
+    for item in changes:
+        if item.get('collection')=='bookings' and item.get('after'):
+            old=find_record(state,'bookings',item['id']);after=item['after']
+            if old and (after.get('checkedInAt') and not old.checked_in_at or after.get('checkedOutAt') and not old.checked_out_at): movement_rooms.add(after['roomId'])
+    order={'users':0,'guests':1,'bookings':2,'rooms':3,'finance':4,'settings':5,'notifications':6}
+    for item in sorted(changes,key=lambda item:order.get(item.get('collection'),99)):
+        kind=item['collection'];key=item['id'];after=item.get('after')
+        if not isinstance(key,str) or len(key)>150: raise ValidationError('ID noto‘g‘ri.')
+        if kind=='rooms' and key in movement_rooms:
+            room=find_record(state,'rooms',key)
+            expected=snapshot(state,request.user)['rooms']
+            existing=next((value for value in expected if value['id']==key),None)
+            if not existing or any(after.get(name)!=existing.get(name) for name in ['number','type','floor','capacity','pricePerNight','status','amenities','imageUrl','description']): raise PermissionDenied
+            continue
+        mutate(state,request.user,kind,key,after)
+    state.revision+=1;state.save()
+    return response(request,state)
+
+
+def react_page(request, path=''):
+    entry=settings.BASE_DIR.parent/'dist'/'index.html'
+    if not entry.exists(): return HttpResponse('Avval loyiha ildizida npm run build bajaring.',status=503)
+    html=entry.read_text().replace('<head>','<head><script>window.__HOTEL_SERVER__="django";</script>',1)
+    return HttpResponse(html)
+
+def react_asset(request,path):
+    root=(settings.BASE_DIR.parent/'dist').resolve();target=(root/path).resolve()
+    if not target.is_relative_to(root) or not target.is_file(): return HttpResponse(status=404)
+    return FileResponse(target.open('rb'))
+
+@endpoint
+@transaction.atomic
+def visit(request):
+    if request.method!='POST': return JsonResponse({},status=405)
+    values=body(request)
+    state,_=SiteState.objects.get_or_create(pk=1)
+    path=str(values.get('path','/'))[:500]
+    if not path.startswith('/'): raise ValidationError('Sahifa manzili noto‘g‘ri.')
+    state.payload['visits']=[{'id':f'visit-{uuid4()}','at':iso(timezone.now()),'path':path,'device':values.get('device') if values.get('device') in ['Mobil','Planshet','Desktop'] else 'Desktop','browser':str(values.get('browser','Boshqa'))[:40], 'userId':key_for(state,'users',request.user.pk) if request.user.is_authenticated else None,'userName':request.user.get_full_name() if request.user.is_authenticated else None,'userRole':role(request.user) if request.user.is_authenticated else None},*state.payload.get('visits',[])][:300]
+    state.save(update_fields=['payload'])
+    return response(request,state)

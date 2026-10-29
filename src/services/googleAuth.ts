@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { GoogleAuthProvider, getAuth, signInWithPopup, signOut, type Auth } from 'firebase/auth';
 
-export type GoogleProfile = { id: string; email: string; name: string; picture?: string };
+export type GoogleProfile = { id: string; email: string; name: string; picture?: string; idToken?: string };
 
 // Firebase web configuration is public. Never put a client secret here.
 const firebaseConfig = {
@@ -26,7 +26,7 @@ export async function signInWithFirebaseGoogle(): Promise<GoogleProfile> {
     await signOut(firebaseAuth());
     throw new Error('google-unverified-email');
   }
-  return { id: result.user.uid, email: result.user.email, name: result.user.displayName ?? result.user.email.split('@')[0], picture: result.user.photoURL ?? undefined };
+  return { idToken: await result.user.getIdToken(), id: result.user.uid, email: result.user.email, name: result.user.displayName ?? result.user.email.split('@')[0], picture: result.user.photoURL ?? undefined };
 }
 
 export async function signOutFirebaseGoogle(): Promise<void> {

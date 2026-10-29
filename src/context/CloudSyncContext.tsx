@@ -1,3 +1,4 @@
+import { usesHotelServer } from '../services/hotelServer';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAppData } from './AppDataContext';
 import { useAuth } from './AuthContext';
@@ -84,6 +85,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (usesHotelServer()) return;
     let cancelled = false;
     generation.current++;
     if (user?.role === 'admin') {
@@ -103,7 +105,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   }, [user?.id, user?.role, reload, updateData]);
 
   useEffect(() => {
-    if (user?.role !== 'admin' || !connected || status === 'error' || status === 'loading') return;
+    if (usesHotelServer() || user?.role !== 'admin' || !connected || status === 'error' || status === 'loading') return;
     if (serialize(data) === saved.current) return;
     const timer = window.setTimeout(() => void save(), 1000);
     return () => window.clearTimeout(timer);

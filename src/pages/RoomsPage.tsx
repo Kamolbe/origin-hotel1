@@ -72,7 +72,7 @@ export function RoomsPage() {
 
   function openAdd() { setActiveRoom(null); setForm(blankForm); setMode('add'); setModalOpen(true); }
   function openEdit(room: Room) { setActiveRoom(room); setMode('edit'); setForm({ ...blankForm, number: room.number, floor: String(room.floor), type: room.type, status: room.status, capacity: String(room.capacity), pricePerNight: String(room.pricePerNight), imageUrl: room.imageUrl ?? '', description: room.description ?? '', amenities: room.amenities.join(', ') }); setModalOpen(true); }
-  function openAssign(room: Room) { setActiveRoom(room); setMode('assign'); setForm({ ...blankForm, number: room.number, guestId: data.guests[0]?.id ?? '' }); setModalOpen(true); }
+  function openAssign(room: Room) { setActiveRoom(room); setMode('assign'); setForm({ ...blankForm, number: room.number, guestId: data.guests.find((guest) => !guest.archived)?.id ?? '' }); setModalOpen(true); }
 
   function saveRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -143,7 +143,7 @@ export function RoomsPage() {
 
     <Modal open={modalOpen} onClose={() => { setModalOpen(false); setActiveRoom(null); }} title={mode === 'add' ? 'Yangi xona qo‘shish' : mode === 'assign' ? `${activeRoom?.number ?? ''}-xonaga mehmon joylashtirish` : `${activeRoom?.number ?? ''}-xonani tahrirlash`} description={mode === 'assign' ? 'Mehmon va qolish muddatini kiriting.' : 'Xona ma’lumotlarini to‘ldiring.'}>
       <form onSubmit={saveRoom} className="grid gap-4 sm:grid-cols-2">
-        {mode === 'assign' ? <><SelectField label="Mehmon" value={form.guestId} onChange={(value) => setForm({ ...form, guestId: value })} options={data.guests.map((guest) => [guest.id,`${guest.firstName} ${guest.lastName}`])} /><FilterField label="Kelish sanasi" type="date" value={form.checkIn} onChange={(value) => setForm({ ...form, checkIn: value })} /><FilterField label="Ketish sanasi" type="date" value={form.checkOut} onChange={(value) => setForm({ ...form, checkOut: value })} /></> : <>
+        {mode === 'assign' ? <><SelectField label="Mehmon" value={form.guestId} onChange={(value) => setForm({ ...form, guestId: value })} options={data.guests.filter((guest) => !guest.archived).map((guest) => [guest.id,`${guest.firstName} ${guest.lastName}`])} /><FilterField label="Kelish sanasi" type="date" value={form.checkIn} onChange={(value) => setForm({ ...form, checkIn: value })} /><FilterField label="Ketish sanasi" type="date" value={form.checkOut} onChange={(value) => setForm({ ...form, checkOut: value })} /></> : <>
           <InputField label="Xona raqami" value={form.number} onChange={(value) => setForm({ ...form, number: value })} required />
           <FilterField label="Qavat" type="select" value={form.floor} onChange={(value) => setForm({ ...form, floor: value })} options={[1,2,3,4,5].map((value) => [String(value),`${value}-qavat`])} />
           <FilterField label="Xona turi" type="select" value={form.type} onChange={(value) => setForm({ ...form, type: value as RoomType })} options={roomTypeOptions.map((value): [string, string] => [value,value])} />

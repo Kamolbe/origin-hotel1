@@ -1,3 +1,4 @@
+import { useAppData } from '../context/AppDataContext';
 import { MobileAccountActions } from './MobileAccountActions';
 import { Link, useNavigate } from 'react-router-dom';
 import { BedDouble, CalendarDays, ChartNoAxesCombined, CircleHelp, LayoutDashboard, LogOut, Settings, ShieldCheck, Users, UserRound, WalletCards, ChevronRight } from 'lucide-react';
@@ -7,6 +8,8 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 
 export function MobileCabinetMenu() {
   const { user, logout } = useAuth();
+  const { data } = useAppData();
+  const canViewFinance = !data.serverPermissions || data.serverPermissions.includes('hotel.view_financeentry');
   const hotel = useHotelContact();
   const navigate = useNavigate();
   const staff = user?.role === 'admin' || user?.role === 'manager';
@@ -15,7 +18,7 @@ export function MobileCabinetMenu() {
     { to: staff ? '/app/rooms' : '/rooms', label: 'Xonalar', icon: BedDouble },
     ...(staff ? [{ to: '/app/guests', label: 'Mehmonlar', icon: Users }] : []),
     { to: '/app/bookings', label: staff ? 'Bronlar' : 'Mening bronlarim', icon: CalendarDays },
-    ...(staff ? [{ to: '/app/finance', label: 'Moliya', icon: WalletCards }, { to: '/app/reports', label: 'Hisobotlar', icon: ChartNoAxesCombined }] : []),
+    ...(staff && canViewFinance ? [{ to: '/app/finance', label: 'Moliya', icon: WalletCards }, { to: '/app/reports', label: 'Hisobotlar', icon: ChartNoAxesCombined }] : []),
     ...(user?.role === 'admin' ? [{ to: '/app/users', label: 'Foydalanuvchilar', icon: ShieldCheck }] : []),
     { to: '/app/settings', label: 'Sozlamalar', icon: Settings },
     { to: '/app/profile', label: 'Mening profilim', icon: UserRound },

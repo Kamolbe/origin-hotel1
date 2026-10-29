@@ -73,7 +73,7 @@ export function BookingsPage() {
 
   function getOrCreateGuest(): Guest | undefined {
     if (staff) return data.guests.find((guest) => guest.id === form.guestId);
-    const existing = data.guests.find((guest) => guest.email.toLowerCase() === user?.email.toLowerCase());
+    const existing = data.guests.find((guest) => !guest.archived && guest.email.toLowerCase() === user?.email.toLowerCase());
     if (existing) return existing;
     if (!user) return undefined;
     const nameParts = user.name.split(' ');
@@ -154,7 +154,7 @@ export function BookingsPage() {
       <form onSubmit={createBooking} className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,.82fr)_minmax(0,1.18fr)]">
         <BookingRoomPreview room={previewRoom} selected={Boolean(selectedRoom)} currency={data.settings.currency} />
         <div className="grid min-w-0 content-start gap-4 sm:grid-cols-2">
-          {staff && <label className="block min-w-0 sm:col-span-2"><span className="mb-1.5 block text-[10px] font-semibold">Mehmon</span><Select required value={form.guestId} onChange={(event) => setForm({ ...form, guestId: event.target.value })} className="w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-xs"><option value="">Mehmonni tanlang</option>{data.guests.map((guest) => <option key={guest.id} value={guest.id}>{guest.firstName} {guest.lastName} · {guest.email}</option>)}</Select></label>}
+          {staff && <label className="block min-w-0 sm:col-span-2"><span className="mb-1.5 block text-[10px] font-semibold">Mehmon</span><Select required value={form.guestId} onChange={(event) => setForm({ ...form, guestId: event.target.value })} className="w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-xs"><option value="">Mehmonni tanlang</option>{data.guests.filter((guest) => !guest.archived).map((guest) => <option key={guest.id} value={guest.id}>{guest.firstName} {guest.lastName} · {guest.email}</option>)}</Select></label>}
           <label className="block min-w-0"><span className="mb-1.5 block text-[10px] font-semibold">Kelish sanasi</span><DatePicker label="Kelish sanasi" required min={localDateAfter(0)} value={form.checkIn} onChange={(checkIn) => { const checkOut = !checkIn ? '' : form.checkOut && form.checkOut > checkIn ? form.checkOut : localDateAfter(1, checkIn); setForm({ ...form, checkIn, checkOut, roomId: '' }); }} /></label>
           <label className="block min-w-0"><span className="mb-1.5 block text-[10px] font-semibold">Ketish sanasi</span><DatePicker label="Ketish sanasi" required min={form.checkIn ? localDateAfter(1, form.checkIn) : localDateAfter(1)} value={form.checkOut} onChange={(checkOut) => setForm({ ...form, checkOut, roomId: '' })} /></label>
           <label className="block min-w-0"><span className="mb-1.5 block text-[10px] font-semibold">Kattalar</span><Select value={form.adults} onChange={(event) => setForm({ ...form, adults: event.target.value, roomId: '' })} className="w-full min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5 text-xs">{[1,2,3,4].map((n) => <option key={n} value={n}>{n}</option>)}</Select></label>

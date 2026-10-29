@@ -35,3 +35,9 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+
+FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "origin-hotel")
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5000000
+CSRF_TRUSTED_ORIGINS = [value.strip() for value in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if value.strip()]
+if os.environ.get('DJANGO_TRUST_PROXY', '0') == '1':
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

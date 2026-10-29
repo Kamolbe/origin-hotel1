@@ -85,3 +85,8 @@ class AuditEntry(models.Model):
     entity_id = models.CharField(max_length=60)
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta: ordering = ['-created_at']
+
+class SiteState(models.Model):
+    """Public site settings and UI extras; relational hotel records remain authoritative."""
+    payload = models.JSONField(default=dict)
+    revision = models.PositiveBigIntegerField(default=0)

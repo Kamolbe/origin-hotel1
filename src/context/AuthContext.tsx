@@ -1,3 +1,4 @@
+import { hotelRequest, serverInitial, usesHotelServer } from '../services/hotelServer';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { recordAudit } from '../services/hotelUtils';
 import { makeId } from '../services/storage';
@@ -7,12 +8,12 @@ import { useAppData } from './AppDataContext';
 
 type SessionUser = Pick<User, 'id' | 'name' | 'email' | 'role'>;
 type ProfileUpdate = Partial<Pick<User, 'name' | 'email' | 'phone' | 'nationality' | 'avatarUrl' | 'password' | 'twoFactorEnabled'>>;
-type AuthResult = { ok: boolean; error?: 'credentials' | 'code' | 'duplicate' | 'email' };
+type AuthResult = { ok: boolean; error?: 'credentials' | 'code' | 'duplicate' | 'email'; message?: string };
 type AuthContextValue = {
   user: SessionUser | null;
-  login: (input: { email: string; password: string; accessCode?: string; name?: string }) => AuthResult;
-  register: (input: { firstName: string; lastName: string; email: string; password: string; accessCode?: string }) => AuthResult;
-  signInWithGoogle: (profile: GoogleProfile) => AuthResult;
+  login: (input: { email: string; password: string; accessCode?: string; name?: string }) => Promise<AuthResult>;
+  register: (input: { firstName: string; lastName: string; email: string; password: string; accessCode?: string }) => Promise<AuthResult>;
+  signInWithGoogle: (profile: GoogleProfile) => Promise<AuthResult>;
   updateProfile: (updates: ProfileUpdate) => boolean;
   logout: () => void;
 };
@@ -34,20 +35,25 @@ function persistSession(user: SessionUser) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { data, updateData } = useAppData();
-  const [user, setUser] = useState<SessionUser | null>(readSession);
+  const { data, updateData, replaceServerData } = useAppData();
+  const [user, setUser] = useState<SessionUser | null>(() => usesHotelServer() ? serverInitial()?.user ?? null : readSession());
   useEffect(() => {
+    if (usesHotelServer()) return;
     const syncSession = (event: StorageEvent) => { if (event.key === SESSION_KEY || event.key === null) setUser(readSession()); };
     window.addEventListener('storage', syncSession);
     return () => window.removeEventListener('storage', syncSession);
   }, []);
   const establishSession = useCallback((record: User, trackLogin = false) => {
     const next: SessionUser = { id: record.id, name: record.name, email: record.email, role: record.role };
-    setUser(next); persistSession(next);
+    setUser(next); if (!usesHotelServer()) persistSession(next);
     if (trackLogin) updateData((current) => ({ ...current, users: current.users.map((item) => item.id === record.id ? { ...item, lastLoginAt: new Date().toISOString() } : item), auditLog: recordAudit(current, 'Tizimga kirildi', 'user', record.id, record.id).slice(0, 500) }));
   }, [updateData]);
 
-  const login = useCallback<AuthContextValue['login']>(({ email, password, accessCode, name }) => {
+  const login = useCallback<AuthContextValue['login']>(async ({ email, password, accessCode, name }) => {
+    if (usesHotelServer()) {
+      try { const reply = await hotelRequest('auth/login', 'POST', { email, password }); replaceServerData(reply); setUser(reply.user); return { ok: true }; }
+      catch (cause) { return { ok: false, error: 'credentials', message: cause instanceof Error ? cause.message : 'Server kirishi bajarilmadi.' }; }
+    }
     const normalizedEmail = email.trim().toLowerCase();
     if (!EMAIL_PATTERN.test(normalizedEmail) || !password) return { ok: false, error: 'credentials' };
     const isAdminDomain = normalizedEmail.endsWith('@admin.com');
@@ -62,9 +68,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       establishSession(account, true); return { ok: true };
     }
     return { ok: false, error: 'credentials' };
-  }, [data.users, establishSession, updateData]);
+  }, [data.users, establishSession, updateData, replaceServerData]);
 
-  const register = useCallback<AuthContextValue['register']>(({ firstName, lastName, email, password, accessCode }) => {
+  const register = useCallback<AuthContextValue['register']>(async ({ firstName, lastName, email, password, accessCode }) => {
+    if (usesHotelServer()) {
+      try { const reply = await hotelRequest('auth/register', 'POST', { firstName,lastName,email,password }); replaceServerData(reply); setUser(reply.user); return { ok: true }; }
+      catch (cause) { return { ok: false, error: 'email', message: cause instanceof Error ? cause.message : 'Hisob yaratilmadi.' }; }
+    }
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = `${firstName.trim()} ${lastName.trim()}`.trim();
     if (!EMAIL_PATTERN.test(normalizedEmail) || !normalizedName || password.length < 6) return { ok: false, error: 'email' };
@@ -77,14 +87,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const record: User = { id: makeId('user'), name: normalizedName, email: normalizedEmail, role, password, accessCode: expectedCode, isActive: true, createdAt: new Date().toISOString() };
     updateData((current) => ({ ...current, users: [...current.users, record] }));
     establishSession(record, true); return { ok: true };
-  }, [data.users, establishSession, updateData]);
+  }, [data.users, establishSession, updateData, replaceServerData]);
 
   /**
    * Sign in with a verified Google identity. A Google account is a guest
    * account: staff roles stay behind the emailed access code, so an identity
    * alone can never escalate to admin or manager.
    */
-  const signInWithGoogle = useCallback<AuthContextValue['signInWithGoogle']>((profile) => {
+  const signInWithGoogle = useCallback<AuthContextValue['signInWithGoogle']>(async (profile) => {
+    if (usesHotelServer()) {
+      try { const reply = await hotelRequest('auth/google', 'POST', { idToken: profile.idToken }); replaceServerData(reply); setUser(reply.user); return { ok: true }; }
+      catch (cause) { return { ok: false, error: 'credentials', message: cause instanceof Error ? cause.message : 'Google server tasdig‘i bajarilmadi.' }; }
+    }
     const email = profile.email.trim().toLowerCase();
     if (!EMAIL_PATTERN.test(email)) return { ok: false, error: 'email' };
 
@@ -111,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateData((current) => ({ ...current, users: [...current.users, record] }));
     establishSession(record, true);
     return { ok: true };
-  }, [data.users, establishSession, updateData]);
+  }, [data.users, establishSession, updateData, replaceServerData]);
 
   const updateProfile = useCallback((updates: ProfileUpdate) => {
     if (!user) return false;
@@ -128,10 +142,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, data.users, updateData, establishSession]);
 
   const logout = useCallback(() => {
+    if (usesHotelServer()) { void hotelRequest('auth/logout','POST').then((reply)=>{replaceServerData(reply);setUser(null);}).catch(()=>{window.alert('Serverdan chiqilmadi. Qayta urinib ko‘ring.');}); return; }
     void import('../services/googleAuth').then(({ signOutFirebaseGoogle }) => signOutFirebaseGoogle()).catch(() => { /* Local logout still completes offline. */ });
     setUser(null);
     try { localStorage.removeItem(SESSION_KEY); } catch { /* Ignore unavailable storage. */ }
-  }, []);
+  }, [replaceServerData]);
 
   useEffect(() => {
     if (!user) return;

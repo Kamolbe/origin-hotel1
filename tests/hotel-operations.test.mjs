@@ -36,3 +36,9 @@ test('actual checkout uses hotel timezone for the last occupied day',()=>{
   const d=blank();d.settings.timeZone='Asia/Tashkent';d.bookings[0].status='completed';d.bookings[0].checkedOutAt='2026-10-29T20:30:00Z';
   assert.equal(periodSummary(d,'2026-10-29','2026-10-30').roomNights,1);
 });
+test('guest availability uses anonymous busy intervals without other guest bookings', async()=>{
+  const { availableRooms } = await import('../src/services/hotelUtils.ts');
+  const d=blank();d.bookings=[];d.unavailableStays=[{roomId:'r1',checkIn:'2026-10-29',checkOut:'2026-10-31'}];
+  assert.equal(availableRooms(d,'2026-10-30','2026-11-01',1).length,0);
+  assert.equal(availableRooms(d,'2026-10-31','2026-11-01',1).length,1);
+});

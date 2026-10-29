@@ -4,9 +4,9 @@ Manba: foydalanuvchi bergan `Hotel_Demo_Amaliyotchilar_20_Kunlik_Reja.pdf`, 5 sa
 
 ## Ishlash muhitlari
 
-**React sayti:** mavjud dizayn/route’lar saqlandi. Standart rejim localStorage, ixtiyoriy Firebase admin snapshot adapteri. Login/rollar bu rejimda demo. Shu commit real Vercel hostingga Django backendni avtomatik ulamaydi.
+**React sayti:** mavjud dizayn/route’lar saqlandi. Django serveridagi `/` va `/app/...` aynan shu React interfeysi orqali server sessiyasi va SQLite bilan ishlaydi. `hotelServer`, AppDataContext va AuthContext `/hotel-api`ga ulangan. Faqat mustaqil Vite/static rejimi backend belgisisiz eski localStorage demosidir. Haqiqiy Vercel deploy uchun backend hosting/proxy domeni alohida kerak.
 
-**Django server demo:** `backend/` ichida Python, Django, SQLite, HTML/CSS, lokal Bootstrap. `/management/` server bazasi bilan ishlaydigan to‘liq demo interfeys; `/django-admin/` boshqaruv. Browserni yopish ma’lumotlarni o‘chirmaydi. React va Django o‘rtasida avtomatik ma’lumot ko‘chirish/sinxronlash yo‘q; eski ma’lumotlar jim ko‘chirilmaydi yoki ustidan yozilmaydi. Ishga tushirish: [backend/README.md](../backend/README.md).
+**Django server demo:** `backend/` ichida Python, Django, SQLite, HTML/CSS, lokal Bootstrap. `/management/` server bazasi bilan ishlaydigan to‘liq demo interfeys; `/django-admin/` boshqaruv. Browserni yopish ma’lumotlarni o‘chirmaydi. Asosiy React interfeysi va Django paneli bir xil Room/Guest/Booking/Finance bazasini ishlatadi. Eski localStorage demo yozuvlari avtomatik import qilinmaydi; ular server nusxasining ustidan yozilmaydi. Ishga tushirish: [backend/README.md](../backend/README.md).
 
 ## 1. Modullar va 4. Biznes qoidalari
 
@@ -27,9 +27,9 @@ Manba: foydalanuvchi bergan `Hotel_Demo_Amaliyotchilar_20_Kunlik_Reja.pdf`, 5 sa
 | Moliya CRUD: summa, sana, izoh | Qo‘shish/ko‘rish/tahrirlash/o‘chirish, davr filtri | FinanceEntry + FinanceForm + permission checks |
 | Musbat summa, majburiy maydonlar | Form tekshiruvlari, noto‘g‘ri sana bloklanadi | ModelForm + MinValueValidator + DB CheckConstraint |
 | Hisobot kirim − chiqim, bandlik | periodSummary, checkout/final kun hisoblari tuzatildi | Decimal jami, noyob xona-kunlar, inclusive date range |
-| Login/logout, admin/xodim rollari | Lokal demo saqlangan, himoya sifatida talqin qilinmaydi | Django sessions, hash parol, CSRF, backend permission checks, guruhlar |
+| Login/logout, admin/xodim rollari | Server rejimida Django sessiyasi, cookie/CSRF; lokal demo alohida qolgan | Django sessions, hash parol, CSRF, backend permission checks, guruhlar |
 | Responsiv layout va xato xabarlari | Mavjud umumiy komponentlar | Bootstrap + max767px labelled table cards, form errors/messages |
-| Doimiy baza, migration, admin | React uchun local/Firebase cheklovlari saqlangan | SQLite models + `0001_initial`, Django admin |
+| Doimiy baza, migration, admin | Server rejimida barcha operatsiyalar `/hotel-api` orqali bir xil SQLite bazada | SQLite models + `0001_initial`, Django admin |
 
 Avvalgi `housekeeping` va `marketing` moliya yozuvlari yo‘qotilmaydi; Reactda eski kategoriyani tahrirlash mumkin. Yangi yozuvlarda PDFdagi asosiy 5 tadan ro‘yxat ishlatiladi. Reactdagi eski sanaga asoslangan avtomatik bandlik o‘rniga actual check-in asosiy belgi bo‘ldi; tarixiy bronlar jim check-in qilinmaydi.
 
@@ -49,7 +49,7 @@ Bu satrlar sayt tugmalari emas, bajarish/taqdim etish jarayoni. Haqiqiy odamlar 
 | 12–13 | 5+5 moliya kategoriyasi va CRUD |
 | 14–15 | Dashboard va hisobot date range, jami/sof natija/bandlik |
 | 16 | Django login/logout, Employee/Manager/admin server ruxsatlari |
-| 17 | Django forms→model→SQLite integratsiyasi, xato ko‘rsatish; React own-data oqimi saqlangan |
+| 17 | React→session/CSRF/PATCH API→permission/validation→SQLite integratsiyasi; Django paneli ham bir xil baza |
 | 18 | Node/Django avtomatik testlar, brauzer smoke sinovlari |
 | 19 | `seed_demo`, README va quyidagi demo ssenariy |
 | 20 | Ishlaydigan lokal demo + shu yakuniy talablar hisoboti; real jamoaviy taqdimot insonlar tomonidan o‘tkaziladi |
@@ -100,3 +100,11 @@ Vazifa: … / Mas’ul: … / Branch-PR: … / O‘zgargan fayllar: … / Qanday
 Kun: … / Bugun bajarildi: … / Qoldi: … / To‘siq: … / Keyingi qadam: …
 
 Jamoaning real taqsimoti, review, GitHub board va 20 kunlik taqdimot bu kod bilan avtomatik bajarilgan deb belgilanmaydi.
+
+## Integratsiyalangan saytning qo‘shimcha QA dalillari
+
+Asosiy React sahifalarida ikki alohida brauzer konteksti bilan: server signup/login; guest bron va izoh yaratishi; boshqa admin sessiyasida ko‘rinishi; tasdiqlash; actual check-in/out; guest qayta yuklab yangilangan holatni olishi tekshirildi. Yangi xona yaratib, sahifa qayta yuklanganda server bazasidan qaytishi tekshirildi. 320/390/1440 px’da asosiy bo‘limlarda gorizontal overflow tekshirildi. Bular mahalliy haqiqiy Django/SQLite serverida, mock API’siz bajarildi; production Vercel deploy yoki haqiqiy Google hisobi sinovi deb talqin qilinmaydi.
+
+API testlari: public/private proyeksiya, password/accessCode chiqmasligi, guest ownership, serverda qayta narxlash, duplicate bloklash, atomik rollback, xodim xona narxini almashtira olmasligi, serverdagi check-in/out, eskirgan revision 409, template o‘zgarishlari bilan revision invalidatsiyasi, server register/login/logout/CSRF, admin domeni bilan huquq oshirib bo‘lmasligi, sayt sozlamalarining boshqa sessiyada nashr bo‘lishi.
+
+Yakuniy integratsiya tekshiruvlari: 24 ta Django va 14 ta Node testi o‘tdi, React build hamda migration drift tekshiruvi o‘tdi. Alohida brauzer sinovida kechikkan refresh yangi saqlangan xonani yo‘qotmasligi, manfiy narx serverda rad etilganda UI server nusxasiga qaytishi va ko‘rinadigan saqlash xatosi, server ulanmaganda lokal demo rejimiga jim o‘tmasligi tekshirildi. Django production `check --deploy` va Gunicorn config tekshiruvi lokal test environment bilan o‘tdi. Windows yordamchi batch fayli, haqiqiy Google login va foydalanuvchining hostingidagi deployment bevosita bajarilgan deb belgilanmaydi.

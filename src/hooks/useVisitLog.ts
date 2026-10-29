@@ -1,3 +1,4 @@
+import { hotelRequest, usesHotelServer } from '../services/hotelServer';
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAppData } from '../context/AppDataContext';
@@ -55,6 +56,7 @@ export function useVisitLog() {
       userName: account?.name,
       userRole: account?.role,
     };
+    if (usesHotelServer()) { void hotelRequest('visit','POST',visit).catch(()=>{}); return; }
     updateData((current) => ({ ...current, visits: [visit, ...current.visits].slice(0, MAX_VISITS) }));
     // Intentionally runs once per tab: the entry page is the interesting one.
     // eslint-disable-next-line react-hooks/exhaustive-deps
