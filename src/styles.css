@@ -481,3 +481,45 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
 .search-field input:focus-visible { border: 0; outline: none; box-shadow: none; }
 .search-field input::-webkit-search-cancel-button { -webkit-appearance: none; }
 .search-field button { display: grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; border-radius: 50%; }
+
+/* Room inventory: a consistent photo, facts, price and action hierarchy. */
+.inventory-room-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+.inventory-room-card { min-width: 0; padding: 8px; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 24px; background: var(--surface); box-shadow: 0 4px 18px #111b2205; transition: border-color .22s, box-shadow .22s; }
+.inventory-room-photo { position: relative; aspect-ratio: 1.6; overflow: hidden; border-radius: 17px; isolation: isolate; background: var(--page); }
+.inventory-room-photo > img { height: 100%; width: 100%; object-fit: cover; transition: transform .5s ease; }
+.inventory-room-shade { position: absolute; inset: 0; background: linear-gradient(180deg, #0c151a26, transparent 35%, #0c151abf); pointer-events: none; }
+.inventory-room-photo-top, .inventory-room-photo-bottom { position: absolute; left: 14px; right: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.inventory-room-photo-top { top: 14px; flex-wrap: wrap; }
+.inventory-room-category { display: inline-flex; align-items: center; gap: 6px; background: #fffef3ef; color: #493d27; border: 1px solid #ffffff55; border-radius: 8px; padding: 6px 9px; font-size: 11px; font-weight: 600; }
+.inventory-room-photo-bottom { bottom: 16px; align-items: flex-end; color: white; }
+.inventory-room-photo-bottom h3 { min-width: 0; margin: 0; font-size: 34px; line-height: 1; font-weight: 600; letter-spacing: -.04em; overflow-wrap: anywhere; }
+.inventory-room-photo-bottom h3 > span { display: block; margin-bottom: 7px; color: #ffffffc4; font-size: 9px; font-weight: 600; letter-spacing: .2em; }
+.inventory-room-floor { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; padding-bottom: 2px; font-size: 11px; color: #ffffffe0; }
+.inventory-room-body { padding: 18px 12px 12px; display: flex; flex: 1; flex-direction: column; }
+.inventory-room-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.inventory-room-facts > div { display: flex; gap: 9px; align-items: center; min-width: 0; }
+.inventory-room-facts > div + div { padding-left: 12px; border-left: 1px solid var(--line); }
+.inventory-room-facts svg { flex-shrink: 0; color: var(--champagne); }
+.inventory-room-facts span { font-size: 10px; line-height: 1.5; color: var(--muted); }
+.inventory-room-facts strong { display: block; margin-top: 3px; font-size: 13px; font-weight: 600; color: var(--text); }
+.inventory-room-amenities { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 7px 12px; min-height: 48px; margin: 18px 0 14px; color: var(--muted); font-size: 10px; line-height: 1.7; }
+.inventory-room-amenities > span { display: inline-flex; align-items: baseline; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.inventory-room-amenities svg { color: var(--champagne); flex-shrink: 0; align-self: center; }
+.inventory-room-amenities details { max-width: 100%; }
+.inventory-room-amenities summary { cursor: pointer; color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.inventory-room-amenities details p { margin-top: 6px; overflow-wrap: anywhere; }
+.inventory-room-price { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); padding-top: 16px; margin-top: auto; }
+.inventory-room-price > span:first-child { min-width: 0; font-size: 10px; color: var(--muted); }
+.inventory-room-price strong { display: block; margin-top: 4px; font-size: 21px; font-weight: 600; letter-spacing: -.035em; color: var(--text); overflow-wrap: anywhere; }
+.inventory-room-night { color: var(--muted); font-size: 11px; white-space: nowrap; padding-bottom: 3px; }
+.inventory-room-actions { display: grid; grid-template-columns: minmax(0, 1fr) 44px 44px; gap: 8px; margin-top: 18px; }
+.inventory-room-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 12px; font-size: 12px; font-weight: 600; transition: background-color .2s, border-color .2s; }
+.inventory-room-assign { background: var(--ink); color: white; border: 1px solid transparent; }
+.inventory-room-edit, .inventory-room-delete { border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+.inventory-room-edit:hover { background: var(--page); color: var(--text); }
+.inventory-room-delete:hover { background: color-mix(in srgb, #ef4444 9%, var(--surface)); color: #e05252; border-color: #e0525266; }
+.inventory-room-assign:hover { background: color-mix(in srgb, var(--ink) 86%, var(--champagne)); }
+@media (min-width: 768px) { .inventory-room-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .inventory-room-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) { .inventory-room-card:hover { border-color: color-mix(in srgb, var(--champagne) 60%, var(--line)); box-shadow: 0 12px 32px #111b2210; } .inventory-room-card:hover .inventory-room-photo > img { transform: scale(1.035); } }
+@media (prefers-reduced-motion: reduce) { .inventory-room-card, .inventory-room-photo > img, .inventory-room-actions button { transition: none; } }

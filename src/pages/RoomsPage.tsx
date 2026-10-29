@@ -1,6 +1,6 @@
 import { SearchField } from '../components/SearchField';
 import { BulkDeletePanel } from '../components/BulkDeletePanel';
-import { PortalImage } from '../components/PortalImage';
+import { RoomInventoryCard } from '../components/RoomInventoryCard';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { isSupportedImage } from '../services/imageUtils';
 import { DatePicker } from '../components/DatePicker';
@@ -9,7 +9,7 @@ import { useRoomPhotos } from '../hooks/useSiteContent';
 import { Select } from '../components/Select';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BedDouble, CalendarDays, Check, ChevronDown, DoorOpen, Edit3, Filter, Plus, Search, Trash2, UserRoundPlus, Users } from 'lucide-react';
+import { BedDouble, Filter, Plus, Search, Users } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { PageHeader } from '../components/PageHeader';
 import { StatusPill } from '../components/StatusPill';
@@ -135,28 +135,8 @@ export function RoomsPage() {
       {roomTiles.length === 0 ? <div className="surface rounded-3xl px-6 py-16 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-champagne/15 text-champagne"><BedDouble size={24} /></span><h2 className="mt-5 font-display text-2xl">Bizda bo‘sh o‘rinlar qolmagan</h2><p className="mt-2 text-sm text-muted">Sanalarni yoki mehmonlar sonini o‘zgartirib qayta qidiring.</p></div> : <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{roomTiles.map((room) => { const image = getRoomPhoto(room); return <article key={room.id} className="surface overflow-hidden rounded-3xl"><div className="relative h-44"><img src={optimizedUnsplashUrl(image, 640, 72)} srcSet={unsplashSrcSet(image, [360, 480, 640, 900], 72)} sizes="(min-width: 1280px) 32vw, (min-width: 640px) 48vw, 100vw" width={900} height={600} alt={`${room.type} mehmonxona xonasi`} loading="lazy" decoding="async" className="h-full w-full object-cover" /><span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[9px] font-bold text-ink">{room.number} · {room.floor}-qavat</span></div><div className="p-5"><div className="flex items-start justify-between"><div><p className="text-[9px] font-bold uppercase tracking-[.18em] text-champagne">{room.type}</p><h3 className="mt-1 font-display text-2xl">{room.type === 'Family' ? 'Oilaviy xona' : `${room.type} xona`}</h3></div><StatusPill status="available">Bo‘sh</StatusPill></div><div className="mt-4 flex gap-4 text-[10px] text-muted"><span><Users size={13} className="mr-1 inline" />{room.capacity} kishi</span><span>{room.amenities.slice(0,2).join(' · ')}</span></div><div className="mt-5 flex items-center justify-between border-t border-[var(--line)] pt-4"><p><span className="font-display text-xl">{formatMoney(room.pricePerNight, data.settings.currency)}</span><span className="ml-1 text-[9px] text-muted">/ tun</span></p><button onClick={() => requestRoom(room)} className="rounded-full bg-ink px-4 py-2.5 text-[10px] font-semibold text-white hover:bg-ink-soft">Bron so‘rash</button></div></div></article>;})}</div>}
     </> : <section aria-label="Xonalar ro‘yxati">
       <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold">Xonalar ro‘yxati</h2><p className="mt-1 text-xs text-muted">Qavat bo‘yicha saralangan · {visibleRooms.length} ta xona</p></div></div>
-      {visibleRooms.length === 0 ? <div className="surface rounded-3xl px-6 py-14 text-center"><BedDouble size={28} className="mx-auto text-champagne" /><h3 className="mt-4 font-display text-2xl">Xona topilmadi</h3><p className="mt-2 text-sm text-muted">Qidiruv yoki filtrlarni o‘zgartirib ko‘ring.</p></div> : <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {visibleRooms.map((room) => {
-          const image = getRoomPhoto(room);
-          return <article key={room.id} aria-label={`${room.number}-xona`} className="surface flex min-w-0 flex-col overflow-hidden rounded-3xl">
-            <div className="relative aspect-[3/2] overflow-hidden">
-              <PortalImage src={optimizedUnsplashUrl(image, 640, 72)} srcSet={unsplashSrcSet(image, [360, 480, 640, 900], 72)} sizes="(min-width: 1536px) 23vw, (min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw" width={900} height={600} alt={`${room.number}-xona · ${room.type}`} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-              <span className="absolute left-3 top-3 rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-white">{room.floor}-qavat</span>
-            </div>
-            <div className="flex flex-1 flex-col p-5">
-              <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wider text-champagne">{room.type}</p><h3 className="mt-1 break-words font-display text-2xl">{room.number}-xona</h3></div><StatusPill status={room.status}>{statusLabel[room.status]}</StatusPill></div>
-              <p className="mt-4 flex items-center gap-2 text-xs text-muted"><Users size={15} className="shrink-0" />{guestCounts.get(room.id) ?? 0} mehmon / {room.capacity} kishi sig‘im</p>
-              <div className="mt-3 flex flex-wrap gap-1.5">{room.amenities.map((amenity) => <span key={amenity} className="max-w-full break-words rounded-lg bg-[var(--page)] px-2 py-1 text-[10px] text-muted">{amenity}</span>)}</div>
-              <div className="mt-auto pt-5"><p className="break-words border-t border-[var(--line)] pt-4 text-lg font-semibold">{formatMoney(room.pricePerNight, data.settings.currency)} <span className="text-xs font-normal text-muted">/ tun</span></p>
-                {isAdmin && <div className="mt-4 flex flex-wrap gap-2">
-                  <button onClick={() => openAssign(room)} aria-label={`${room.number}-xonaga mehmon joylashtirish`} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-white hover:bg-ink-soft"><UserRoundPlus size={15} />Joylashtirish</button>
-                  <button onClick={() => openEdit(room)} aria-label={`${room.number}-xonani tahrirlash`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--line)] px-3 py-2 text-xs font-semibold hover:bg-[var(--page)]"><Edit3 size={15} />Tahrirlash</button>
-                  <button onClick={() => setDeleteRoom(room)} aria-label={`${room.number}-xonani o‘chirish`} title="O‘chirish" className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--line)] text-muted hover:bg-rose-50 hover:text-rose-600"><Trash2 size={15} /></button>
-                </div>}
-              </div>
-            </div>
-          </article>;
-        })}
+      {visibleRooms.length === 0 ? <div className="surface rounded-3xl px-6 py-14 text-center"><BedDouble size={28} className="mx-auto text-champagne" /><h3 className="mt-4 font-display text-2xl">Xona topilmadi</h3><p className="mt-2 text-sm text-muted">Qidiruv yoki filtrlarni o‘zgartirib ko‘ring.</p></div> : <div className="inventory-room-grid">
+        {visibleRooms.map((room) => <RoomInventoryCard key={room.id} room={room} image={getRoomPhoto(room)} guestCount={guestCounts.get(room.id) ?? 0} currency={data.settings.currency} canManage={isAdmin} onAssign={() => openAssign(room)} onEdit={() => openEdit(room)} onDelete={() => setDeleteRoom(room)} />)}
       </div>}
     </section>}
 
