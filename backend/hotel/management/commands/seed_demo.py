@@ -6,12 +6,14 @@ from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
+from hotel.services import lock_hotel_state
 from hotel.models import Room, Guest, Booking, FinanceEntry
 
 class Command(BaseCommand):
     help = 'Faqat sun’iy demo ma’lumotlarini qo‘shadi; mavjud ma’lumot va parollarni almashtirmaydi.'
     @transaction.atomic
     def handle(self, *args, **options):
+        lock_hotel_state()
         password = os.environ.get('HOTEL_DEMO_PASSWORD', '')
         if len(password) < 12: raise CommandError('HOTEL_DEMO_PASSWORD: kamida 12 belgili lokal test parolini environment orqali kiriting.')
         employee, _ = Group.objects.get_or_create(name='Employee')

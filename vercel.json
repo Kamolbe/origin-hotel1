@@ -1,8 +1,13 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api/).*)",
+      "source": "/hotel-api/:path*",
+      "destination": "https://origin-hotel1.onrender.com/hotel-api/:path*"
+    },
+    {
+      "source": "/((?!api/|hotel-api/).*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "buildCommand": "npm run build:vercel"
 }

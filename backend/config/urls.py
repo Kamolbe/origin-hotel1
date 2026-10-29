@@ -5,6 +5,8 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('django-admin/', admin.site.urls), path('management/', include('hotel.urls')),
+    path('hotel-api/live/', react_api.live),
+    path('hotel-api/health/', react_api.health),
     path('hotel-api/visit/', react_api.visit),
     path('hotel-api/session/', react_api.session), path('hotel-api/state/', react_api.patch), path('hotel-api/auth/<str:action>/', react_api.auth),
     path('assets/<path:path>', lambda request,path: react_api.react_asset(request,'assets/'+path)),

@@ -3,20 +3,21 @@ from uuid import uuid4
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 from pathlib import Path
+from urllib.parse import urlparse
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, OperationalError, transaction
-from django.http import FileResponse, HttpResponse, JsonResponse
+from django.db import IntegrityError, OperationalError, DatabaseError, connection, transaction
+from django.http import FileResponse, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.middleware.csrf import get_token
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .models import SiteState, Room, Guest, Booking, FinanceEntry, AuditEntry
-from .services import transition_booking, audit
+from .services import transition_booking, audit, lock_hotel_state
 
 MODELS = {'rooms': Room, 'guests': Guest, 'bookings': Booking, 'finance': FinanceEntry}
 PUBLIC_SETTINGS = ['website','hotelName','contact','currency','timeZone','dateFormat','checkInTime','checkOutTime','taxRate','serviceFeeRate','seo','interface']
@@ -273,7 +274,7 @@ def patch(request):
     if request.method!='PATCH': return JsonResponse({},status=405)
     if not request.user.is_authenticated: raise PermissionDenied
     values=body(request)
-    state,_=SiteState.objects.get_or_create(pk=1)
+    state=lock_hotel_state()
     if values.get('revision')!=state.revision: return JsonResponse({'message':'Boshqa qurilmada ma’lumot yangilandi. Server nusxasi qayta yuklanadi.'},status=409)
     changes=values.get('changes',[])
     if not isinstance(changes,list) or len(changes)>2000 or any(not isinstance(item,dict) or item.get('after') is not None and not isinstance(item.get('after'),dict) for item in changes): raise ValidationError('O‘zgarishlar ro‘yxati noto‘g‘ri.')
@@ -301,7 +302,9 @@ def patch(request):
 
 def react_page(request, path=''):
     entry=settings.BASE_DIR.parent/'dist'/'index.html'
-    if not entry.exists(): return HttpResponse('Avval loyiha ildizida npm run build bajaring.',status=503)
+    if not entry.exists():
+        if settings.FRONTEND_URL: return HttpResponseRedirect(settings.FRONTEND_URL + request.get_full_path())
+        return HttpResponse('Avval loyiha ildizida npm run build bajaring.',status=503)
     html=entry.read_text().replace('<head>','<head><script>window.__HOTEL_SERVER__="django";</script>',1)
     return HttpResponse(html)
 
@@ -315,9 +318,32 @@ def react_asset(request,path):
 def visit(request):
     if request.method!='POST': return JsonResponse({},status=405)
     values=body(request)
-    state,_=SiteState.objects.get_or_create(pk=1)
+    state=lock_hotel_state()
     path=str(values.get('path','/'))[:500]
     if not path.startswith('/'): raise ValidationError('Sahifa manzili noto‘g‘ri.')
     state.payload['visits']=[{'id':f'visit-{uuid4()}','at':iso(timezone.now()),'path':path,'device':values.get('device') if values.get('device') in ['Mobil','Planshet','Desktop'] else 'Desktop','browser':str(values.get('browser','Boshqa'))[:40], 'userId':key_for(state,'users',request.user.pk) if request.user.is_authenticated else None,'userName':request.user.get_full_name() if request.user.is_authenticated else None,'userRole':role(request.user) if request.user.is_authenticated else None},*state.payload.get('visits',[])][:300]
     state.save(update_fields=['payload'])
     return response(request,state)
+
+
+@endpoint
+def health(request):
+    if request.method != 'GET': return JsonResponse({},status=405)
+    try:
+        connection.ensure_connection()
+        SiteState.objects.exists()
+        Room.objects.exists()
+        configured = get_user_model().objects.filter(is_superuser=True,is_active=True).exists()
+    except DatabaseError:
+        configured = False
+    frontend = settings.FRONTEND_URL or 'https://strix-user.vercel.app'
+    trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
+    durable = settings.HOTEL_DURABLE_STORAGE
+    ready = configured and trusted and durable
+    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
+
+
+@endpoint
+def live(request):
+    if request.method != 'GET': return JsonResponse({},status=405)
+    return JsonResponse({'service':'origin-hotel','apiVersion':1},headers={'Cache-Control':'no-store'})

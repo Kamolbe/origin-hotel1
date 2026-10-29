@@ -3,7 +3,12 @@ from decimal import Decimal
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
-from .models import AuditEntry, Booking, FinanceEntry, Room
+from .models import AuditEntry, Booking, FinanceEntry, Room, SiteState
+
+
+def lock_hotel_state():
+    state, _ = SiteState.objects.select_for_update().get_or_create(pk=1)
+    return state
 
 
 def audit(user, action, obj):
@@ -13,6 +18,7 @@ def audit(user, action, obj):
 @transaction.atomic
 def transition_booking(user, pk, action):
     if not user.has_perm('hotel.change_booking'): raise PermissionDenied
+    lock_hotel_state()
     booking = Booking.objects.select_for_update().select_related('room', 'guest').get(pk=pk)
     room = Room.objects.select_for_update().get(pk=booking.room_id)
     now, today = timezone.now(), timezone.localdate()

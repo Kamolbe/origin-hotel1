@@ -1,10 +1,13 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin
+from .admin_lock import SerializedHotelWrites
 from django.contrib import admin
 from .models import Room, Guest, Booking, FinanceEntry, AuditEntry
 from .forms import BookingForm, RoomForm, FinanceForm
 from .services import audit
 
 @admin.register(Room)
-class RoomAdmin(admin.ModelAdmin):
+class RoomAdmin(SerializedHotelWrites, admin.ModelAdmin):
     form = RoomForm
     list_display = ['number', 'room_type', 'capacity', 'price', 'status']
     search_fields = ['number']
@@ -12,13 +15,13 @@ class RoomAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None): return super().has_delete_permission(request, obj) and (obj is None or not obj.booking_set.exists())
 
 @admin.register(Guest)
-class GuestAdmin(admin.ModelAdmin):
+class GuestAdmin(SerializedHotelWrites, admin.ModelAdmin):
     list_display = ['first_name', 'last_name', 'phone', 'archived']
     search_fields = ['first_name', 'last_name', 'phone']
     list_filter = ['archived']
 
 @admin.register(Booking)
-class BookingAdmin(admin.ModelAdmin):
+class BookingAdmin(SerializedHotelWrites, admin.ModelAdmin):
     form = BookingForm
     list_display = ['id', 'guest', 'room', 'check_in', 'check_out', 'status']
     readonly_fields = ['checked_in_at', 'checked_out_at', 'status']
@@ -27,7 +30,7 @@ class BookingAdmin(admin.ModelAdmin):
     actions = None
 
 @admin.register(FinanceEntry)
-class FinanceAdmin(admin.ModelAdmin):
+class FinanceAdmin(SerializedHotelWrites, admin.ModelAdmin):
     form = FinanceForm
     list_display = ['date', 'entry_type', 'category', 'amount', 'description']
     list_filter = ['entry_type', 'category', 'date']
@@ -39,3 +42,8 @@ class AuditAdmin(admin.ModelAdmin):
     def has_add_permission(self, request): return False
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
+
+admin.site.unregister(get_user_model())
+@admin.register(get_user_model())
+class HotelUserAdmin(SerializedHotelWrites, UserAdmin):
+    pass

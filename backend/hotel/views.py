@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from .forms import RoomForm, GuestForm, BookingForm, FinanceForm, DateRangeForm
 from .models import Room, Guest, Booking, FinanceEntry
-from .services import audit, period_report, transition_booking
+from .services import audit, period_report, transition_booking, lock_hotel_state
 
 MODULES = {
     'rooms': (Room, RoomForm, 'Xonalar', ['number', 'room_type'], ['Xona', 'Turi', 'Sig‘im', 'Narx / tun', 'Holat']),
@@ -87,6 +87,7 @@ def module_list(request, kind):
         elif request.POST.get('action') == 'delete_confirm':
             try:
                 with transaction.atomic():
+                    lock_hotel_state()
                     for obj in model.objects.select_for_update().filter(pk__in=[item.pk for item in eligible]):
                         if not removable(kind, obj): raise ValidationError('Yozuvga faol bron biriktirildi. Ro‘yxatni yangilang.')
                         audit(request.user, 'archive' if kind == 'guests' else 'delete', obj)
@@ -116,6 +117,7 @@ def edit_record(request, kind, pk=None):
     if request.method == 'POST':
         try:
             with transaction.atomic():
+                lock_hotel_state()
                 if form.is_valid():
                     obj = form.save(commit=False)
                     obj.full_clean()

@@ -131,3 +131,7 @@ PDFdagi **Python + Django + SQLite + HTML/CSS + Bootstrap** uchun [backend/](./b
 Avval `npm.cmd ci --include=dev`, `npm.cmd run build`; so‘ng [backend README](./backend/README.md) bo‘yicha Python venv, requirements, `migrate`, `createsuperuser`, `runserver`. **Asosiy sayt: http://127.0.0.1:8000/**. Aynan shu interfeysda mehmon bronlari boshqa admin sessiyasiga keladi, admin o‘zgarishlari SQLite’da saqlanadi, check-in/out va moliya bir backend bilan ishlaydi. Windows yordamchisi: `scripts\start-hotel-server.cmd`.
 
 Bu rejimda parollar browserga yuborilmaydi, server ruxsatlari/CSRF tekshiriladi va saqlash xatolari ko‘rinadi. Brauzerdagi demo admin paroli serverga avtomatik o‘tmaydi; birinchi hisob `createsuperuser` bilan yaratiladi. Faqat `npm run dev` yoki Vercel static deploy backendni avtomatik ishga tushirmaydi. Haqiqiy Vercel saytga ulash uchun deploy qilingan Python server domeni va proxy/env sozlamalari kerak.
+
+## Sizning Render + Vercel manzillaringiz
+
+Frontend `https://strix-user.vercel.app`, backend `https://origin-hotel1.onrender.com`. API rewrite va himoyalangan Vercel build script sozlangan. Render’da doimiy baza, maxfiy kalit va birinchi admin tayyor bo‘lmaguncha frontend build to‘xtaydi va oldingi Vercel deployment qoladi. Bajariladigan panel sozlamalari: [backend/RENDER_DEPLOY.md](./backend/RENDER_DEPLOY.md). PostgreSQL uchun DATABASE_URL yoki Render Persistent Disk’dagi SQLite qo‘llanadi; vaqtinchalik Render diski doimiy saqlash deb belgilanmaydi.
