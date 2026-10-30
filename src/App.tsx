@@ -15,6 +15,7 @@ import { useAuth } from './context/AuthContext';
 import { useAppData } from './context/AppDataContext';
 import type { UserRole } from './types';
 
+const ManagersPage = lazy(async () => ({ default: (await import('./pages/ManagersPage')).ManagersPage }));
 const StaffPage = lazy(async () => ({ default: (await import('./pages/StaffPage')).StaffPage }));
 const AdminOversightPage = lazy(async () => ({ default: (await import('./pages/AdminOversightPage')).AdminOversightPage }));
 const CompleteProfilePage = lazy(async () => ({ default: (await import('./pages/CompleteProfilePage')).CompleteProfilePage }));
@@ -59,6 +60,7 @@ export function App() {
     <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
       <Route path="my-stay" element={<MyStayPage />} />
       <Route index element={user?.role === 'admin' ? <AdminOversightPage /> : <DashboardPage />} />
+      <Route path="managers" element={<ProtectedRoute roles={['admin']}><ManagersPage /></ProtectedRoute>} />
       <Route path="employees" element={<ProtectedRoute roles={['admin']}><StaffPage /></ProtectedRoute>} />
       <Route path="rooms" element={<RoomsPage />} />
       <Route path="guests" element={<ProtectedRoute roles={staffRoles}><GuestsPage /></ProtectedRoute>} />

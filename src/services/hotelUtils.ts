@@ -48,7 +48,9 @@ export function recordAudit(
     entityType,
     entityId,
     userId,
-    details,
+    actorName: data.users.find((item)=>item.id===userId)?.name,
+    actorEmail: data.users.find((item)=>item.id===userId)?.email,
+    details: { ...details, actorRole: data.users.find((item)=>item.id===userId)?.role },
     createdAt: new Date().toISOString(),
   };
   return [entry, ...data.auditLog];

@@ -14,7 +14,7 @@ import { makeId } from '../services/storage';
 import { recordAudit } from '../services/hotelUtils';
 import type { User, UserRole } from '../types';
 
-const roleOptions: Array<[UserRole, string]> = [['user', 'Mehmon'], ['manager', 'Manager']];
+const roleOptions: Array<[UserRole, string]> = [['user', 'Mehmon']];
 const roleLabels: Record<UserRole, string> = { user: 'Mehmon', manager: 'Menejer', admin: 'Administrator' };
 const demoCode: Partial<Record<UserRole, string>> = { admin: 'admin1234', manager: 'manager1234' };
 
@@ -46,6 +46,7 @@ export function UsersPage() {
 
   function toggleActive(id: string) {
     if (user?.role !== 'manager') return;
+    if (data.users.find((item)=>item.id===id)?.role==='manager') { error('Manager hisoblarini administrator boshqaradi.'); return; }
     if (id === user.id) { error('O‘z hisobingizni bu yerdan bloklay olmaysiz.'); return; }
     updateData((current) => ({ ...current, users: current.users.map((item) => item.id === id ? { ...item, isActive: !item.isActive } : item), auditLog: recordAudit(current, 'Hisob holati o‘zgartirildi', 'user', id, user.id).slice(0, 500) }));
     success('Foydalanuvchi holati yangilandi.');
@@ -66,6 +67,7 @@ export function UsersPage() {
 
   function removeUser() {
     if (!removeTarget || user?.role !== 'manager') return;
+    if (removeTarget.role === 'manager') { error('Manager hisoblarini administrator boshqaradi.'); return; }
     if (removeTarget.id === user.id) { error('O‘z hisobingizni o‘chira olmaysiz.'); setRemoveTarget(null); return; }
     const admins = data.users.filter((item) => item.role === 'admin');
     if (removeTarget.role === 'admin' && admins.length <= 1) { error('Tizimda kamida bitta administrator qolishi kerak.'); setRemoveTarget(null); return; }
@@ -102,7 +104,7 @@ export function UsersPage() {
         <h2 className="flex items-center gap-2 font-display text-2xl"><Users size={18} className="text-champagne" />Hisoblar</h2>
         <SearchField value={query} onChange={setQuery} label="Foydalanuvchilarni qidirish" placeholder="Ism yoki email bo‘yicha qidirish" className="w-full sm:max-w-xs" />
       </div>
-    {user?.role === 'manager' && <BulkDeletePanel subject="ta foydalanuvchi" items={users.filter((item) => item.id !== user.id && item.role !== 'admin').map((item) => ({ id: item.id, label: `${item.name} · ${item.email}` }))} note="O‘z hisobingiz va administratorlar guruhlab o‘chirilmaydi. Joriy qidiruv natijalari belgilanadi." onDelete={(ids) => { if (user.role !== 'manager') return; updateData((current) => ({ ...current, users: current.users.filter((item) => !ids.includes(item.id) || item.id === user.id || item.role === 'admin'), auditLog: recordAudit(current, 'Belgilangan foydalanuvchilar o‘chirildi', 'user', ids.join(','), user.id).slice(0, 500) })); success('Belgilangan foydalanuvchilar o‘chirildi.'); }} />}
+    {user?.role === 'manager' && <BulkDeletePanel subject="ta foydalanuvchi" items={users.filter((item) => item.id !== user.id && item.role !== 'admin' && item.role !== 'manager').map((item) => ({ id: item.id, label: `${item.name} · ${item.email}` }))} note="O‘z hisobingiz va administratorlar guruhlab o‘chirilmaydi. Joriy qidiruv natijalari belgilanadi." onDelete={(ids) => { if (user.role !== 'manager') return; updateData((current) => ({ ...current, users: current.users.filter((item) => !ids.includes(item.id) || item.id === user.id || item.role === 'admin'), auditLog: recordAudit(current, 'Belgilangan foydalanuvchilar o‘chirildi', 'user', ids.join(','), user.id).slice(0, 500) })); success('Belgilangan foydalanuvchilar o‘chirildi.'); }} />}
       <ResponsiveTable><table className="w-full min-w-[880px] text-left"><thead className="bg-[var(--page)] text-[10px] uppercase text-muted"><tr>{['Foydalanuvchi', 'Rol', 'Holat', 'Ro‘yxatdan o‘tgan', 'Oxirgi kirish', 'Amallar'].map((label) => <th key={label} className="px-4 py-3">{label}</th>)}</tr></thead><tbody>{users.map((item) => <tr key={item.id} className="border-t border-[var(--line)] text-xs">
         <td className="px-4 py-4 font-semibold">{item.name}<span className="block text-[10px] font-normal text-muted">{item.email}</span></td>
         <td className="px-4 py-4"><span className="inline-flex items-center gap-1.5"><ShieldCheck size={14} />{roleLabels[item.role]}</span></td>
@@ -110,8 +112,8 @@ export function UsersPage() {
         <td className="px-4 py-4">{new Date(item.createdAt).toLocaleDateString('uz-UZ')}</td>
         <td className="px-4 py-4">{item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString('uz-UZ') : 'Hali qayd etilmagan'}</td>
         <td className="px-4 py-4"><div className="flex justify-end gap-1">
-          {user?.role === 'manager' && <button disabled={item.id === user?.id} onClick={() => toggleActive(item.id)} className="secondary-button disabled:opacity-40">{item.isActive ? 'Bloklash' : 'Faollashtirish'}</button>}
-          {user?.role === 'manager' && <button disabled={item.id === user.id} onClick={() => setRemoveTarget(item)} title="O‘chirish" className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"><Trash2 size={15} /></button>}
+          {user?.role === 'manager' && <button disabled={item.id === user?.id || item.role === 'manager'} onClick={() => toggleActive(item.id)} className="secondary-button disabled:opacity-40">{item.isActive ? 'Bloklash' : 'Faollashtirish'}</button>}
+          {user?.role === 'manager' && <button disabled={item.id === user.id || item.role === 'manager'} onClick={() => setRemoveTarget(item)} title="O‘chirish" className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"><Trash2 size={15} /></button>}
         </div></td>
       </tr>)}</tbody></table>{!users.length && <p className="p-6 text-center text-sm text-muted">Hisob topilmadi.</p>}</ResponsiveTable>
     </section>

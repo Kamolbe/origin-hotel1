@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { AppData } from '../types';
 import { loadAppData, saveAppData } from '../services/storage';
-import { applyServerChanges, hotelRequest, serverChanges, serverInitial, usesHotelServer, type ServerChange, type ServerReply } from '../services/hotelServer';
+import { applyServerChanges, hotelRequest, hotelRevision, serverChanges, serverInitial, usesHotelServer, type ServerChange, type ServerReply } from '../services/hotelServer';
 
 type Updater = (current: AppData) => AppData;
 type AppDataContextValue = { data: AppData; updateData: (updater: Updater) => AppData; refreshData: () => void; replaceServerData: (reply: ServerReply) => void; serverStatus: 'ready' | 'saving' | 'error'; serverError: string };
@@ -67,8 +67,30 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [replaceServerData]);
   useEffect(() => {
     if (usesHotelServer()) {
-      const timer = window.setInterval(() => { if (!busy.current && !pending.current.length && document.visibilityState === 'visible') refreshData(); }, 15000);
-      return () => window.clearInterval(timer);
+      let checking = false;
+      let active = true;
+      let lastSessionCheck = Date.now();
+      const poll = async (force = false) => {
+        if (!active || checking || busy.current || pending.current.length || document.visibilityState !== 'visible') return;
+        checking = true;
+        const session = generation.current;
+        const version = revision.current;
+        try {
+          const periodicSession = Date.now() - lastSessionCheck >= 30000;
+          if (!force && !periodicSession && await hotelRevision() === version) return;
+          const reply = await hotelRequest('session');
+          if (active && !busy.current && !pending.current.length && session === generation.current && version === revision.current) {
+            lastSessionCheck = Date.now(); replaceServerData(reply);
+          }
+        } catch (cause) {
+          if (active && session === generation.current && version === revision.current && !busy.current && !pending.current.length) { setServerError(String(cause)); setServerStatus('error'); }
+        } finally { checking = false; }
+      };
+      const focus = () => { void poll(true); };
+      const timer = window.setInterval(() => { void poll(); }, 3000);
+      window.addEventListener('focus', focus);
+      document.addEventListener('visibilitychange', focus);
+      return () => { active = false; window.clearInterval(timer); window.removeEventListener('focus', focus); document.removeEventListener('visibilitychange', focus); };
     }
     const onStorage = (event: StorageEvent) => { if (event.key === null || event.key === 'origin-hotel-app-data-v1') refreshData(); };
     window.addEventListener('storage', onStorage);

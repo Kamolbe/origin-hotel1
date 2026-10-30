@@ -26,6 +26,7 @@ export interface UserPreferences {
 }
 
 export interface User extends DemoUserCredentials {
+  isManagerAccount?: boolean;
   profileRequired?: boolean;
   isActive: boolean;
   createdAt: string;
@@ -65,6 +66,10 @@ export interface Room {
 }
 
 export interface Booking {
+  expectedStatus?: BookingStatus;
+  lastHandledBy?: string;
+  lastHandledByName?: string;
+  handledAt?: string;
   id: string;
   bookingNumber: string;
   userId?: string;
@@ -108,6 +113,8 @@ export interface NotificationItem {
 }
 
 export interface AuditEntry {
+  actorName?: string;
+  actorEmail?: string;
   id: string;
   action: string;
   entityType: 'room' | 'guest' | 'booking' | 'finance' | 'user';
@@ -231,6 +238,7 @@ export interface SavedReport {
   summary: { income: number; expense: number; net: number; occupancy: number; currency: Currency; bookingCount: number; financeCount: number; room_nights: number; days: number };
 }
 export interface AppData {
+  managerSummary?: Array<{userId: string; totalActions: number; bookingApprovals: number; lastActionAt: string | null}>;
   reports?: SavedReport[];
   employees?: StaffMember[];
   salaryPayments?: SalaryPayment[];

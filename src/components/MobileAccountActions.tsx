@@ -23,7 +23,7 @@ export function MobileAccountActions({ onNavigate }: { onNavigate?: () => void }
     ...(user?.role === 'manager' ? [['/app/guests', 'Mehmonlar']] : []),
     ...(staff ? [['/app/finance', 'Moliya'], ['/app/reports', 'Hisobotlar']] : []),
     ...(staff ? [['/app/users', 'Foydalanuvchilar']] : []),
-    ...(user?.role === 'admin' ? [['/app/employees', 'Ishchilar va oyliklar']] : []),
+    ...(user?.role === 'admin' ? [['/app/managers', 'Managerlar'], ['/app/employees', 'Ishchilar va oyliklar']] : []),
   ];
   const notifications = user ? data.notifications.filter((item) => canSeeNotification(user,item)) : [];
   const pages = Math.max(1, Math.ceil(notifications.length / 2));

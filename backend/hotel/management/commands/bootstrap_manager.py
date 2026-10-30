@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.models import Q
-from hotel.permissions import configure_manager
+from hotel.permissions import configure_manager, manager_accounts
 from hotel.services import lock_hotel_state
 
 class Command(BaseCommand):
@@ -13,8 +13,8 @@ class Command(BaseCommand):
     def handle(self,*args,**options):
         lock_hotel_state()
         group=configure_manager();User=get_user_model()
-        if User.objects.filter(groups=group,is_active=True).exists():
-            self.stdout.write('Manager mavjud; hisob o‘zgartirilmadi.');return
+        if manager_accounts().exists():
+            self.stdout.write('Manager hisobi mavjud; hisob va bloklash holati o‘zgartirilmadi.');return
         email=os.environ.get('HOTEL_BOOTSTRAP_MANAGER_EMAIL','manager@manager.com').strip().lower()
         password=os.environ.get('HOTEL_BOOTSTRAP_MANAGER_PASSWORD','')
         if len(password)<12: raise CommandError('Manager paroli kamida 12 belgili bo‘lsin.')

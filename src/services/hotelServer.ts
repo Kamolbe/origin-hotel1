@@ -46,3 +46,11 @@ export function applyServerChanges(data: AppData, changes: ServerChange[]): AppD
   }
   return next;
 }
+
+export async function hotelRevision(): Promise<number> {
+  const response = await fetch('/hotel-api/revision/', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error('Server yangilanishini tekshirib bo‘lmadi.');
+  const result = await response.json();
+  if (!Number.isSafeInteger(result.revision) || result.revision < 0) throw new Error('Server yangilanish javobi noto‘g‘ri.');
+  return result.revision;
+}

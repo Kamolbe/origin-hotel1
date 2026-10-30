@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const names: Record<string, string> = {
-  employees: 'Ishchilar va oyliklar', rooms: 'Xonalar', guests: 'Mehmonlar', bookings: 'Bronlar', finance: 'Moliya', reports: 'Hisobotlar', users: 'Foydalanuvchilar', profile: 'Mening profilim', 'my-stay': 'Mening kabinetim',
+  managers: 'Managerlar', employees: 'Ishchilar va oyliklar', rooms: 'Xonalar', guests: 'Mehmonlar', bookings: 'Bronlar', finance: 'Moliya', reports: 'Hisobotlar', users: 'Foydalanuvchilar', profile: 'Mening profilim', 'my-stay': 'Mening kabinetim',
   settings: 'Sozlamalar', site: 'Sayt muharriri', hotel: 'Mehmonxona va aloqa', security: 'Xavfsizlik', roles: 'Rollar', communication: 'Xabarlar', content: 'Kontent va media', seo: 'SEO va integratsiya', interface: 'Menyu va interfeys', operations: 'Backup va tizim',
   text: 'Matnlar', media: 'Rasmlar va logo', layout: 'Sahifa bo‘limlari', stay: 'Mehmonxona qoidalari', account: 'Profil', preferences: 'Mening tanlovlarim', privacy: 'Ma’lumotlarim', help: 'Yordam',
 };

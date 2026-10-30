@@ -11,8 +11,8 @@ def lock_hotel_state():
     return state
 
 
-def audit(user, action, obj):
-    AuditEntry.objects.create(actor=user, action=action, entity=obj._meta.model_name, entity_id=str(obj.pk))
+def audit(user, action, obj, details=None):
+    AuditEntry.objects.create(actor=user, action=action, entity=obj._meta.model_name, entity_id=str(obj.pk), details={**(details or {}), 'actorId':str(user.pk), 'actorRole':'admin' if user.is_superuser else 'manager' if user.groups.filter(name='Manager').exists() else 'user', 'actorName':user.get_full_name() or user.username, 'actorEmail':user.email, 'record':str(obj)[:250]})
 
 
 @transaction.atomic

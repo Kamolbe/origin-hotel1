@@ -83,6 +83,7 @@ class FinanceEntry(models.Model):
 
 class AuditEntry(models.Model):
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    details = models.JSONField(default=dict, blank=True)
     action = models.CharField(max_length=250)
     entity = models.CharField(max_length=60)
     entity_id = models.CharField(max_length=60)

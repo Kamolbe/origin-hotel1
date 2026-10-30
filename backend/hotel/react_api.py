@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .models import SiteState, Room, Guest, Booking, FinanceEntry, AuditEntry, StaffMember, SalaryPayment, ReportSnapshot
-from .permissions import configure_manager, is_manager
+from .permissions import configure_manager, is_manager, ensure_manager_capacity, manager_accounts
 from .services import transition_booking, audit, lock_hotel_state
 
 MODELS = {'rooms': Room, 'guests': Guest, 'bookings': Booking, 'finance': FinanceEntry, 'employees': StaffMember, 'salaryPayments': SalaryPayment, 'reports': ReportSnapshot}
@@ -48,7 +48,7 @@ def iso(value): return value.isoformat() if value else None
 def account(state, user):
     key = key_for(state, 'users', user.pk)
     extra = {name:value for name,value in extras(state,'users',key).items() if name not in ['password','accessCode']}
-    return {**extra, 'id': key, 'name': user.get_full_name() or user.username, 'email': user.email or user.username, 'role': role(user), 'password': '', 'isActive': user.is_active, 'profileRequired': bool(extra.get('profileRequired',False)), 'createdAt': iso(user.date_joined), 'lastLoginAt': iso(user.last_login)}
+    return {**extra, 'id': key, 'name': user.get_full_name() or user.username, 'email': user.email or user.username, 'role': role(user), 'isManagerAccount':is_manager(user) and not user.is_superuser, 'password': '', 'isActive': user.is_active, 'profileRequired': bool(extra.get('profileRequired',False)), 'createdAt': iso(user.date_joined), 'lastLoginAt': iso(user.last_login)}
 
 def notification_visible(state,user,note):
     if not user.is_authenticated or role(user)=='admin' and note.get('type')=='booking': return False
@@ -83,15 +83,20 @@ def snapshot(state, user):
     users = [account(state,item) for item in (get_user_model().objects.all() if user.is_authenticated and (role(user)=='admin' or is_manager(user)) else [user] if user.is_authenticated else [])]
     config = state.payload.get('settings',{})
     if not user.is_authenticated or role(user) not in ['admin','manager']: config = {key:value for key,value in config.items() if key in PUBLIC_SETTINGS}
-    notifications = [note for note in state.payload.get('notifications',[]) if notification_visible(state,user,note)]
+    notifications = [{**note, **({'read':key_for(state,'users',user.pk) in note.get('readBy',[])} if note.get('type')=='booking' and not note.get('userId') else {})} for note in state.payload.get('notifications',[]) if notification_visible(state,user,note)]
     if user.is_authenticated and role(user)=='admin':
         from .payroll import due_notifications
         notifications=due_notifications(key_for(state,'users',user.pk),state.payload.get('payrollRead',[]))+notifications
-    logs = [{'id':str(item.pk),'action':item.action,'entityType':{'financeentry':'finance'}.get(item.entity,item.entity),'entityId':item.entity_id,'userId':key_for(state,'users',item.actor_id) if item.actor_id else None,'createdAt':iso(item.created_at)} for item in AuditEntry.objects.all()[:500]] if staff(user) else []
+    logs = [{'id':str(item.pk),'action':item.action,'details':item.details,'actorName':item.details.get('actorName') or (item.actor.get_full_name() or item.actor.username if item.actor else 'Tizim'),'actorEmail':item.details.get('actorEmail',''),'entityType':{'financeentry':'finance'}.get(item.entity,item.entity),'entityId':item.entity_id,'userId':key_for(state,'users',item.actor_id or int(item.details['actorId'])) if item.actor_id or str(item.details.get('actorId','')).isdigit() else None,'createdAt':iso(item.created_at)} for item in AuditEntry.objects.select_related('actor').all()[:1000]] if staff(user) else []
     employees = [{'id':key_for(state,'employees',e.pk),'name':e.name,'jobTitle':e.job_title,'phone':e.phone,'email':e.email,'monthlySalary':float(e.monthly_salary),'startDate':str(e.start_date),'payday':e.payday,'notes':e.notes,'isActive':e.is_active,'createdAt':iso(e.created_at)} for e in StaffMember.objects.all()] if user.is_authenticated and role(user)=='admin' else []
     salaries = [{'id':key_for(state,'salaryPayments',p.pk),'employeeId':key_for(state,'employees',p.employee_id),'period':p.period.strftime('%Y-%m'),'amount':float(p.amount),'paidAt':iso(p.paid_at),'paidBy':key_for(state,'users',p.paid_by_id) if p.paid_by_id else None} for p in SalaryPayment.objects.all()] if user.is_authenticated and role(user)=='admin' else []
     reports = [{'id':key_for(state,'reports',record.pk),'title':record.title,'from':str(record.start_date),'to':str(record.end_date),'summary':record.summary,'createdBy':key_for(state,'users',record.created_by_id) if record.created_by_id else None,'createdAt':iso(record.created_at)} for record in ReportSnapshot.objects.all()] if staff(user) and user.has_perm('hotel.view_financeentry') else []
-    return {'serverPermissions':list(user.get_all_permissions()) if user.is_authenticated else [],'reports':reports,'employees':employees,'salaryPayments':salaries,'rooms':rooms,'guests':guests,'bookings':bookings,'finance':finance,'users':users,'settings':config,'notifications':notifications,'visits':state.payload.get('visits',[]) if user.is_authenticated and role(user) in ['admin','manager'] else [],'auditLog':logs,'unavailableStays':[{'roomId':key_for(state,'rooms',b.room_id),'checkIn':str(b.check_in),'checkOut':str(b.check_out)} for b in all_bookings if b.status in ['pending','confirmed']]}
+    manager_summary=[]
+    if user.is_authenticated and role(user)=='admin':
+        from django.db.models import Count, Q, Max
+        for row in AuditEntry.objects.filter(actor__in=manager_accounts()).values('actor_id').annotate(total=Count('id'),approvals=Count('id',filter=Q(details__event='booking_confirmed')),last=Max('created_at')):
+            manager_summary.append({'userId':key_for(state,'users',row['actor_id']),'totalActions':row['total'],'bookingApprovals':row['approvals'],'lastActionAt':iso(row['last'])})
+    return {'managerSummary':manager_summary,'serverPermissions':list(user.get_all_permissions()) if user.is_authenticated else [],'reports':reports,'employees':employees,'salaryPayments':salaries,'rooms':rooms,'guests':guests,'bookings':bookings,'finance':finance,'users':users,'settings':config,'notifications':notifications,'visits':state.payload.get('visits',[]) if user.is_authenticated and role(user) in ['admin','manager'] else [],'auditLog':logs,'unavailableStays':[{'roomId':key_for(state,'rooms',b.room_id),'checkIn':str(b.check_in),'checkOut':str(b.check_out)} for b in all_bookings if b.status in ['pending','confirmed']]}
 
 def response(request,state):
     return JsonResponse({'data':snapshot(state,request.user),'user':account(state,request.user) if request.user.is_authenticated else None,'revision':state.revision,'csrfToken':get_token(request)},headers={'Cache-Control':'no-store, private'})
@@ -115,8 +120,11 @@ def body(request):
 
 def notification(state,title,message,owner=None):
     notes = state.payload.setdefault('notifications',[])
-    notes.insert(0,{'id':f'notification-{uuid4()}','userId':owner,'type':'booking','title':title,'message':message,'read':False,'createdAt':iso(timezone.now())})
-    state.payload['notifications']=notes[:500]
+    recipients=[owner] if owner else [key_for(state,'users',pk) for pk in manager_accounts().filter(is_active=True).values_list('pk',flat=True)]
+    # A shared fallback keeps pending requests visible if the first manager is added later.
+    for recipient in recipients or [None]:
+        notes.insert(0,{'id':f'notification-{uuid4()}','userId':recipient,'type':'booking','title':title,'message':message,'read':False,'createdAt':iso(timezone.now())})
+    state.payload['notifications']=notes[:1000]
 
 @ensure_csrf_cookie
 @endpoint
@@ -178,6 +186,8 @@ def auth(request, action):
                 if not extra.get('profileConfirmedAt'): extra['profileRequired']=True
                 state.revision+=1;state.save()
         login(request,user,backend='django.contrib.auth.backends.ModelBackend')
+        with transaction.atomic():
+            state=lock_hotel_state();audit(user,'Tizimga kirildi',user,{'event':'login'});state.revision+=1;state.save()
     else: return JsonResponse({},status=404)
     state,_=SiteState.objects.get_or_create(pk=1)
     return response(request,state)
@@ -213,15 +223,22 @@ def mutate(state,user,kind,key,after):
             state.payload['payrollRead']=sorted(read)[-5000:]
             return
         for note in state.payload.get('notifications',[]):
-            if note['id']==key and after and notification_visible(state,user,note): note['read']=bool(after.get('read'))
+            if note['id']==key and after and notification_visible(state,user,note):
+                if note.get('type')=='booking' and not note.get('userId'):
+                    readers=set(note.get('readBy',[]));user_key=key_for(state,'users',user.pk)
+                    if after.get('read'): readers.add(user_key)
+                    else: readers.discard(user_key)
+                    note['readBy']=sorted(readers)
+                else: note['read']=bool(after.get('read'))
         return
     if kind=='users':
         obj=find_record(state,kind,key)
         if not (admin or manager) and (not obj or obj.pk!=user.pk): raise PermissionDenied
         if after is None:
-            if not obj or obj.pk==user.pk or obj.is_superuser: raise PermissionDenied
+            if not obj or obj.pk==user.pk or obj.is_superuser or manager and is_manager(obj): raise PermissionDenied
             audit(user,'delete',obj);obj.delete();return
-        if manager and (obj and obj.is_superuser or after and after.get('role')=='admin'): raise PermissionDenied
+        if manager and (obj and obj.is_superuser or after and after.get('role')=='admin' or obj and is_manager(obj) and obj.pk!=user.pk or after.get('role')=='manager' and (not obj or not is_manager(obj))): raise PermissionDenied
+        if after.get('role')=='manager' and (not obj or not is_manager(obj)): ensure_manager_capacity(obj)
         if obj is None:
             obj=get_user_model()(username=after['email'].strip().lower(),email=after['email'].strip().lower())
             validate_password(after.get('password',''),obj);obj.set_password(after['password'])
@@ -317,6 +334,8 @@ def mutate(state,user,kind,key,after):
         # Some Google accounts have one display name; preserve a valid guest record.
         if not obj.last_name: obj.last_name='—'
     elif kind=='bookings':
+        previous_status=obj.status if obj else None
+        if obj and after.get('expectedStatus') is not None and after['expectedStatus']!=obj.status: raise ValidationError('Bu bronni boshqa manager allaqachon ko‘rib chiqqan. Yangilangan holatni tekshiring.')
         room=find_record(state,'rooms',after['roomId']);guest=find_record(state,'guests',after['guestId'])
         if not room or not guest: raise ValidationError('Xona yoki mehmon topilmadi.')
         own=obj and (extras(state,kind,key).get('userId')==key_for(state,'users',user.pk) or not extras(state,kind,key).get('userId') and obj.guest.email.lower()==user.email.lower())
@@ -334,6 +353,7 @@ def mutate(state,user,kind,key,after):
             return
         if obj and obj.checked_in_at: raise ValidationError('Joylashtirilgan bron tahrirlanmaydi. Check-out bajaring.')
         if obj and after['status']!=obj.status and staff(user) and not (admin or manager): raise PermissionDenied
+        if obj and after['status']=='confirmed' and obj.status not in ['pending','confirmed']: raise ValidationError('Faqat kutilayotgan bronni tasdiqlash mumkin.')
         new=obj is None;obj=obj or Booking()
         obj.room=room;obj.guest=guest;obj.check_in=parse_date(after['checkIn']);obj.check_out=parse_date(after['checkOut']);obj.status=after['status'];obj.adults=int(after['adults']);obj.children=int(after['children'])
         if not obj.check_in or not obj.check_out: raise ValidationError('Sanalarni to‘g‘ri kiriting.')
@@ -344,15 +364,23 @@ def mutate(state,user,kind,key,after):
         metadata={**after}
         if not staff(user): metadata['userId']=key_for(state,'users',user.pk);metadata['paidAmount']=0 if new else extras(state,kind,key).get('paidAmount',0)
         save_extra(state,kind,key,metadata,['bookingNumber','userId','source','paidAmount','guestNote'])
-        notification(state,'Yangi bron' if new else 'Bron holati yangilandi',f'{guest.first_name} · {room.number}-xona',None if new else extras(state,kind,key).get('userId'))
-        if not new: notification(state,'Bron holati o‘zgardi',f'{guest.first_name} · {room.number}-xona · {obj.get_status_display()}')
+        owner_key=extras(state,kind,key).get('userId')
+        if new: notification(state,'Yangi bron',f'{guest.first_name} · {room.number}-xona')
+        elif owner_key: notification(state,'Bron holati yangilandi',f'{guest.first_name} · {room.number}-xona',owner_key)
+        if not new and previous_status!=obj.status:
+            actor=user.get_full_name() or user.username
+            notification(state,'Bron tasdiqlandi' if obj.status=='confirmed' else 'Bron holati o‘zgardi',f'{guest.first_name} · {room.number}-xona · {obj.get_status_display()} · {actor}')
+            metadata=state.payload.setdefault('extras',{}).setdefault(kind,{}).setdefault(key,{})
+            metadata.update({'lastHandledBy':key_for(state,'users',user.pk),'lastHandledByName':actor,'handledAt':iso(timezone.now())})
     else:
         check_permission(user,kind,'change' if obj else 'add')
         obj=obj or FinanceEntry();obj.entry_type=after['type'];obj.category=after['category'];obj.amount=Decimal(str(after['amount']));obj.date=parse_date(after['date'][:10]);obj.description=after['description'];obj.booking=find_record(state,'bookings',after['bookingId']) if after.get('bookingId') else None
         save_extra(state,kind,key,after,['paymentMethod'])
     obj.full_clean();obj.save()
     state.payload.setdefault('ids',{}).setdefault(kind,{})[key]=obj.pk
-    audit(user,'save',obj)
+    if kind=='bookings' and previous_status!=obj.status:
+        audit(user,'Bron tasdiqlandi' if obj.status=='confirmed' else 'Bron holati yangilandi',obj,{'event':'booking_confirmed' if obj.status=='confirmed' else 'booking_status_changed','previousStatus':previous_status,'status':obj.status,'bookingNumber':extras(state,kind,key).get('bookingNumber',f'BR-{obj.pk:05}'),'roomNumber':obj.room.number})
+    else: audit(user,'save',obj)
 
 @endpoint
 @transaction.atomic
@@ -430,10 +458,17 @@ def health(request):
     trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
     durable = settings.HOTEL_DURABLE_STORAGE
     ready = configured and trusted and durable
-    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
+    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
 
 
 @endpoint
 def live(request):
     if request.method != 'GET': return JsonResponse({},status=405)
     return JsonResponse({'service':'origin-hotel','apiVersion':1},headers={'Cache-Control':'no-store'})
+
+
+@endpoint
+def revision(request):
+    if request.method != 'GET': return JsonResponse({},status=405)
+    value=SiteState.objects.filter(pk=1).values_list('revision',flat=True).first()
+    return JsonResponse({'revision':value or 0},headers={'Cache-Control':'no-store, private'})

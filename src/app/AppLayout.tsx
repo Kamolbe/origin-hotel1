@@ -26,6 +26,7 @@ const navigation = [
   { to: '/app/finance', key: 'nav.finance', icon: WalletCards, roles: ['manager', 'admin'] as UserRole[] },
   { to: '/app/reports', key: 'nav.reports', icon: ChartNoAxesCombined, roles: ['manager', 'admin'] as UserRole[] },
   { to: '/app/users', key: 'Foydalanuvchilar', icon: ShieldCheck, roles: ['manager', 'admin'] as UserRole[] },
+  { to: '/app/managers', key: 'Managerlar', icon: ShieldCheck, roles: ['admin'] as UserRole[] },
   { to: '/app/employees', key: 'Ishchilar va oyliklar', icon: Users, roles: ['admin'] as UserRole[] },
   { to: '/app/settings', key: 'nav.settings', icon: Settings, roles: ['user', 'manager', 'admin'] as UserRole[] },
 ];

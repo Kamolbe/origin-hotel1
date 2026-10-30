@@ -59,3 +59,17 @@ Alohida check-in/out tugmalari foydalanuvchi so‘roviga ko‘ra olib tashlangan
 Adminning desktop/mobil menyusi, tezkor qidiruvi va nazorat havolalaridan **Bronlar** hamda **Mehmonlar** olib tashlangan; ushbu `/app` sahifalariga bevosita kirish adminni umumiy nazoratga qaytaradi. Adminning umumiy statistika, xona kuzatuvi, moliya/hisobotlar va ishchilar huquqlari qolgan.
 
 Yangi bron va bron holati o‘zgarishi (jumladan, foydalanuvchi bekor qilishi) managerning tizim ichidagi bildirishnomalariga tushadi. Foydalanuvchiga o‘z bronining natijasi alohida yuboriladi. Admin bron bildirishnomasini olmaydi va uni manager o‘rniga o‘qilgan deb belgilay olmaydi. Oylik va moliyaviy nazorat bildirishnomalari admin uchun saqlangan. Bu yo‘naltirish email/SMS jo‘natish emas, sayt ichidagi inbox uchun.
+
+## Managerlar nazorati va umumiy bron holati
+
+Adminning **Managerlar** (`/app/managers`) sahifasida hisoblar, oxirgi kirish va amal, barcha server qaydlari bo‘yicha amallar/tasdiqlashlar soni, so‘nggi 1000 qayddan saralangan faoliyat bor. Ishchilar sahifasidagi manager yaratish ham shu komponentdan foydalanadi. Managerlar bir-birining hisobini qo‘sha/bloklay/o‘chira olmaydi; buni admin bajaradi.
+
+**Limit — jami 3 ta Manager guruhi hisobi**, bloklangan hisoblar ham sanaladi. Faqat o‘chirish slotni bo‘shatadi. Eski cheklangan Employee guruhi manager hisoblari soniga qo‘shilmaydi. Agar eski bazada allaqachon 3 tadan ko‘p bo‘lsa, yangi hisoblar bloklanadi; mavjud hisoblar avtomatik o‘chirilmaydi. API global state lock + transaction ichida tekshiradi; User.groups m2m signal ham oddiy/reverse guruh qo‘shishlarida limitni tekshiradi. Render bootstrap mavjud bloklangan managerlarni qayta yaratmaydi/faollashtirmaydi.
+
+Yangi bron haqidagi xabar va tasdiqlash/holat natijasi barcha faol managerlarga **alohida bildirishnoma** sifatida yoziladi. Biri o‘qishi boshqasining read holatini o‘zgartirmaydi. Tasdiqlash xabari va bron qatorida amalni bajargan managerning ismi, vaqt ko‘rsatiladi. Foydalanuvchi o‘z natijasini ko‘rishda davom etadi; adminning bron inboxi ochilmaydi.
+
+Ochiq/ko‘rinib turgan sahifa har **3 soniyada** yengil `/hotel-api/revision/` endpointini tekshiradi, revision o‘zgargandagina to‘liq ma’lumot oladi. Focus/visibility qaytganda ham yangilanadi; sessiya har 30 soniyada tekshiriladi. Bu polling, WebSocket emas: tarmoq yoki Render cold-start vaqtida kechikish bo‘lishi mumkin. Saqlanayotgan o‘zgarishlar yoki eskirgan javoblar yangi holatni bosib ketmasligi uchun generation/revision tekshiruvlari saqlangan.
+
+Bir vaqtning o‘zida kelgan manager amallari transaction/global revision orqali tartiblanadi. Bron holatiga qo‘shimcha `expectedStatus` tekshiruvi qo‘yilgan. Eski pending holatini qayta tasdiqlash 409/400 bilan rad etiladi, ikkinchi tasdiqlash yoki ikki marta tasdiqlash auditi yaratilmaydi.
+
+Faoliyat `AuditEntry.details` ichida canonical actor ismi/emaili/roli, yozuv va bron oldingi/yangi holati bilan yoziladi. Manager o‘chirilganda FK null bo‘lsa ham saqlangan actor ma’lumotlari qoladi. Eski mavjud actorli qaydlar `0005_auditentry_details` migratsiyasida to‘ldiriladi; oldin o‘chirilgan hisoblardagi yo‘qolgan ismni qayta tiklab bo‘lmaydi. Readiness yangi `manager-team-sync` xususiyatini tekshiradi: avval Render migratsiyasi/deployi, keyin Vercel.
