@@ -34,7 +34,7 @@ export function RoomsPage() {
   const { success, error } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const isAdmin = user?.role === 'admin';
+  const canManage = user?.role === 'manager';
   const guestView = user?.role === 'user';
   const [query, setQuery] = useState('');
   const [floor, setFloor] = useState('all');
@@ -76,7 +76,7 @@ export function RoomsPage() {
 
   function saveRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isAdmin) { error('Xonalarni faqat administrator boshqaradi.'); return; }
+    if (!canManage) { error('Xonalarni faqat manager boshqaradi.'); return; }
     if (mode !== 'assign' && form.imageUrl.trim() && !isSupportedImage(form.imageUrl.trim())) { error('Rasm uchun http/https yoki / bilan boshlanuvchi manzil kiriting.'); return; }
     if (mode !== 'assign' && (!form.number.trim() || !Number.isInteger(Number(form.floor)) || Number(form.floor) < 1 || !Number.isInteger(Number(form.capacity)) || Number(form.capacity) < 1 || !Number.isFinite(Number(form.pricePerNight)) || Number(form.pricePerNight) <= 0)) { error('Xona raqami, qavat, sig‘im va narxni to‘g‘ri kiriting.'); return; }
     if (mode !== 'assign' && data.rooms.some((room) => room.number === form.number.trim() && room.id !== activeRoom?.id)) { error('Bu xona raqami allaqachon mavjud.'); return; }
@@ -100,7 +100,7 @@ export function RoomsPage() {
   }
 
   function removeRoom() {
-    if (!deleteRoom || !isAdmin) return;
+    if (!deleteRoom || !canManage) return;
     const hasBookings = data.bookings.some((booking) => booking.roomId === deleteRoom.id);
     if (hasBookings) { error('Bron tarixi bor xonani o‘chirib bo‘lmaydi. Uni ta’mir holatiga o‘tkazing.'); setDeleteRoom(null); return; }
     updateData((current) => ({ ...current, rooms: current.rooms.filter((room) => room.id !== deleteRoom.id), auditLog: recordAudit(current, 'Xona o‘chirildi', 'room', deleteRoom.id, user?.id) }));
@@ -113,7 +113,7 @@ export function RoomsPage() {
 
   const roomTiles = guestView ? visibleRooms : [];
   return <div className="animate-rise-in">
-    <PageHeader eyebrow={guestView ? 'Origin Hotel · Xonalar' : 'Inventar · 5 qavat'} title={guestView ? 'Sizga mos xonani toping' : 'Xonalar'} description={guestView ? 'Sanalar va sig‘imni tanlang — bo‘sh xonalarni darhol ko‘ring.' : 'Qavatlar, narxlar va xonalar holatini bir joydan boshqaring.'} action={isAdmin ? <button onClick={openAdd} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white hover:bg-ink-soft"><Plus size={14} />Xona qo‘shish</button> : undefined} />
+    <PageHeader eyebrow={guestView ? 'Origin Hotel · Xonalar' : 'Inventar · 5 qavat'} title={guestView ? 'Sizga mos xonani toping' : 'Xonalar'} description={guestView ? 'Sanalar va sig‘imni tanlang — bo‘sh xonalarni darhol ko‘ring.' : 'Qavatlar, narxlar va xonalar holatini bir joydan boshqaring.'} action={canManage ? <button onClick={openAdd} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white hover:bg-ink-soft"><Plus size={14} />Xona qo‘shish</button> : undefined} />
 
     {guestView ? <div className="surface mb-6 grid items-end gap-4 rounded-3xl p-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-[1fr_1fr_.8fr_1fr_1fr_auto] sm:p-5">
       <FilterField label="Kelish" value={checkIn} type="date" onChange={(value) => setCheckIn(value)} />
@@ -130,13 +130,13 @@ export function RoomsPage() {
       <span className="flex h-12 min-w-0 items-center justify-center rounded-xl bg-[var(--page)] px-3 py-2.5 text-[10px] font-semibold text-muted"><Filter size={13} className="mr-1.5 inline" />{visibleRooms.length} xona</span>
     </div>}
 
-    {isAdmin && <BulkDeletePanel subject="ta xona" items={visibleRooms.filter((room) => !data.bookings.some((booking) => booking.roomId === room.id)).map((room) => ({ id: room.id, label: `${room.number} · ${room.type}` }))} note="Bron tarixi bor xonalar o‘chirilmaydi. Tanlash joriy filtrdagi xonalarga tegishli." onDelete={(ids) => { if (!isAdmin) return; updateData((current) => { const removable = new Set(current.rooms.filter((room) => ids.includes(room.id) && !current.bookings.some((booking) => booking.roomId === room.id)).map((room) => room.id)); return { ...current, rooms: current.rooms.filter((room) => !removable.has(room.id)), auditLog: recordAudit(current, `${removable.size} ta xona guruhlab o‘chirildi`, 'room', ids.join(','), user?.id) }; }); success('Belgilangan xonalar o‘chirildi.'); }} />}
+    {canManage && <BulkDeletePanel subject="ta xona" items={visibleRooms.filter((room) => !data.bookings.some((booking) => booking.roomId === room.id)).map((room) => ({ id: room.id, label: `${room.number} · ${room.type}` }))} note="Bron tarixi bor xonalar o‘chirilmaydi. Tanlash joriy filtrdagi xonalarga tegishli." onDelete={(ids) => { if (!canManage) return; updateData((current) => { const removable = new Set(current.rooms.filter((room) => ids.includes(room.id) && !current.bookings.some((booking) => booking.roomId === room.id)).map((room) => room.id)); return { ...current, rooms: current.rooms.filter((room) => !removable.has(room.id)), auditLog: recordAudit(current, `${removable.size} ta xona guruhlab o‘chirildi`, 'room', ids.join(','), user?.id) }; }); success('Belgilangan xonalar o‘chirildi.'); }} />}
     {guestView ? <>
       {roomTiles.length === 0 ? <div className="surface rounded-3xl px-6 py-16 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-champagne/15 text-champagne"><BedDouble size={24} /></span><h2 className="mt-5 font-display text-2xl">Bizda bo‘sh o‘rinlar qolmagan</h2><p className="mt-2 text-sm text-muted">Sanalarni yoki mehmonlar sonini o‘zgartirib qayta qidiring.</p></div> : <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{roomTiles.map((room) => { const image = getRoomPhoto(room); return <article key={room.id} className="surface overflow-hidden rounded-3xl"><div className="relative h-44"><img src={optimizedUnsplashUrl(image, 640, 72)} srcSet={unsplashSrcSet(image, [360, 480, 640, 900], 72)} sizes="(min-width: 1280px) 32vw, (min-width: 640px) 48vw, 100vw" width={900} height={600} alt={`${room.type} mehmonxona xonasi`} loading="lazy" decoding="async" className="h-full w-full object-cover" /><span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[9px] font-bold text-ink">{room.number} · {room.floor}-qavat</span></div><div className="p-5"><div className="flex items-start justify-between"><div><p className="text-[9px] font-bold uppercase tracking-[.18em] text-champagne">{room.type}</p><h3 className="mt-1 font-display text-2xl">{room.type === 'Family' ? 'Oilaviy xona' : `${room.type} xona`}</h3></div><StatusPill status="available">Bo‘sh</StatusPill></div><div className="mt-4 flex gap-4 text-[10px] text-muted"><span><Users size={13} className="mr-1 inline" />{room.capacity} kishi</span><span>{room.amenities.slice(0,2).join(' · ')}</span></div><div className="mt-5 flex items-center justify-between border-t border-[var(--line)] pt-4"><p><span className="font-display text-xl">{formatMoney(room.pricePerNight, data.settings.currency)}</span><span className="ml-1 text-[9px] text-muted">/ tun</span></p><button onClick={() => requestRoom(room)} className="rounded-full bg-ink px-4 py-2.5 text-[10px] font-semibold text-white hover:bg-ink-soft">Bron so‘rash</button></div></div></article>;})}</div>}
     </> : <section aria-label="Xonalar ro‘yxati">
       <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold">Xonalar ro‘yxati</h2><p className="mt-1 text-xs text-muted">Qavat bo‘yicha saralangan · {visibleRooms.length} ta xona</p></div></div>
       {visibleRooms.length === 0 ? <div className="surface rounded-3xl px-6 py-14 text-center"><BedDouble size={28} className="mx-auto text-champagne" /><h3 className="mt-4 font-display text-2xl">Xona topilmadi</h3><p className="mt-2 text-sm text-muted">Qidiruv yoki filtrlarni o‘zgartirib ko‘ring.</p></div> : <div className="inventory-room-grid">
-        {visibleRooms.map((room) => <RoomInventoryCard key={room.id} room={room} image={getRoomPhoto(room)} guestCount={guestCounts.get(room.id) ?? 0} currency={data.settings.currency} canManage={isAdmin} onAssign={() => openAssign(room)} onEdit={() => openEdit(room)} onDelete={() => setDeleteRoom(room)} />)}
+        {visibleRooms.map((room) => <RoomInventoryCard key={room.id} room={room} image={getRoomPhoto(room)} guestCount={guestCounts.get(room.id) ?? 0} currency={data.settings.currency} canManage={canManage} onAssign={() => openAssign(room)} onEdit={() => openEdit(room)} onDelete={() => setDeleteRoom(room)} />)}
       </div>}
     </section>}
 

@@ -2,14 +2,15 @@ import { Check, Crown, LockKeyhole, Pencil, ShieldCheck, UserRound } from 'lucid
 import type { SystemRolePermission } from '../types';
 
 const roleInfo = {
-  admin: { title: 'Administrator', description: 'Mehmonxonani to‘liq boshqarish', icon: Crown },
+  admin: { title: 'Administrator', description: 'Umumiy nazorat, ishchilar va oyliklar', icon: Crown },
+  manager: { title: 'Manager', description: 'Xonalar, bronlar, mehmonlar, moliya va sayt sozlamalari', icon: ShieldCheck },
   moderator: { title: 'Moderator', description: 'Bron va mehmonlar bilan ishlash', icon: ShieldCheck },
   editor: { title: 'Muharrir', description: 'Sayt matnlari va media', icon: Pencil },
   user: { title: 'Mehmon', description: 'Shaxsiy hisob va bronlar', icon: UserRound },
 };
 
 export function RolesOverview({ roles }: { roles: SystemRolePermission[] }) {
-  return <div className="roles-overview"><p className="roles-intro">Har bir rol uchun ko‘zda tutilgan imkoniyatlar.</p><div className="roles-list">{roles.map((role) => {
+  return <div className="roles-overview"><p className="roles-intro">Har bir rol uchun ko‘zda tutilgan imkoniyatlar.</p><div className="roles-list">{[{ role: 'admin' as const, permissions: ['Umumiy nazorat', 'Ishchilar', 'Oyliklar'] }, { role: 'manager' as const, permissions: ['Xonalar va bronlar', 'Mehmonlar va foydalanuvchilar', 'Moliya va hisobotlar', 'Sayt sozlamalari'] }, ...roles.filter((role)=>!['admin','manager'].includes(role.role))].map((role) => {
     const info = roleInfo[role.role];
     const Icon = info.icon;
     return <article key={role.role} className={`role-card ${role.role === 'admin' ? 'role-card-admin' : ''}`}>

@@ -11,6 +11,7 @@ export async function verifyHotelBackend({ fetchImpl = fetch, attempts = 3, wait
       if (!response.ok) throw new Error(`Render readiness HTTP ${response.status}`);
       const result = await response.json();
       if (result.service !== 'origin-hotel' || result.apiVersion !== 1 || result.ready !== true || result.trustedFrontend !== true || result.durableStorage !== true) throw new Error('Render API, doimiy baza, admin hisobi yoki CSRF origin sozlamasi tayyor emas.');
+      if (!['manager-operations','staff-payroll','google-profile'].every((feature) => result.features?.includes(feature))) throw new Error('Render’da yangi manager, ishchi va profil API hali deploy qilinmagan. Avval Render deploy tugashini kuting.');
       return;
     } catch (error) { lastError = error; }
     if (attempt + 1 < attempts) await wait(1000);

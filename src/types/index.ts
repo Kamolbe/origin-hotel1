@@ -26,6 +26,7 @@ export interface UserPreferences {
 }
 
 export interface User extends DemoUserCredentials {
+  profileRequired?: boolean;
   isActive: boolean;
   createdAt: string;
   phone?: string;
@@ -116,7 +117,7 @@ export interface AuditEntry {
 }
 
 export interface SystemRolePermission {
-  role: 'admin' | 'moderator' | 'editor' | 'user';
+  role: 'admin' | 'manager' | 'moderator' | 'editor' | 'user';
   permissions: string[];
 }
 
@@ -216,7 +217,17 @@ export interface AppSettings {
   };
 }
 
+export interface StaffMember {
+  id: string; name: string; jobTitle: string; phone: string; email: string;
+  monthlySalary: number; startDate: string; payday: number; notes: string;
+  isActive: boolean; createdAt: string;
+}
+export interface SalaryPayment {
+  id: string; employeeId: string; period: string; amount: number; paidAt: string; paidBy?: string | null;
+}
 export interface AppData {
+  employees?: StaffMember[];
+  salaryPayments?: SalaryPayment[];
   serverPermissions?: string[];
   unavailableStays?: Array<{ roomId: string; checkIn: string; checkOut: string }>;
   rooms: Room[];

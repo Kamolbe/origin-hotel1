@@ -61,3 +61,7 @@ Sinov xonalari kerak bo‘lsa va Shell mavjud bo‘lsa `HOTEL_DEMO_PASSWORD`ni v
 5. Yangi yozuv qo‘shing, Render qayta deploy/restartidan keyin yozuv saqlanganini tekshiring. Bu tekshiruv real doimiy storage’ni tasdiqlash uchun kerak.
 
 Bu ijro muhitining tarmoq proksisi foydalanuvchi bergan ikkala public domenni 403 bilan blokladi. Shu sabab haqiqiy Render/Vercel deployment holati shu sessiyada tasdiqlanmadi; lokal testlar va koddagi preflight buni almashtirmaydi.
+
+## Admin / manager va ish haqi yangilanishi
+
+Yangi rol taqsimoti, Render’da manager yaratish, migratsiyalar, oyliklar va Google profilining chegaralari: [ROLES_AND_PAYROLL.md](../docs/ROLES_AND_PAYROLL.md). Avval Render’ni deploy qiling, keyin Vercel yangi backend xususiyatlari tekshiruvidan o‘tsin.

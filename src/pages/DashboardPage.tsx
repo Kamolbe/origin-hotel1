@@ -36,7 +36,7 @@ export function DashboardPage() {
     { to: '/app/rooms', label: 'Xonalarni boshqarish', hint: 'Narxlar, holat va qulayliklar', icon: BedDouble },
     { to: '/app/finance', label: 'Moliyani ko‘rish', hint: 'Kirim, chiqim va to‘lovlar', icon: WalletCards },
     { to: '/app/reports', label: 'Hisobotlarni ochish', hint: 'Davrlar bo‘yicha tahlil', icon: Activity },
-    ...(user.role === 'admin' ? [{ to: '/app/users', label: 'Foydalanuvchilar', hint: 'Hisoblar va sayt faoliyati', icon: ShieldCheck }] : []),
+    ...(user.role === 'manager' ? [{ to: '/app/users', label: 'Foydalanuvchilar', hint: 'Hisoblar va sayt faoliyati', icon: ShieldCheck }] : []),
     { to: '/app/settings', label: 'Sozlamalar', hint: 'Sayt, aloqa va dizayn', icon: Settings },
   ].filter((tool) => canViewFinance || !['/app/finance','/app/reports'].includes(tool.to));
   const movements = [...stats.arrivals.map((booking) => ({ booking, label: 'Keladi', icon: LogIn })), ...stats.departures.map((booking) => ({ booking, label: 'Ketadi', icon: LogOut }))];

@@ -19,12 +19,13 @@ import type { UserRole } from '../types';
 
 const navigation = [
   { to: '/app', key: 'nav.dashboard', icon: LayoutDashboard, roles: ['user', 'manager', 'admin'] as UserRole[] },
-  { to: '/app/rooms', key: 'nav.rooms', icon: BedDouble, roles: ['user', 'manager', 'admin'] as UserRole[] },
-  { to: '/app/guests', key: 'nav.guests', icon: Users, roles: ['manager', 'admin'] as UserRole[] },
-  { to: '/app/bookings', key: 'nav.bookings', icon: CalendarDays, roles: ['user', 'manager', 'admin'] as UserRole[] },
-  { to: '/app/finance', key: 'nav.finance', icon: WalletCards, roles: ['manager', 'admin'] as UserRole[] },
-  { to: '/app/reports', key: 'nav.reports', icon: ChartNoAxesCombined, roles: ['manager', 'admin'] as UserRole[] },
-  { to: '/app/users', key: 'Foydalanuvchilar', icon: ShieldCheck, roles: ['admin'] as UserRole[] },
+  { to: '/app/rooms', key: 'nav.rooms', icon: BedDouble, roles: ['user', 'manager'] as UserRole[] },
+  { to: '/app/guests', key: 'nav.guests', icon: Users, roles: ['manager'] as UserRole[] },
+  { to: '/app/bookings', key: 'nav.bookings', icon: CalendarDays, roles: ['user', 'manager'] as UserRole[] },
+  { to: '/app/finance', key: 'nav.finance', icon: WalletCards, roles: ['manager'] as UserRole[] },
+  { to: '/app/reports', key: 'nav.reports', icon: ChartNoAxesCombined, roles: ['manager'] as UserRole[] },
+  { to: '/app/users', key: 'Foydalanuvchilar', icon: ShieldCheck, roles: ['manager'] as UserRole[] },
+  { to: '/app/employees', key: 'Ishchilar va oyliklar', icon: Users, roles: ['admin'] as UserRole[] },
   { to: '/app/settings', key: 'nav.settings', icon: Settings, roles: ['user', 'manager', 'admin'] as UserRole[] },
 ];
 
@@ -88,8 +89,8 @@ export function AppLayout() {
     const needle = query.trim().toLocaleLowerCase();
     if (!needle) return quickLinks.slice(0, 6);
     const pages = quickLinks.filter((item) => item.title.toLocaleLowerCase().includes(needle));
-    const rooms = data.rooms.filter((room) => `${room.number} ${room.type}`.toLocaleLowerCase().includes(needle)).slice(0, 5).map((room) => ({ title: `Xona ${room.number} · ${room.type}`, path: '/app/rooms', kind: 'room' }));
-    const guests = user?.role !== 'user' ? data.guests.filter((guest) => `${guest.firstName} ${guest.lastName} ${guest.email}`.toLocaleLowerCase().includes(needle)).slice(0, 4).map((guest) => ({ title: `${guest.firstName} ${guest.lastName}`, path: '/app/guests', kind: 'guest' })) : [];
+    const rooms = data.rooms.filter((room) => `${room.number} ${room.type}`.toLocaleLowerCase().includes(needle)).slice(0, 5).map((room) => ({ title: `Xona ${room.number} · ${room.type}`, path: user?.role === 'admin' ? '/rooms' : '/app/rooms', kind: 'room' }));
+    const guests = user?.role === 'manager' ? data.guests.filter((guest) => `${guest.firstName} ${guest.lastName} ${guest.email}`.toLocaleLowerCase().includes(needle)).slice(0, 4).map((guest) => ({ title: `${guest.firstName} ${guest.lastName}`, path: '/app/guests', kind: 'guest' })) : [];
     return [...pages, ...rooms, ...guests].slice(0, 9);
   }, [data.guests, data.rooms, query, quickLinks, user?.role]);
 
@@ -103,7 +104,7 @@ export function AppLayout() {
 
   const sidebar = <div className="flex h-full flex-col px-4 pb-5 pt-6">
     <div className="px-3"><Logo to="/app" /></div>
-    <div className="mb-3 mt-9 px-3 text-[9px] font-bold uppercase tracking-[.2em] text-muted">{user?.role === 'user' ? 'Mening kabinetim' : 'Mehmonxona boshqaruvi'}</div>
+    <div className="mb-3 mt-9 px-3 text-[9px] font-bold uppercase tracking-[.2em] text-muted">{user?.role === 'user' ? 'Mening kabinetim' : user?.role === 'admin' ? 'Mehmonxona nazorati' : 'Manager paneli'}</div>
     <nav className="flex-1 space-y-1" aria-label="Boshqaruv menyusi">{visibleNav.map(({ to, key, icon: Icon }) => <NavLink key={to} to={to} end={to === '/app'} className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-3 text-[12px] font-semibold transition ${isActive ? 'bg-ink text-white shadow-soft' : 'text-muted hover:bg-[var(--page)] hover:text-[var(--text)]'}`}>
       {({ isActive }) => <><Icon size={17} className={isActive ? 'text-champagne' : 'text-muted group-hover:text-champagne'} /><span>{key.startsWith('nav.') ? t(key) : key}</span>{to === '/app/bookings' && data.bookings.some((item) => item.status === 'pending') && user?.role === 'admin' && <span className="ml-auto h-2 w-2 rounded-full bg-champagne" />}</>}
     </NavLink>)}</nav>

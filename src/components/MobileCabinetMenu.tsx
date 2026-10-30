@@ -13,13 +13,14 @@ export function MobileCabinetMenu() {
   const hotel = useHotelContact();
   const navigate = useNavigate();
   const staff = user?.role === 'admin' || user?.role === 'manager';
+  const manager = user?.role === 'manager';
   const links = [
     { to: staff ? '/app' : '/app/my-stay', label: staff ? 'Boshqaruv paneli' : 'Shaxsiy kabinet', icon: LayoutDashboard },
-    { to: staff ? '/app/rooms' : '/rooms', label: 'Xonalar', icon: BedDouble },
-    ...(staff ? [{ to: '/app/guests', label: 'Mehmonlar', icon: Users }] : []),
-    { to: '/app/bookings', label: staff ? 'Bronlar' : 'Mening bronlarim', icon: CalendarDays },
-    ...(staff && canViewFinance ? [{ to: '/app/finance', label: 'Moliya', icon: WalletCards }, { to: '/app/reports', label: 'Hisobotlar', icon: ChartNoAxesCombined }] : []),
-    ...(user?.role === 'admin' ? [{ to: '/app/users', label: 'Foydalanuvchilar', icon: ShieldCheck }] : []),
+    ...(user?.role === 'admin' ? [{ to: '/app/employees', label: 'Ishchilar va oyliklar', icon: Users }] : [{ to: staff ? '/app/rooms' : '/rooms', label: 'Xonalar', icon: BedDouble }]),
+    ...(manager ? [{ to: '/app/guests', label: 'Mehmonlar', icon: Users }] : []),
+    ...(user?.role === 'admin' ? [] : [{ to: '/app/bookings', label: staff ? 'Bronlar' : 'Mening bronlarim', icon: CalendarDays }]),
+    ...(manager && canViewFinance ? [{ to: '/app/finance', label: 'Moliya', icon: WalletCards }, { to: '/app/reports', label: 'Hisobotlar', icon: ChartNoAxesCombined }] : []),
+    ...(manager ? [{ to: '/app/users', label: 'Foydalanuvchilar', icon: ShieldCheck }] : []),
     { to: '/app/settings', label: 'Sozlamalar', icon: Settings },
     { to: '/app/profile', label: 'Mening profilim', icon: UserRound },
   ];

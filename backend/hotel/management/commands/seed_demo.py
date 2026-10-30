@@ -19,7 +19,8 @@ class Command(BaseCommand):
         employee, _ = Group.objects.get_or_create(name='Employee')
         manager, _ = Group.objects.get_or_create(name='Manager')
         employee.permissions.set(Permission.objects.filter(content_type__app_label='hotel', codename__in=['view_room', 'view_guest', 'add_guest', 'change_guest', 'view_booking', 'add_booking', 'change_booking']))
-        manager.permissions.set(Permission.objects.filter(content_type__app_label='hotel').exclude(content_type__model='auditentry').exclude(codename__in=['add_room', 'change_room', 'delete_room', 'delete_booking', 'delete_guest']))
+        from hotel.permissions import configure_manager
+        manager=configure_manager()
         User = get_user_model()
         for username, role in [('admin@admin.com', 'admin'), ('manager@manager.com', 'manager'), ('employee@origin.test', 'employee')]:
             user, created = User.objects.get_or_create(username=username, defaults={'email': username, 'is_staff': role == 'admin', 'is_superuser': role == 'admin', 'first_name': 'Demo', 'last_name': role.title()})

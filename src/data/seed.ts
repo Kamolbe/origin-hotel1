@@ -272,7 +272,8 @@ export function createDemoData(): AppData {
       serviceFeeRate: 0.05,
       security: { requireStrongPasswords: true, sessionTimeoutMinutes: 30, twoFactorEnabled: false, sslHttps: true, blockedIps: [] },
       roles: [
-        { role: 'admin', permissions: ['Barcha boshqaruv', 'Foydalanuvchilar', 'Tizim sozlamalari'] },
+        { role: 'admin', permissions: ['Umumiy nazorat', 'Ishchilar', 'Oyliklar'] },
+        { role: 'manager', permissions: ['Xonalar va bronlar', 'Moliya', 'Foydalanuvchilar', 'Sayt sozlamalari'] },
         { role: 'moderator', permissions: ['Sharhlar', 'Bronlar', 'Mehmonlar'] },
         { role: 'editor', permissions: ['Kontent', 'Media', 'Sharhlar'] },
         { role: 'user', permissions: ['Xona bron qilish', 'Profil'] },

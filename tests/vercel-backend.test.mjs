@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { BACKEND_URL, verifyHotelBackend } from '../scripts/build-vercel.mjs';
-const ready = { service:'origin-hotel',apiVersion:1,ready:true,trustedFrontend:true,durableStorage:true };
+const ready = { service:'origin-hotel',apiVersion:1,ready:true,trustedFrontend:true,durableStorage:true,features:['manager-operations','staff-payroll','google-profile'] };
 test('Vercel routes the shared API to the exact checked Render service before the SPA',async()=>{
   assert.equal(BACKEND_URL,'https://origin-hotel1-1.onrender.com');
   const config=JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'));
@@ -16,7 +16,7 @@ test('Vercel routes the shared API to the exact checked Render service before th
     }
     return null;
   }
-  for (const endpoint of ['live','health','session','state','visit','auth/login','auth/logout','auth/register','auth/google']) {
+  for (const endpoint of ['live','health','session','state','visit','auth/login','auth/logout','auth/register','auth/google','auth/complete-profile']) {
     for (const suffix of ['', '/']) assert.equal(route(`/hotel-api/${endpoint}${suffix}`),`${BACKEND_URL}/hotel-api/${endpoint}/`);
   }
   assert.equal(route('/app/bookings'),'/index.html');
@@ -27,7 +27,7 @@ test('Vercel routes the shared API to the exact checked Render service before th
   assert.equal(requested,`${BACKEND_URL}/hotel-api/health/`);
 });
 test('deployment readiness blocks wrong APIs, missing setup and HTML responses',async()=>{
-  for(const response of [{ok:false,status:503},{ok:true,json:async()=>({...ready,service:'other'})},{ok:true,json:async()=>({...ready,ready:false})},{ok:true,json:async()=>({...ready,durableStorage:false})},{ok:true,json:async()=>({...ready,trustedFrontend:false})},{ok:true,json:async()=>{throw new Error('HTML response')}}]){
+  for(const response of [{ok:true,json:async()=>({...ready,features:[]})},{ok:false,status:503},{ok:true,json:async()=>({...ready,service:'other'})},{ok:true,json:async()=>({...ready,ready:false})},{ok:true,json:async()=>({...ready,durableStorage:false})},{ok:true,json:async()=>({...ready,trustedFrontend:false})},{ok:true,json:async()=>{throw new Error('HTML response')}}]){
     await assert.rejects(()=>verifyHotelBackend({fetchImpl:async()=>response,attempts:1,wait:async()=>{}}),/Render backend tasdiqlanmadi/);
   }
 });

@@ -11,7 +11,7 @@ type ProfileUpdate = Partial<Pick<User, 'name' | 'email' | 'phone' | 'nationalit
 type AuthResult = { ok: boolean; error?: 'credentials' | 'code' | 'duplicate' | 'email'; message?: string };
 type AuthContextValue = {
   user: SessionUser | null;
-  login: (input: { email: string; password: string; accessCode?: string; name?: string }) => Promise<AuthResult>;
+  login: (input: { email: string; password: string; accessCode?: string; name?: string; portal?: 'user' | 'manager' | 'admin' }) => Promise<AuthResult>;
   register: (input: { firstName: string; lastName: string; email: string; password: string; accessCode?: string }) => Promise<AuthResult>;
   signInWithGoogle: (profile: GoogleProfile) => Promise<AuthResult>;
   updateProfile: (updates: ProfileUpdate) => boolean;
@@ -49,9 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (trackLogin) updateData((current) => ({ ...current, users: current.users.map((item) => item.id === record.id ? { ...item, lastLoginAt: new Date().toISOString() } : item), auditLog: recordAudit(current, 'Tizimga kirildi', 'user', record.id, record.id).slice(0, 500) }));
   }, [updateData]);
 
-  const login = useCallback<AuthContextValue['login']>(async ({ email, password, accessCode, name }) => {
+  const login = useCallback<AuthContextValue['login']>(async ({ email, password, accessCode, name, portal }) => {
     if (usesHotelServer()) {
-      try { const reply = await hotelRequest('auth/login', 'POST', { email, password }); replaceServerData(reply); setUser(reply.user); return { ok: true }; }
+      try { const reply = await hotelRequest('auth/login', 'POST', { email, password, portal }); replaceServerData(reply); setUser(reply.user); return { ok: true }; }
       catch (cause) { return { ok: false, error: 'credentials', message: cause instanceof Error ? cause.message : 'Server kirishi bajarilmadi.' }; }
     }
     const normalizedEmail = email.trim().toLowerCase();
@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const account = data.users.find((item) => item.email.toLowerCase() === normalizedEmail);
     if (account) {
+      if (portal && account.role !== portal) return { ok: false, error: 'credentials' };
       if (!account.isActive || account.password !== password) return { ok: false, error: 'credentials' };
       if ((account.role === 'admin' || account.role === 'manager') && account.accessCode !== accessCode) return { ok: false, error: 'code' };
       establishSession(account, true); return { ok: true };
@@ -106,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (account) {
       if (account.role !== 'user') return { ok: false, error: 'code' };
       if (!account.isActive) return { ok: false, error: 'credentials' };
-      const linked: User = { ...account, name: account.name || profile.name, avatarUrl: account.avatarUrl ?? profile.picture };
+      const linked: User = { ...account, name: account.name || profile.name, profileRequired: account.profileRequired ?? true, avatarUrl: account.avatarUrl ?? profile.picture };
       updateData((current) => ({ ...current, users: current.users.map((item) => item.id === account.id ? linked : item) }));
       establishSession(linked, true);
       return { ok: true };
@@ -118,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       role: 'user',
       password: makeId('google'),
+      profileRequired: true,
       isActive: true,
       createdAt: new Date().toISOString(),
       avatarUrl: profile.picture,

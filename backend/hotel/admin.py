@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from .admin_lock import SerializedHotelWrites
 from django.contrib import admin
-from .models import Room, Guest, Booking, FinanceEntry, AuditEntry
+from .models import Room, Guest, Booking, FinanceEntry, AuditEntry, StaffMember, SalaryPayment
 from .forms import BookingForm, RoomForm, FinanceForm
 from .services import audit
 
@@ -47,3 +47,22 @@ admin.site.unregister(get_user_model())
 @admin.register(get_user_model())
 class HotelUserAdmin(SerializedHotelWrites, UserAdmin):
     pass
+
+@admin.register(StaffMember)
+class StaffMemberAdmin(SerializedHotelWrites, admin.ModelAdmin):
+    list_display = ['name','job_title','monthly_salary','payday','start_date','is_active']
+    search_fields = ['name','job_title','phone']
+    def has_module_permission(self,request): return request.user.is_superuser
+    def has_view_permission(self,request,obj=None): return request.user.is_superuser
+    def has_change_permission(self,request,obj=None): return request.user.is_superuser
+    def has_add_permission(self,request): return request.user.is_superuser
+    def has_delete_permission(self,request,obj=None): return request.user.is_superuser
+
+@admin.register(SalaryPayment)
+class SalaryPaymentAdmin(admin.ModelAdmin):
+    list_display = ['employee','period','amount','paid_at']
+    def has_module_permission(self,request): return request.user.is_superuser
+    def has_view_permission(self,request,obj=None): return request.user.is_superuser
+    def has_add_permission(self,request): return False
+    def has_change_permission(self,request,obj=None): return False
+    def has_delete_permission(self,request,obj=None): return False

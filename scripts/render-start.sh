@@ -5,4 +5,7 @@ python backend/manage.py migrate --noinput
 if [[ -n "${HOTEL_BOOTSTRAP_ADMIN_PASSWORD:-}" ]]; then
   python backend/manage.py bootstrap_admin
 fi
+if [[ -n "${HOTEL_BOOTSTRAP_MANAGER_PASSWORD:-}" ]]; then
+  python backend/manage.py bootstrap_manager
+fi
 exec gunicorn --chdir backend --config backend/gunicorn.conf.py config.wsgi:application

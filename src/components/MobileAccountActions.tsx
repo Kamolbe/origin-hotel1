@@ -15,12 +15,13 @@ export function MobileAccountActions({ onNavigate }: { onNavigate?: () => void }
   const [panel, setPanel] = useState<'search' | 'notifications' | null>(null);
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
-  const staff = user?.role === 'admin' || user?.role === 'manager';
+  const staff = user?.role === 'manager';
   const routes = [
     ['/', 'Bosh sahifa'], ['/rooms', 'Xonalar'], ['/contact', 'Aloqa'],
-    ...(user ? [['/app/profile', 'Mening profilim'], ['/app/bookings', 'Bronlar'], ['/app/settings', 'Sozlamalar']] : []),
+    ...(user ? [['/app/profile', 'Mening profilim'], ...(user?.role === 'admin' ? [] : [['/app/bookings', 'Bronlar']]), ['/app/settings', 'Sozlamalar']] : []),
     ...(staff ? [['/app/guests', 'Mehmonlar'], ['/app/finance', 'Moliya'], ['/app/reports', 'Hisobotlar']] : []),
-    ...(user?.role === 'admin' ? [['/app/users', 'Foydalanuvchilar']] : []),
+    ...(user?.role === 'manager' ? [['/app/users', 'Foydalanuvchilar']] : []),
+    ...(user?.role === 'admin' ? [['/app/employees', 'Ishchilar va oyliklar']] : []),
   ];
   const notifications = user ? data.notifications.filter((item) => !item.userId || item.userId === user.id) : [];
   const pages = Math.max(1, Math.ceil(notifications.length / 2));

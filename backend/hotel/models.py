@@ -73,6 +73,9 @@ class FinanceEntry(models.Model):
         ordering = ['-date', '-pk']
         constraints = [models.CheckConstraint(condition=models.Q(amount__gt=0), name='finance_positive_amount')]
     def clean(self):
+        if self.pk and SalaryPayment.objects.filter(finance_id=self.pk).exists():
+            original=FinanceEntry.objects.get(pk=self.pk)
+            if any(getattr(original,key)!=getattr(self,key) for key in ['entry_type','category','amount','date','description','booking_id']): raise ValidationError('Ish haqi to‘lovining moliyaviy tarixi himoyalangan.')
         allowed = INCOME_CATEGORIES if self.entry_type == 'income' else EXPENSE_CATEGORIES
         if self.category not in dict(allowed): raise ValidationError({'category': 'Yozuv turiga mos kategoriya tanlang.'})
     def get_category_display(self): return dict(INCOME_CATEGORIES + EXPENSE_CATEGORIES).get(self.category, self.category)
@@ -90,3 +93,33 @@ class SiteState(models.Model):
     """Public site settings and UI extras; relational hotel records remain authoritative."""
     payload = models.JSONField(default=dict)
     revision = models.PositiveBigIntegerField(default=0)
+
+class StaffMember(models.Model):
+    name = models.CharField(max_length=160)
+    job_title = models.CharField(max_length=120)
+    phone = models.CharField(max_length=25, validators=[RegexValidator(r'^\+?[0-9]{9,15}$', 'Telefon 9–15 ta raqamdan iborat bo‘lsin.')])
+    email = models.EmailField(blank=True)
+    monthly_salary = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    start_date = models.DateField()
+    payday = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    notes = models.TextField(blank=True, max_length=2000)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['name']
+        constraints = [models.CheckConstraint(condition=models.Q(monthly_salary__gt=0), name='staff_positive_salary'), models.CheckConstraint(condition=models.Q(payday__gte=1,payday__lte=31), name='staff_valid_payday')]
+    def clean(self):
+        if self.payday and self.payday > 31: raise ValidationError('Oylik kuni 1–31 oralig‘ida bo‘lsin.')
+    def __str__(self): return self.name
+
+class SalaryPayment(models.Model):
+    employee = models.ForeignKey(StaffMember, on_delete=models.PROTECT, related_name='payments')
+    period = models.DateField(help_text='Hisob oyi, oyning birinchi kuni.')
+    amount = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    paid_at = models.DateTimeField(auto_now_add=True)
+    paid_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    finance = models.OneToOneField(FinanceEntry, on_delete=models.PROTECT)
+    class Meta:
+        ordering = ['-paid_at']
+        constraints = [models.UniqueConstraint(fields=['employee','period'],name='staff_one_salary_per_month')]
+    def __str__(self): return f'{self.employee} · {self.period:%Y-%m}'

@@ -14,7 +14,7 @@ import { makeId } from '../services/storage';
 import { recordAudit } from '../services/hotelUtils';
 import type { User, UserRole } from '../types';
 
-const roleOptions: Array<[UserRole, string]> = [['user', 'Mehmon'], ['manager', 'Menejer'], ['admin', 'Administrator']];
+const roleOptions: Array<[UserRole, string]> = [['user', 'Mehmon'], ['manager', 'Manager']];
 const roleLabels: Record<UserRole, string> = { user: 'Mehmon', manager: 'Menejer', admin: 'Administrator' };
 const demoCode: Partial<Record<UserRole, string>> = { admin: 'admin1234', manager: 'manager1234' };
 
@@ -32,7 +32,7 @@ export function UsersPage() {
 
   const historyPages = Math.max(1, Math.ceil(data.auditLog.length / 10));
   const currentHistoryPage = Math.min(historyPage, historyPages - 1);
-  const users = data.users.filter((item) => `${item.name} ${item.email}`.toLowerCase().includes(query.toLowerCase()));
+  const users = data.users.filter((item) => item.role !== 'admin' && `${item.name} ${item.email}`.toLowerCase().includes(query.toLowerCase()));
 
   const visits = data.visits;
   const visitPages = Math.max(1, Math.ceil(visits.length / 8));
@@ -45,7 +45,7 @@ export function UsersPage() {
   const deviceIcon = { Mobil: Smartphone, Planshet: Tablet, Desktop: Monitor } as const;
 
   function toggleActive(id: string) {
-    if (user?.role !== 'admin') return;
+    if (user?.role !== 'manager') return;
     if (id === user.id) { error('O‘z hisobingizni bu yerdan bloklay olmaysiz.'); return; }
     updateData((current) => ({ ...current, users: current.users.map((item) => item.id === id ? { ...item, isActive: !item.isActive } : item), auditLog: recordAudit(current, 'Hisob holati o‘zgartirildi', 'user', id, user.id).slice(0, 500) }));
     success('Foydalanuvchi holati yangilandi.');
@@ -53,7 +53,7 @@ export function UsersPage() {
 
   function addUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (user?.role !== 'admin') return;
+    if (user?.role !== 'manager') return;
     const email = form.email.trim().toLowerCase();
     if (!form.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || form.password.length < 6) { error('Ism, to‘g‘ri email va kamida 6 belgili parol kiriting.'); return; }
     if (data.users.some((item) => item.email.toLowerCase() === email)) { error('Bu email bilan hisob allaqachon mavjud.'); return; }
@@ -65,7 +65,7 @@ export function UsersPage() {
   }
 
   function removeUser() {
-    if (!removeTarget || user?.role !== 'admin') return;
+    if (!removeTarget || user?.role !== 'manager') return;
     if (removeTarget.id === user.id) { error('O‘z hisobingizni o‘chira olmaysiz.'); setRemoveTarget(null); return; }
     const admins = data.users.filter((item) => item.role === 'admin');
     if (removeTarget.role === 'admin' && admins.length <= 1) { error('Tizimda kamida bitta administrator qolishi kerak.'); setRemoveTarget(null); return; }
@@ -75,7 +75,7 @@ export function UsersPage() {
   }
 
   return <div className="animate-rise-in">
-    <PageHeader eyebrow="Kiruvchilar boshqaruvi" title="Foydalanuvchilar" description={usesHotelServer() ? 'Hisoblar, serverda qayd etilgan sayt tashriflari va faoliyat tarixi.' : 'Hisoblar, sayt tashriflari va faoliyat tarixi. Tashriflar shu brauzerda qayd etiladi.'} action={user?.role === 'admin' ? <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white hover:bg-ink-soft"><Plus size={14} />Foydalanuvchi qo‘shish</button> : undefined} />
+    <PageHeader eyebrow="Kiruvchilar boshqaruvi" title="Foydalanuvchilar" description={usesHotelServer() ? 'Hisoblar, serverda qayd etilgan sayt tashriflari va faoliyat tarixi.' : 'Hisoblar, sayt tashriflari va faoliyat tarixi. Tashriflar shu brauzerda qayd etiladi.'} action={user?.role === 'manager' ? <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white hover:bg-ink-soft"><Plus size={14} />Foydalanuvchi qo‘shish</button> : undefined} />
 
     <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
       {[['Hisoblar', data.users.length], ['Faol hisoblar', data.users.filter((item) => item.isActive).length], ['Kirgan hisoblar', data.users.filter((item) => item.lastLoginAt).length], ['7 kunlik tashrif', weeklyVisits.length]].map(([label, value]) => <div key={label} className="surface rounded-2xl p-4"><p className="text-xs text-muted">{label}</p><p className="mt-2 text-2xl font-semibold">{value}</p></div>)}
@@ -102,7 +102,7 @@ export function UsersPage() {
         <h2 className="flex items-center gap-2 font-display text-2xl"><Users size={18} className="text-champagne" />Hisoblar</h2>
         <SearchField value={query} onChange={setQuery} label="Foydalanuvchilarni qidirish" placeholder="Ism yoki email bo‘yicha qidirish" className="w-full sm:max-w-xs" />
       </div>
-    {user?.role === 'admin' && <BulkDeletePanel subject="ta foydalanuvchi" items={users.filter((item) => item.id !== user.id && item.role !== 'admin').map((item) => ({ id: item.id, label: `${item.name} · ${item.email}` }))} note="O‘z hisobingiz va administratorlar guruhlab o‘chirilmaydi. Joriy qidiruv natijalari belgilanadi." onDelete={(ids) => { if (user.role !== 'admin') return; updateData((current) => ({ ...current, users: current.users.filter((item) => !ids.includes(item.id) || item.id === user.id || item.role === 'admin'), auditLog: recordAudit(current, 'Belgilangan foydalanuvchilar o‘chirildi', 'user', ids.join(','), user.id).slice(0, 500) })); success('Belgilangan foydalanuvchilar o‘chirildi.'); }} />}
+    {user?.role === 'manager' && <BulkDeletePanel subject="ta foydalanuvchi" items={users.filter((item) => item.id !== user.id && item.role !== 'admin').map((item) => ({ id: item.id, label: `${item.name} · ${item.email}` }))} note="O‘z hisobingiz va administratorlar guruhlab o‘chirilmaydi. Joriy qidiruv natijalari belgilanadi." onDelete={(ids) => { if (user.role !== 'manager') return; updateData((current) => ({ ...current, users: current.users.filter((item) => !ids.includes(item.id) || item.id === user.id || item.role === 'admin'), auditLog: recordAudit(current, 'Belgilangan foydalanuvchilar o‘chirildi', 'user', ids.join(','), user.id).slice(0, 500) })); success('Belgilangan foydalanuvchilar o‘chirildi.'); }} />}
       <ResponsiveTable><table className="w-full min-w-[880px] text-left"><thead className="bg-[var(--page)] text-[10px] uppercase text-muted"><tr>{['Foydalanuvchi', 'Rol', 'Holat', 'Ro‘yxatdan o‘tgan', 'Oxirgi kirish', 'Amallar'].map((label) => <th key={label} className="px-4 py-3">{label}</th>)}</tr></thead><tbody>{users.map((item) => <tr key={item.id} className="border-t border-[var(--line)] text-xs">
         <td className="px-4 py-4 font-semibold">{item.name}<span className="block text-[10px] font-normal text-muted">{item.email}</span></td>
         <td className="px-4 py-4"><span className="inline-flex items-center gap-1.5"><ShieldCheck size={14} />{roleLabels[item.role]}</span></td>
@@ -111,7 +111,7 @@ export function UsersPage() {
         <td className="px-4 py-4">{item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString('uz-UZ') : 'Hali qayd etilmagan'}</td>
         <td className="px-4 py-4"><div className="flex justify-end gap-1">
           <button disabled={item.id === user?.id} onClick={() => toggleActive(item.id)} className="secondary-button disabled:opacity-40">{item.isActive ? 'Bloklash' : 'Faollashtirish'}</button>
-          {user?.role === 'admin' && <button disabled={item.id === user.id} onClick={() => setRemoveTarget(item)} title="O‘chirish" className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"><Trash2 size={15} /></button>}
+          {user?.role === 'manager' && <button disabled={item.id === user.id} onClick={() => setRemoveTarget(item)} title="O‘chirish" className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"><Trash2 size={15} /></button>}
         </div></td>
       </tr>)}</tbody></table>{!users.length && <p className="p-6 text-center text-sm text-muted">Hisob topilmadi.</p>}</ResponsiveTable>
     </section>

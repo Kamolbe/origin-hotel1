@@ -7,7 +7,7 @@
       "dest": "https://origin-hotel1-1.onrender.com/hotel-api/$1/"
     },
     {
-      "src": "^/hotel-api/auth/(login|logout|register|google)/?$",
+      "src": "^/hotel-api/auth/(login|logout|register|google|complete-profile)/?$",
       "dest": "https://origin-hotel1-1.onrender.com/hotel-api/auth/$1/"
     },
     {
