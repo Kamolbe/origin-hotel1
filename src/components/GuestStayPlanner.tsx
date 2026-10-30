@@ -1,3 +1,4 @@
+import { Select } from './Select';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calculator, Check, Moon } from 'lucide-react';
@@ -33,8 +34,8 @@ export function GuestStayPlanner() {
     <p className="mt-2 text-xs leading-6 text-muted">Sanalar va mehmonlar soniga mos xonalar narxini oldindan bilib oling.</p>
     <div className="mt-4 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)]">
       <div className="col-span-2 min-w-0 sm:col-span-1"><span className="mb-2 block text-[10px] font-semibold text-muted">Kelish sanasi</span><DatePicker label="Safar uchun kelish sanasi" value={arrival} min={today} onChange={setArrival} /></div>
-      <label className="min-w-0"><span className="mb-2 block text-[10px] font-semibold text-muted">Davomiyligi</span><select className={control} value={nights} onChange={(event) => setNights(Number(event.target.value))}>{[1, 2, 3, 4, 5, 7, 10, 14].map((value) => <option key={value} value={value}>{value} tun</option>)}</select></label>
-      <label className="min-w-0"><span className="mb-2 block text-[10px] font-semibold text-muted">Mehmonlar</span><select className={control} value={guests} onChange={(event) => setGuests(Number(event.target.value))}>{[1, 2, 3, 4, 5, 6].map((value) => <option key={value} value={value}>{value} kishi</option>)}</select></label>
+      <label className="min-w-0"><span className="mb-2 block text-[10px] font-semibold text-muted">Davomiyligi</span><Select className={control} value={nights} onChange={(event) => setNights(Number(event.target.value))}>{[1, 2, 3, 4, 5, 7, 10, 14].map((value) => <option key={value} value={value}>{value} tun</option>)}</Select></label>
+      <label className="min-w-0"><span className="mb-2 block text-[10px] font-semibold text-muted">Mehmonlar</span><Select className={control} value={guests} onChange={(event) => setGuests(Number(event.target.value))}>{[1, 2, 3, 4, 5, 6].map((value) => <option key={value} value={value}>{value} kishi</option>)}</Select></label>
     </div>
     <div className="mt-4 rounded-2xl border border-[var(--line)] bg-[var(--page)] p-4" aria-live="polite" aria-atomic="true">
       <p className="text-[10px] text-muted">{lowestPrice !== null ? `${nights} tun uchun xona narxi` : 'Tanlangan safar holati'}</p>
