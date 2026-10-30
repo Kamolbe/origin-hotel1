@@ -39,13 +39,13 @@ export function LocationSection() {
           </li>
         </ul>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          <button type="button" onClick={openContact} className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft"><Headphones size={15} />Administrator bilan bog‘lanish</button>
-          {HOTEL.telegram && <a href={HOTEL.telegram} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-5 py-3.5 text-xs font-semibold transition hover:border-champagne hover:text-champagne"><Send size={15} />Telegram bot <span className="text-muted">{HOTEL.telegramHandle}</span></a>}
+        <div className="contact-mobile-actions mt-6 flex flex-wrap gap-2">
+          <button type="button" onClick={openContact} className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft"><Headphones size={15} className="shrink-0" /><span>Administrator bilan bog‘lanish</span></button>
+          {HOTEL.telegram && <a href={HOTEL.telegram} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-5 py-3.5 text-xs font-semibold transition hover:border-champagne hover:text-champagne"><Send size={15} className="shrink-0" /><span>Telegram bot</span> <span className="text-muted">{HOTEL.telegramHandle}</span></a>}
           <a href={HOTEL.mapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-5 py-3.5 text-xs font-semibold transition hover:border-champagne hover:text-champagne">{t('landing.openMap')}<ExternalLink size={14} /></a>
         </div>
-        <div className="mt-5 flex flex-wrap gap-2">
-          {socialLinks.map(({ label, href, handle, icon: Icon }) => <a key={label} href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-4 py-2.5 text-[11px] font-semibold transition hover:text-champagne"><Icon size={14} className="text-champagne" />{label}<span className="text-muted">{handle}</span></a>)}
+        <div className="contact-mobile-socials mt-5 flex flex-wrap gap-2">
+          {socialLinks.map(({ label, href, handle, icon: Icon }) => <a key={label} href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-4 py-2.5 text-[11px] font-semibold transition hover:text-champagne"><Icon size={14} className="shrink-0 text-champagne" /><span>{label}</span><span className="contact-social-handle text-muted" title={handle}>{handle}</span></a>)}
         </div>
       </div>
 

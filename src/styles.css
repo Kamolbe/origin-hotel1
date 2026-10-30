@@ -581,3 +581,14 @@ label.hotel-validation-label > .hotel-field-feedback { flex-basis: 100%; }
   .guest-mobile-compact .guest-gallery-list > button { height: 140px; }
   .guest-mobile-compact .guest-review-list > figure { padding: 20px; }
 }
+
+@media (max-width: 767px) {
+  .contact-mobile-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .contact-mobile-actions > button, .contact-mobile-actions > a { width: 100%; min-width: 0; min-height: 48px; justify-content: center; border-radius: 16px; padding: 13px 14px; font-size: 12px; line-height: 20px; text-align: center; }
+  .contact-mobile-actions > a { flex-wrap: wrap; column-gap: 8px; row-gap: 0; }
+  .contact-mobile-actions > a > .text-muted { overflow-wrap: anywhere; }
+  .contact-mobile-socials { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .contact-mobile-socials > a { min-width: 0; min-height: 48px; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 12px; }
+  .contact-mobile-socials .contact-social-handle { margin-left: auto; min-width: 0; max-width: 58%; overflow-wrap: anywhere; text-align: right; font-weight: 400; }
+  #contact li > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+}
