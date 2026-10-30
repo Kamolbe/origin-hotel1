@@ -8,7 +8,6 @@ export function LocationSection() {
   const { openContact } = useContactDialog();
   const { t } = useSiteTranslation();
   const socialLinks = [
-    { label: 'Telegram', href: HOTEL.telegram, handle: HOTEL.telegramHandle, icon: Send },
     { label: 'Instagram', href: HOTEL.instagram, handle: HOTEL.instagramHandle, icon: Camera },
     { label: 'Facebook', href: HOTEL.facebook, handle: HOTEL.facebookHandle, icon: Share2 },
   ].filter((item) => item.href);
@@ -42,7 +41,6 @@ export function LocationSection() {
         <div className="contact-mobile-actions mt-6 flex flex-wrap gap-2">
           <button type="button" onClick={openContact} className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3.5 text-xs font-semibold text-white transition hover:bg-ink-soft"><Headphones size={15} className="shrink-0" /><span>Administrator bilan bog‘lanish</span></button>
           {HOTEL.telegram && <a href={HOTEL.telegram} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-5 py-3.5 text-xs font-semibold transition hover:border-champagne hover:text-champagne"><Send size={15} className="shrink-0" /><span>Telegram bot</span> <span className="text-muted">{HOTEL.telegramHandle}</span></a>}
-          <a href={HOTEL.mapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-5 py-3.5 text-xs font-semibold transition hover:border-champagne hover:text-champagne">{t('landing.openMap')}<ExternalLink size={14} /></a>
         </div>
         <div className="contact-mobile-socials mt-5 flex flex-wrap gap-2">
           {socialLinks.map(({ label, href, handle, icon: Icon }) => <a key={label} href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-4 py-2.5 text-[11px] font-semibold transition hover:text-champagne"><Icon size={14} className="shrink-0 text-champagne" /><span>{label}</span><span className="contact-social-handle text-muted" title={handle}>{handle}</span></a>)}
@@ -58,7 +56,7 @@ export function LocationSection() {
  *  shows an empty iframe or blocks on network. */
 function MapSketch({ caption }: { caption: string }) {
   const HOTEL = useHotelContact();
-  return <figure className="surface overflow-hidden rounded-3xl p-4 sm:p-6">
+  return <a href={HOTEL.mapUrl} target="_blank" rel="noopener noreferrer" aria-label="Mehmonxona joylashuvini xaritada ochish" className="group block rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-champagne"><figure className="surface overflow-hidden rounded-3xl p-4 transition group-hover:border-champagne sm:p-6">
     <svg viewBox="0 0 520 360" role="img" aria-label={caption} className="h-auto w-full rounded-2xl bg-[var(--page)]">
       <g stroke="var(--line)" strokeWidth="14" strokeLinecap="round">
         <path d="M-20 96h560" /><path d="M-20 232h560" />
@@ -78,10 +76,10 @@ function MapSketch({ caption }: { caption: string }) {
         <circle cx="222" cy="176" r="19" fill="var(--champagne)" />
         <circle cx="222" cy="176" r="7" fill="#fff" />
       </g>
-      <text x="222" y="238" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">Origin Hotel</text>
+      <text x="222" y="238" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">{HOTEL.name}</text>
     </svg>
     <figcaption className="mt-4 flex items-center justify-between gap-4 text-[10px] uppercase tracking-[.14em] text-muted">
-      <span>{caption}</span><span>{HOTEL.addressLineTwo}</span>
+      <span className="flex items-center gap-2">{caption}<ExternalLink size={14} className="shrink-0 text-champagne" /></span><span>{HOTEL.addressLineTwo}</span>
     </figcaption>
-  </figure>;
+  </figure></a>;
 }
