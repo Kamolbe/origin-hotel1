@@ -22,6 +22,7 @@ export function LandingPage() {
   const { data } = useAppData();
   const sections = data.settings.website.sections;
   const { user } = useAuth();
+  const compactGuest = !user || user.role === 'user';
   const location = useLocation();
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
@@ -33,7 +34,7 @@ export function LandingPage() {
     return () => window.clearTimeout(timer);
   }, [location.state]);
 
-  return <div className="marketing-page min-h-screen bg-[var(--page)]">
+  return <div className={`marketing-page min-h-screen bg-[var(--page)] ${compactGuest ? 'guest-mobile-compact' : ''}`}>
     <motion.div aria-hidden="true" style={{ scaleX: progress }} className="fixed inset-x-0 top-0 z-[80] h-1 origin-left bg-champagne" />
     <MarketingNav />
     <main>
@@ -42,10 +43,10 @@ export function LandingPage() {
         <div className="hotel-ticker-track" aria-hidden="true">{[0, 1, 2, 3].map((item) => <span key={item}>{data.settings.hotelName.toUpperCase()} <i>✦</i> TOSHKENT <i>✦</i> QULAYLIK VA NAFOSAT <i>✦</i> UNUTILMAS HORDIQ <i>✦</i></span>)}</div>
       </div>
       {sections.stats && <Reveal><StatsStrip /></Reveal>}
-      {sections.rooms && <Reveal><RoomsShowcase /></Reveal>}
+      {sections.rooms && <Reveal><RoomsShowcase compactGuest={compactGuest} /></Reveal>}
       {sections.about && <Reveal><ExperienceSection /></Reveal>}
-      {sections.gallery && <Reveal><GallerySection /></Reveal>}
-      {sections.reviews && <Reveal><ReviewsSection /></Reveal>}
+      {sections.gallery && <Reveal><GallerySection compactGuest={compactGuest} /></Reveal>}
+      {sections.reviews && <Reveal><ReviewsSection compactGuest={compactGuest} /></Reveal>}
       {sections.contact && <Reveal><LocationSection /></Reveal>}
       {sections.planner && <Reveal><StayPlanner /></Reveal>}
       {sections.cta && <Reveal><CtaBand /></Reveal>}

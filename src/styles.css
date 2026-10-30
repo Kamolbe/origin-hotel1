@@ -555,3 +555,29 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
 
 label.hotel-validation-label { flex-wrap: wrap; }
 label.hotel-validation-label > .hotel-field-feedback { flex-basis: 100%; }
+
+
+/* Only guest/visitor home pages become compact on phones. Staff and desktop stay full. */
+.guest-mobile-toggle { display: none; }
+@media (max-width: 767px) {
+  .guest-mobile-compact .guest-mobile-toggle { display: inline-flex; }
+  .guest-mobile-compact .hotel-ticker { display: none; }
+  .guest-mobile-compact .guest-home-hero { min-height: 0; }
+  .guest-mobile-compact .guest-home-hero > .relative { gap: 24px; padding-block: 28px; }
+  .guest-mobile-compact .guest-home-hero h1 { font-size: clamp(2rem, 9vw, 3rem); }
+  .guest-mobile-compact .guest-home-hero dl { display: none; }
+  .guest-mobile-compact .guest-home-stats > div { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding-block: 24px; }
+  .guest-mobile-compact #rooms, .guest-mobile-compact #gallery, .guest-mobile-compact #contact, .guest-mobile-compact #stay-planner { padding-block: 32px; }
+  .guest-mobile-compact #about > div, .guest-mobile-compact #reviews > div { padding-block: 32px; gap: 24px; }
+  .guest-mobile-compact #about img:first-child { max-height: 200px; }
+  .guest-mobile-compact #about img:nth-child(2) { display: none; }
+  .guest-mobile-compact #rooms h2, .guest-mobile-compact #about h2, .guest-mobile-compact #gallery h2, .guest-mobile-compact #reviews h2, .guest-mobile-compact #contact h2 { font-size: 1.75rem; }
+  .guest-mobile-compact .guest-room-list, .guest-mobile-compact .guest-review-list, .guest-mobile-compact .guest-gallery-list { margin-top: 24px; }
+  .guest-mobile-compact .guest-room-list:not(.mobile-list-expanded) > .room-showcase-card:nth-child(n+3),
+  .guest-mobile-compact .guest-gallery-list:not(.mobile-list-expanded) > button:nth-child(n+4),
+  .guest-mobile-compact .guest-review-list:not(.mobile-list-expanded) > figure:nth-child(n+2) { display: none; }
+  .guest-mobile-compact .room-showcase-card > div:first-child { aspect-ratio: 2 / 1; }
+  .guest-mobile-compact .room-showcase-card > div:last-child { padding: 18px; }
+  .guest-mobile-compact .guest-gallery-list > button { height: 140px; }
+  .guest-mobile-compact .guest-review-list > figure { padding: 20px; }
+}

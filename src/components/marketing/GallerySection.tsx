@@ -6,7 +6,8 @@ import { Modal } from '../Modal';
 import { GALLERY as DEFAULT_GALLERY } from '../../data/marketing';
 import { optimizedUnsplashUrl, unsplashSrcSet } from '../../services/imageUtils';
 
-export function GallerySection() {
+export function GallerySection({ compactGuest = false }: { compactGuest?: boolean }) {
+  const [expanded, setExpanded] = useState(false);
   const { data } = useAppData();
   const GALLERY: Array<{ photo: string; wide: boolean }> = data.settings.website.gallery.length ? data.settings.website.gallery.map((photo, index) => ({ photo, wide: index % 3 === 0 })) : [...DEFAULT_GALLERY];
   const { t } = useSiteTranslation();
@@ -21,7 +22,7 @@ export function GallerySection() {
       <p className="text-[11px] uppercase tracking-[.14em] text-muted">{t('landing.galleryHint')}</p>
     </div>
 
-    <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+    <div id="home-gallery-list" className={`guest-gallery-list mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 ${expanded ? 'mobile-list-expanded' : ''}`}>
       {GALLERY.map((item, index) => <button
         key={item.photo}
         type="button"
@@ -44,6 +45,7 @@ export function GallerySection() {
       </button>)}
     </div>
 
+    {compactGuest && GALLERY.length > 3 && <button type="button" aria-expanded={expanded} aria-controls="home-gallery-list" className="guest-mobile-toggle secondary-button mt-4 w-full" onClick={() => setExpanded(!expanded)}>{expanded ? 'Kamroq rasmlar' : `Barcha rasmlar (${GALLERY.length})`}</button>}
     <Modal open={active !== null} onClose={() => setActive(null)} title={t('landing.galleryTitle')} description={t('landing.galleryHint')} size="lg">
       {active && <div className="aspect-[3/2] w-full overflow-hidden rounded-2xl bg-[var(--line)]">
         <img

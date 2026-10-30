@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useHotelContact } from '../../hooks/useHotelContact';
 import { Quote, Star } from 'lucide-react';
 import { useSiteTranslation } from '../../hooks/useSiteContent';
 import { REVIEWS } from '../../data/marketing';
 
-export function ReviewsSection() {
+export function ReviewsSection({ compactGuest = false }: { compactGuest?: boolean }) {
+  const [expanded, setExpanded] = useState(false);
   const HOTEL = useHotelContact();
   const { t } = useSiteTranslation();
 
@@ -22,7 +24,7 @@ export function ReviewsSection() {
         </div>
       </div>
 
-      <div className="mt-12 grid gap-5 lg:grid-cols-3">
+      <div id="home-review-list" className={`guest-review-list mt-12 grid gap-5 lg:grid-cols-3 ${expanded ? 'mobile-list-expanded' : ''}`}>
         {REVIEWS.map((review) => <figure key={review.name} className="surface flex h-full flex-col rounded-3xl p-6">
           <Quote size={22} className="text-champagne" aria-hidden="true" />
           <blockquote className="mt-4 flex-1 text-sm leading-7">{t(review.quoteKey)}</blockquote>
@@ -33,6 +35,7 @@ export function ReviewsSection() {
           </figcaption>
         </figure>)}
       </div>
+      {compactGuest && REVIEWS.length > 1 && <button type="button" aria-expanded={expanded} aria-controls="home-review-list" className="guest-mobile-toggle secondary-button mt-4 w-full" onClick={() => setExpanded(!expanded)}>{expanded ? 'Kamroq sharhlar' : `Barcha sharhlar (${REVIEWS.length})`}</button>}
     </div>
   </section>;
 }

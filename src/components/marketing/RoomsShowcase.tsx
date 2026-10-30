@@ -20,7 +20,8 @@ const ROOM_LABEL_KEY: Record<RoomType, string> = {
   Presidential: 'room.presidential',
 };
 
-export function RoomsShowcase() {
+export function RoomsShowcase({ compactGuest = false }: { compactGuest?: boolean }) {
+  const [expanded, setExpanded] = useState(false);
   const getRoomPhoto = useRoomPhotos();
   const reduced = usePrefersReducedMotion();
   const { t } = useSiteTranslation();
@@ -36,7 +37,7 @@ export function RoomsShowcase() {
       <p className="mt-4 text-sm leading-7 text-muted">{t('landing.roomsSubtitle')}</p>
     </div>
 
-    <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div id="home-room-list" className={`guest-room-list mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${expanded ? 'mobile-list-expanded' : ''}`}>
       {rooms.map(({ type, room }, index) => <motion.article initial={reduced ? false : { opacity: 0, y: 55 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .15 }} transition={{ duration: .65, delay: index % 3 * .12 }} key={type} className="surface room-showcase-card group flex flex-col overflow-hidden rounded-3xl transition duration-300 hover:-translate-y-1 hover:shadow-lift">
         <div className="relative aspect-[16/11] overflow-hidden">
           <img
@@ -74,6 +75,7 @@ export function RoomsShowcase() {
       </article>
     </div>
 
+    {compactGuest && rooms.length > 2 && <button type="button" aria-expanded={expanded} aria-controls="home-room-list" className="guest-mobile-toggle secondary-button mt-5 w-full" onClick={() => setExpanded(!expanded)}>{expanded ? 'Kamroq xonalar' : `Barcha xona turlari (${rooms.length})`}</button>}
     <RoomDetailsDialog room={details} onClose={() => setDetails(null)} onBook={(chosen) => { setDetails(null); book({ selectedRoomType: chosen.type }); }} />
   </section>;
 }

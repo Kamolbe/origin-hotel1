@@ -38,7 +38,7 @@ export function StatsStrip() {
     { label: t('landing.statSatisfaction'), value: HOTEL.satisfaction, decimals: 0, suffix: '%' },
   ];
 
-  return <section className="border-b border-[var(--line)] bg-[var(--surface)]">
+  return <section className="guest-home-stats border-b border-[var(--line)] bg-[var(--surface)]">
     <div className="mx-auto grid max-w-[1440px] gap-6 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-10 lg:py-12">
       {entries.map((entry) => <Counter key={entry.label} label={entry.label} value={entry.value} decimals={entry.decimals} suffix={entry.suffix} enabled={!reducedMotion} />)}
     </div>

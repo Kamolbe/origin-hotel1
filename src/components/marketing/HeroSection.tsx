@@ -22,7 +22,7 @@ export function HeroSection() {
   const y = useSpring(useTransform(pointerY, [-.5, .5], [-18, 18]), { stiffness: 70, damping: 22 });
   const roomCount = data.rooms.length;
 
-  return <section onPointerMove={(event) => { if (reduced || event.pointerType !== 'mouse') return; const rect = event.currentTarget.getBoundingClientRect(); pointerX.set((event.clientX - rect.left) / rect.width - .5); pointerY.set((event.clientY - rect.top) / rect.height - .5); }} onPointerLeave={() => { pointerX.set(0); pointerY.set(0); }} className="relative isolate flex min-h-[660px] items-center overflow-hidden bg-ink text-white lg:min-h-[88vh]">
+  return <section onPointerMove={(event) => { if (reduced || event.pointerType !== 'mouse') return; const rect = event.currentTarget.getBoundingClientRect(); pointerX.set((event.clientX - rect.left) / rect.width - .5); pointerY.set((event.clientY - rect.top) / rect.height - .5); }} onPointerLeave={() => { pointerX.set(0); pointerY.set(0); }} className="guest-home-hero relative isolate flex min-h-[660px] items-center overflow-hidden bg-ink text-white lg:min-h-[88vh]">
     <motion.img style={reduced ? undefined : { x, y, scale: 1.08 }}
       src={optimizedUnsplashUrl(PHOTOS.exterior, 1800, 82)}
       srcSet={unsplashSrcSet(PHOTOS.exterior, [720, 1080, 1440, 1800, 2400], 82)}
