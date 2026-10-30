@@ -214,6 +214,13 @@ def mutate(state,user,kind,key,after):
     manager=is_manager(user)
     if kind=='settings':
         if not can_edit_site(state,user) or not isinstance(after,dict): raise PermissionDenied
+        contact=after.get('contact')
+        if isinstance(contact,dict):
+            from .map_preview import map_embed_url
+            previous=state.payload.get('settings',{}).get('contact',{})
+            if contact.get('mapUrl') != previous.get('mapUrl') or contact.get('address') != previous.get('address') or contact.get('city') != previous.get('city') or not previous.get('mapEmbedUrl'):
+                contact['mapEmbedUrl']=map_embed_url(str(contact.get('mapUrl','')),f"{contact.get('address','')} {contact.get('city','')}")
+            else: contact['mapEmbedUrl']=previous['mapEmbedUrl']
         state.payload['settings']=after
         audit(user,'site settings updated',state)
         return
@@ -472,7 +479,7 @@ def health(request):
     trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
     durable = settings.HOTEL_DURABLE_STORAGE
     ready = configured and trusted and durable
-    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
+    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access','map-preview']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
 
 
 @endpoint

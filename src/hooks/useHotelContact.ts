@@ -26,6 +26,7 @@ export function useHotelContact() {
     addressLineOne: contact.address,
     addressLineTwo: contact.city,
     mapUrl: contact.mapUrl,
+    mapEmbedUrl: contact.mapEmbedUrl,
     telegram: contact.telegram,
     telegramHandle: channelHandle(contact.telegram),
     instagram: contact.instagram,

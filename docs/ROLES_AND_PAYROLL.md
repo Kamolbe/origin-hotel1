@@ -84,3 +84,11 @@ Yangi manager avtomatik ruxsat olmaydi. Boshqa managerlar kundalik bron, xona va
 Ruxsat server bazasidagi SiteState ichida saqlanadi; manager o‘ziga ruxsat bera olmaydi.
 Managerlar nazorati alohida /app/managers sahifasida joylashgan. Ishchilar sahifasi faqat ishchilar va oyliklar uchun.
 Deploy: avval Render latest commit (health features: site-editor-access), keyin Vercel redeploy.
+
+
+## Google Maps ko‘rinishi
+
+Mehmonxona va aloqa sozlamalaridagi joylashuv havolasi saytda Google Maps iframe ichida ko‘rsatiladi.
+Google Maps qisqa havolalari saqlash paytida faqat ruxsat etilgan Google domenlari orqali ochiladi; boshqa xostga yo‘naltirish rad etiladi.
+To‘liq joylashuv, koordinata, qidiruv yoki Google Maps embed havolalari ishlatiladi. Google bo‘lmagan xarita havolalari uchun manzil bo‘yicha Google ko‘rinishi beriladi, asl havola saqlanadi.
+Mavjud qisqa havola uchun sozlamalarni bir marta qayta saqlang. Avval Render (map-preview feature), keyin Vercel deploy qiling. API kaliti kerak emas; iframe Google serveridan yuklanadi.

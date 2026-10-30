@@ -137,7 +137,7 @@ export interface HotelContact {
   email: string;
   address: string;
   city: string;
-  mapUrl: string;
+  mapUrl: string; mapEmbedUrl?: string;
   telegram: string;
   instagram: string;
   facebook: string;

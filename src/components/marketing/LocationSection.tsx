@@ -1,3 +1,4 @@
+import { mapPreviewUrl } from '../../services/mapPreview';
 import { useHotelContact } from '../../hooks/useHotelContact';
 import { useContactDialog } from '../../context/ContactDialogContext';
 import { Camera, Clock, ExternalLink, Headphones, Mail, MapPin, Phone, Send, Share2 } from 'lucide-react';
@@ -52,34 +53,11 @@ export function LocationSection() {
   </section>;
 }
 
-/** Lightweight inline map sketch — no third-party frame, so the panel never
- *  shows an empty iframe or blocks on network. */
 function MapSketch({ caption }: { caption: string }) {
   const HOTEL = useHotelContact();
-  return <a href={HOTEL.mapUrl} target="_blank" rel="noopener noreferrer" aria-label="Mehmonxona joylashuvini xaritada ochish" className="group block rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-champagne"><figure className="surface overflow-hidden rounded-3xl p-4 transition group-hover:border-champagne sm:p-6">
-    <svg viewBox="0 0 520 360" role="img" aria-label={caption} className="h-auto w-full rounded-2xl bg-[var(--page)]">
-      <g stroke="var(--line)" strokeWidth="14" strokeLinecap="round">
-        <path d="M-20 96h560" /><path d="M-20 232h560" />
-        <path d="M132 -20v400" /><path d="M356 -20v400" />
-      </g>
-      <g stroke="var(--line)" strokeWidth="6" strokeLinecap="round" opacity=".75">
-        <path d="M-20 160h300" /><path d="M430 232v148" /><path d="M132 300h424" />
-      </g>
-      <g fill="color-mix(in oklab, var(--muted) 22%, transparent)">
-        <rect x="166" y="126" width="70" height="52" rx="8" /><rect x="252" y="126" width="52" height="52" rx="8" />
-        <rect x="166" y="196" width="52" height="60" rx="8" /><rect x="252" y="196" width="70" height="60" rx="8" />
-        <rect x="392" y="60" width="86" height="60" rx="8" /><rect x="60" y="252" width="52" height="60" rx="8" />
-      </g>
-      <path d="M392 126c0 0-3 8-3 12a9 9 0 0 0 18 0c0-4-3-12-3-12h-12Z" fill="color-mix(in oklab, var(--champagne) 30%, transparent)" />
-      <g>
-        <circle cx="222" cy="176" r="34" fill="color-mix(in oklab, var(--champagne) 18%, transparent)" />
-        <circle cx="222" cy="176" r="19" fill="var(--champagne)" />
-        <circle cx="222" cy="176" r="7" fill="#fff" />
-      </g>
-      <text x="222" y="238" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">{HOTEL.name}</text>
-    </svg>
-    <figcaption className="mt-4 flex items-center justify-between gap-4 text-[10px] uppercase tracking-[.14em] text-muted">
-      <span className="flex items-center gap-2">{caption}<ExternalLink size={14} className="shrink-0 text-champagne" /></span><span>{HOTEL.addressLineTwo}</span>
-    </figcaption>
-  </figure></a>;
+  const preview = mapPreviewUrl(HOTEL.mapUrl, `${HOTEL.name} ${HOTEL.addressLineOne} ${HOTEL.addressLineTwo}`, HOTEL.mapEmbedUrl);
+  return <figure className="surface overflow-hidden rounded-3xl p-3 sm:p-4">
+    <iframe key={preview} title="Mehmonxona joylashuvi — Google Maps" src={preview} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen className="h-[280px] w-full rounded-2xl border-0 bg-[var(--page)] sm:h-[360px]" />
+    <figcaption className="mt-3"><a href={HOTEL.mapUrl} target="_blank" rel="noopener noreferrer" aria-label="Mehmonxona joylashuvini xaritada ochish" className="flex items-center justify-between gap-3 rounded-xl p-2 text-xs transition hover:bg-[var(--page)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-champagne"><span className="min-w-0"><span className="block font-semibold">{caption}</span><span className="mt-1 block break-words text-[11px] text-muted">{HOTEL.addressLineOne}, {HOTEL.addressLineTwo}</span></span><ExternalLink size={17} className="shrink-0 text-champagne" /></a><p className="px-2 pb-1 text-[10px] leading-5 text-muted">Xarita yuklanmasa, yuqoridagi manzilni bosib Google Maps’da oching.</p></figcaption>
+  </figure>;
 }
