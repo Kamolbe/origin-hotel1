@@ -315,7 +315,7 @@ img { max-width: 100%; }
 
 /* A single compact navigation row on phones; never a wrapping floating pill. */
 .dock-short-label { display: none; }
-.marketing-page { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); overflow-x: clip; }
+.marketing-page { padding-bottom: 0; overflow-x: clip; }
 .marketing-page main, .marketing-page section, .marketing-page footer, .marketing-page .grid > * { min-width: 0; }
 .marketing-page :where(a[href^="mailto:"], a[href^="tel:"]) { overflow-wrap: anywhere; }
 @media (max-width: 767px) {
