@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { BACKEND_URL, verifyHotelBackend } from '../scripts/build-vercel.mjs';
-const ready = { service:'origin-hotel',apiVersion:1,ready:true,trustedFrontend:true,durableStorage:true,features:['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync'] };
+const ready = { service:'origin-hotel',apiVersion:1,ready:true,trustedFrontend:true,durableStorage:true,features:['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access'] };
 test('Vercel routes the shared API to the exact checked Render service before the SPA',async()=>{
   assert.equal(BACKEND_URL,'https://origin-hotel1-1.onrender.com');
   const config=JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'));

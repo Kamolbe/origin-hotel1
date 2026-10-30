@@ -39,7 +39,7 @@ class StaffAndManagerTests(TestCase):
         self.client.force_login(self.manager)
         room={'id':'new-room','number':'M101','type':'Standard','floor':1,'capacity':2,'pricePerNight':100000,'status':'available','amenities':[]}
         self.assertEqual(self.change('rooms',room['id'],room).status_code,200)
-        self.assertEqual(self.change('settings','settings',{'hotelName':'Manager hotel'}).status_code,200)
+        self.assertEqual(self.change('settings','settings',{'hotelName':'Manager hotel'}).status_code,403)
         user={'id':'new-account','name':'New Guest','email':'new@example.test','password':'Unique-long-pass-7363','role':'user','isActive':True}
         self.assertEqual(self.change('users',user['id'],user).status_code,200)
         user.update(id='forged-admin',email='forged@example.test',role='admin')

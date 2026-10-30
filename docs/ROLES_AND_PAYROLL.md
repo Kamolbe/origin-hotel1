@@ -73,3 +73,14 @@ Ochiq/ko‘rinib turgan sahifa har **3 soniyada** yengil `/hotel-api/revision/` 
 Bir vaqtning o‘zida kelgan manager amallari transaction/global revision orqali tartiblanadi. Bron holatiga qo‘shimcha `expectedStatus` tekshiruvi qo‘yilgan. Eski pending holatini qayta tasdiqlash 409/400 bilan rad etiladi, ikkinchi tasdiqlash yoki ikki marta tasdiqlash auditi yaratilmaydi.
 
 Faoliyat `AuditEntry.details` ichida canonical actor ismi/emaili/roli, yozuv va bron oldingi/yangi holati bilan yoziladi. Manager o‘chirilganda FK null bo‘lsa ham saqlangan actor ma’lumotlari qoladi. Eski mavjud actorli qaydlar `0005_auditentry_details` migratsiyasida to‘ldiriladi; oldin o‘chirilgan hisoblardagi yo‘qolgan ismni qayta tiklab bo‘lmaydi. Readiness yangi `manager-team-sync` xususiyatini tekshiradi: avval Render migratsiyasi/deployi, keyin Vercel.
+
+
+## Sayt muharriri ruxsati
+
+Admin doim sayt sozlamalari, matnlar, rasmlar, aloqa va dizaynni tahrirlay oladi.
+Admin Managerlar nazorati kartasida faqat bitta managerga sayt tahrirlash huquqini beradi.
+Boshqa manager tanlansa, oldingisidan huquq atomik ravishda olinadi; huquqni butunlay olish ham mumkin.
+Yangi manager avtomatik ruxsat olmaydi. Boshqa managerlar kundalik bron, xona va moliya ishlarini davom ettiradi.
+Ruxsat server bazasidagi SiteState ichida saqlanadi; manager o‘ziga ruxsat bera olmaydi.
+Managerlar nazorati ishchilar sahifasida ishchi kartalaridan oldin joylashgan.
+Deploy: avval Render latest commit (health features: site-editor-access), keyin Vercel redeploy.

@@ -1,3 +1,8 @@
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from django.test import TransactionTestCase, Client
+from django.db import connections, close_old_connections
+from .models import SiteState
 import json
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -75,11 +80,53 @@ class ManagerTeamTests(TestCase):
     def test_revision_endpoint_is_lightweight_and_no_store(self):
         result=self.client.get('/hotel-api/revision/');self.assertEqual(result.status_code,200);self.assertEqual(list(result.json()),['revision']);self.assertIn('no-store',result['Cache-Control'])
 
-from concurrent.futures import ThreadPoolExecutor
-from threading import Barrier
-from django.test import TransactionTestCase, Client
-from django.db import connections, close_old_connections
-from .models import SiteState
+    def test_site_editor_transfer_revoke_and_owner_access(self):
+        for i in range(3): self.assertEqual(self.create_manager(i)[0].status_code,200)
+        managers=list(manager_accounts().order_by('pk'))
+        def account_for(manager):
+            return next(item for item in self.session()['data']['users'] if item['email']==manager.email)
+        self.client.force_login(managers[0])
+        self.assertEqual(self.change('settings','settings',{'hotelName':'Denied'}).status_code,403)
+        self.client.force_login(self.owner)
+        first=account_for(managers[0]);first['canEditSite']=True
+        self.assertEqual(self.change('users',first['id'],first).status_code,200)
+        self.client.force_login(managers[0])
+        self.assertEqual(self.change('settings','settings',{'hotelName':'First editor'}).status_code,200)
+        self.client.force_login(self.owner)
+        second=account_for(managers[1]);second['canEditSite']=True
+        self.assertEqual(self.change('users',second['id'],second).status_code,200)
+        accounts=self.session()['data']['users']
+        self.assertEqual(sum(item['canEditSite'] for item in accounts if item['role']=='manager'),1)
+        self.client.force_login(managers[0])
+        self.assertEqual(self.change('settings','settings',{'hotelName':'Old editor'}).status_code,403)
+        self.client.force_login(managers[1])
+        self.assertEqual(self.change('settings','settings',{'hotelName':'Second editor'}).status_code,200)
+        self.client.force_login(self.owner)
+        second=account_for(managers[1]);second['canEditSite']=False
+        self.assertEqual(self.change('users',second['id'],second).status_code,200)
+        self.assertEqual(self.change('settings','settings',{'hotelName':'Owner always allowed'}).status_code,200)
+        self.client.force_login(managers[1])
+        self.assertEqual(self.change('settings','settings',{'hotelName':'Revoked'}).status_code,403)
+
+    def test_managers_cannot_grant_themselves_site_access(self):
+        self.assertEqual(self.create_manager(0)[0].status_code,200)
+        manager=manager_accounts().get()
+        self.client.force_login(manager)
+        own=next(item for item in self.session()['data']['users'] if item['email']==manager.email)
+        own['canEditSite']=True
+        self.assertEqual(self.change('users',own['id'],own).status_code,403)
+        self.assertFalse(self.session()['user']['canEditSite'])
+
+    def test_deleting_editor_removes_grant(self):
+        self.assertEqual(self.create_manager(0)[0].status_code,200)
+        manager=manager_accounts().get()
+        own=next(item for item in self.session()['data']['users'] if item['email']==manager.email)
+        own['canEditSite']=True
+        self.assertEqual(self.change('users',own['id'],own).status_code,200)
+        self.assertEqual(self.change('users',own['id'],None).status_code,200)
+        from .models import SiteState
+        self.assertNotIn('siteEditorUserId',SiteState.objects.get(pk=1).payload)
+
 
 class ConcurrentManagerLimitTests(TransactionTestCase):
     def test_two_simultaneous_creates_cannot_exceed_three(self):

@@ -1,3 +1,4 @@
+import { canEditSite } from '../services/managerTeam';
 import { CloudStorageSettings } from '../components/CloudStorageSettings';
 import { SettingsIdentity } from '../components/SettingsIdentity';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
@@ -40,7 +41,7 @@ export function SettingsPage() {
   const settings = data.settings;
 
   const updateSettings = (patch: (current: typeof settings) => typeof settings) => {
-    if (user?.role !== 'manager') return;
+    if (!canEditSite(user, data.users)) return;
     updateData((current) => ({ ...current, settings: patch(current.settings) }));
   };
 
@@ -52,19 +53,19 @@ export function SettingsPage() {
     if (updateProfile({ name, phone })) success('Profil sozlamalari saqlandi.');
   };
 
-  if (user?.role !== 'manager') return <GuestSettingsPage />;
+  if (!canEditSite(user, data.users)) return <GuestSettingsPage />;
   if ((section && !selectedSection) || (editorTab && section !== 'site')) return <Navigate to="/app/settings" replace />;
   if (!section) return <div className="animate-rise-in"><PageHeader eyebrow="Tizim boshqaruvi" title="Sozlamalar" description="Hisobingiz va boshqaruv sozlamalarini bir joydan boshqaring." /><SettingsIdentity /><CloudStorageSettings /><nav aria-label="Admin sozlama bo‘limlari" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{sections.map(({ id, title, icon: Icon }) => <Link key={id} to={`/app/settings/${id}`} className="surface flex min-h-28 items-center gap-4 rounded-2xl p-5 transition hover:border-champagne"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-champagne/10 text-champagne"><Icon size={21} /></span><span className="text-sm font-semibold">{title}</span></Link>)}</nav></div>;
 
   return <div className="animate-rise-in">
     <PageHeader eyebrow="Tizim boshqaruvi" title={selectedSection?.title ?? 'Sozlamalar'} description="O‘zgarishlarni shu bo‘limdan boshqaring." />
       <div className="space-y-5">
-        {active === 'site' && user?.role === 'manager' && <SiteContentSettings />}
-        {active === 'hotel' && user?.role === 'manager' && <HotelContactSettings />}
+        {active === 'site' && canEditSite(user, data.users) && <SiteContentSettings />}
+        {active === 'hotel' && canEditSite(user, data.users) && <HotelContactSettings />}
         {active === 'security' && <>
           <AccountSummary />
           <Panel title="Profil va parol himoyasi" icon={LockKeyhole}><form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2"><Field label="Ism"><input name="name" defaultValue={user?.name} className="field" /></Field><Field label="Telefon"><input name="phone" defaultValue={data.users.find((item) => item.id === user?.id)?.phone ?? ''} className="field" /></Field><div className="sm:col-span-2 flex justify-end"><button className="primary-button">Profilni saqlash</button></div></form></Panel>
-          {user?.role === 'manager' && <Panel title="Kiruvchilarga oid xavfsizlik" icon={ShieldCheck}><Toggle label="Kuchli parol talab qilish" checked={settings.security.requireStrongPasswords} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, requireStrongPasswords: value } }))} /><Toggle label="SSL / HTTPS majburiy" checked={settings.security.sslHttps} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, sslHttps: value } }))} /><Toggle label="Ikki bosqichli tasdiqlash" checked={settings.security.twoFactorEnabled} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, twoFactorEnabled: value } }))} /><IpBlockList value={settings.security.blockedIps} onSave={(blockedIps) => updateSettings((current) => ({ ...current, security: { ...current.security, blockedIps } }))} /></Panel>}
+          {canEditSite(user, data.users) && <Panel title="Kiruvchilarga oid xavfsizlik" icon={ShieldCheck}><Toggle label="Kuchli parol talab qilish" checked={settings.security.requireStrongPasswords} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, requireStrongPasswords: value } }))} /><Toggle label="SSL / HTTPS majburiy" checked={settings.security.sslHttps} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, sslHttps: value } }))} /><Toggle label="Ikki bosqichli tasdiqlash" checked={settings.security.twoFactorEnabled} onChange={(value) => updateSettings((current) => ({ ...current, security: { ...current.security, twoFactorEnabled: value } }))} /><IpBlockList value={settings.security.blockedIps} onSave={(blockedIps) => updateSettings((current) => ({ ...current, security: { ...current.security, blockedIps } }))} /></Panel>}
         </>}
         {active === 'roles' && <Panel title="Foydalanuvchi rollari va ruxsatlar" icon={UsersRound}><RolesOverview roles={settings.roles} /></Panel>}
         {active === 'communication' && <><Panel title="Email (SMTP)" icon={Mail}><Toggle label="SMTP bildirishnomalar" checked={settings.integrations.smtpEnabled} onChange={(value) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smtpEnabled: value } }))} /><div className="grid gap-3 sm:grid-cols-2"><Field label="SMTP host"><input value={settings.integrations.smtpHost} onChange={(event) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smtpHost: event.target.value } }))} className="field" placeholder="smtp.example.com" /></Field><Field label="Port"><input type="number" value={settings.integrations.smtpPort} onChange={(event) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smtpPort: Number(event.target.value) } }))} className="field" /></Field></div></Panel><Panel title="SMS xabarnomalar" icon={Wifi}><Toggle label="SMS bildirishnomalar" checked={settings.integrations.smsEnabled} onChange={(value) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smsEnabled: value } }))} /><Field label="Provider"><input value={settings.integrations.smsProvider} onChange={(event) => updateSettings((current) => ({ ...current, integrations: { ...current.integrations, smsProvider: event.target.value } }))} className="field" placeholder="Eskiz, Twilio" /></Field></Panel></>}

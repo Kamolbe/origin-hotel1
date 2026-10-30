@@ -45,10 +45,13 @@ def extras(state, kind, key): return state.payload.get('extras', {}).get(kind, {
 
 def iso(value): return value.isoformat() if value else None
 
+def can_edit_site(state, user):
+    return user.is_authenticated and user.is_active and (user.is_superuser or is_manager(user) and state.payload.get('siteEditorUserId') == user.pk)
+
 def account(state, user):
     key = key_for(state, 'users', user.pk)
     extra = {name:value for name,value in extras(state,'users',key).items() if name not in ['password','accessCode']}
-    return {**extra, 'id': key, 'name': user.get_full_name() or user.username, 'email': user.email or user.username, 'role': role(user), 'isManagerAccount':is_manager(user) and not user.is_superuser, 'password': '', 'isActive': user.is_active, 'profileRequired': bool(extra.get('profileRequired',False)), 'createdAt': iso(user.date_joined), 'lastLoginAt': iso(user.last_login)}
+    return {**extra, 'id': key, 'name': user.get_full_name() or user.username, 'email': user.email or user.username, 'role': role(user), 'isManagerAccount':is_manager(user) and not user.is_superuser, 'canEditSite':can_edit_site(state,user), 'password': '', 'isActive': user.is_active, 'profileRequired': bool(extra.get('profileRequired',False)), 'createdAt': iso(user.date_joined), 'lastLoginAt': iso(user.last_login)}
 
 def notification_visible(state,user,note):
     if not user.is_authenticated or role(user)=='admin' and note.get('type')=='booking': return False
@@ -210,8 +213,9 @@ def mutate(state,user,kind,key,after):
     admin=role(user)=='admin'
     manager=is_manager(user)
     if kind=='settings':
-        if not (admin or manager) or not isinstance(after,dict): raise PermissionDenied
+        if not can_edit_site(state,user) or not isinstance(after,dict): raise PermissionDenied
         state.payload['settings']=after
+        audit(user,'site settings updated',state)
         return
     if kind=='notifications':
         if admin and key.startswith('payroll-due-') and after:
@@ -236,7 +240,9 @@ def mutate(state,user,kind,key,after):
         if not (admin or manager) and (not obj or obj.pk!=user.pk): raise PermissionDenied
         if after is None:
             if not obj or obj.pk==user.pk or obj.is_superuser or manager and is_manager(obj): raise PermissionDenied
+            if state.payload.get('siteEditorUserId')==obj.pk: state.payload.pop('siteEditorUserId',None)
             audit(user,'delete',obj);obj.delete();return
+        if 'canEditSite' in after and (not isinstance(after['canEditSite'],bool) or not admin and after['canEditSite'] != bool(obj and can_edit_site(state,obj))): raise PermissionDenied
         if manager and (obj and obj.is_superuser or after and after.get('role')=='admin' or obj and is_manager(obj) and obj.pk!=user.pk or after.get('role')=='manager' and (not obj or not is_manager(obj))): raise PermissionDenied
         if after.get('role')=='manager' and (not obj or not is_manager(obj)): ensure_manager_capacity(obj)
         if obj is None:
@@ -259,6 +265,14 @@ def mutate(state,user,kind,key,after):
             if newrole=='manager':
                 obj.groups.add(configure_manager())
         state.payload.setdefault('ids',{}).setdefault(kind,{})[key]=obj.pk
+        if admin:
+            previous_editor=state.payload.get('siteEditorUserId')
+            if after.get('canEditSite') is True and is_manager(obj) and not obj.is_superuser:
+                state.payload['siteEditorUserId']=obj.pk
+            elif previous_editor==obj.pk and (after.get('canEditSite') is False or not is_manager(obj) or obj.is_superuser):
+                state.payload.pop('siteEditorUserId',None)
+            if previous_editor != state.payload.get('siteEditorUserId'):
+                audit(user,'site editor permission changed',obj,details={'previousEditorId':previous_editor,'editorId':state.payload.get('siteEditorUserId')})
         save_extra(state,kind,key,after,['phone','nationality','avatarUrl','preferences','twoFactorEnabled'])
         audit(user,'profile',obj)
         return
@@ -458,7 +472,7 @@ def health(request):
     trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
     durable = settings.HOTEL_DURABLE_STORAGE
     ready = configured and trusted and durable
-    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
+    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
 
 
 @endpoint

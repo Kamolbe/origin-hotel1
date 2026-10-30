@@ -27,6 +27,7 @@ export interface UserPreferences {
 
 export interface User extends DemoUserCredentials {
   isManagerAccount?: boolean;
+  canEditSite?: boolean;
   profileRequired?: boolean;
   isActive: boolean;
   createdAt: string;
