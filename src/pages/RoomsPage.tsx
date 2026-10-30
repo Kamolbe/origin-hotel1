@@ -1,3 +1,4 @@
+import { RoomAvailability } from '../components/RoomAvailability';
 import { hotelToday } from '../services/dashboardMetrics';
 import { validStayDates } from '../services/hotelOperations';
 import { SearchField } from '../components/SearchField';
@@ -117,6 +118,7 @@ export function RoomsPage() {
   return <div className="animate-rise-in">
     <PageHeader eyebrow={guestView ? 'Origin Hotel · Xonalar' : 'Inventar · 5 qavat'} title={guestView ? 'Sizga mos xonani toping' : 'Xonalar'} description={guestView ? 'Sanalar va sig‘imni tanlang — bo‘sh xonalarni darhol ko‘ring.' : user?.role === 'admin' ? 'Barcha qavatlar, xonalar, narxlar va joriy bronlarni kuzating. Xonalarni manager boshqaradi.' : 'Qavatlar, narxlar va xonalar holatini bir joydan boshqaring.'} action={canManage ? <button onClick={openAdd} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white hover:bg-ink-soft"><Plus size={14} />Xona qo‘shish</button> : undefined} />
 
+    {guestView && <div className="mb-5 md:hidden"><RoomAvailability /></div>}
     {user?.role==='admin' && <section aria-label="Xonalar holati nazorati" className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">{[['all','Barcha xonalar'],...Object.entries(statusLabel)].map(([key,label])=><button key={key} aria-pressed={status===key} onClick={()=>setStatus(key)} className={`surface rounded-2xl p-4 text-left ${status===key?'border-champagne':''}`}><span className="text-xs text-muted">{label}</span><b className="mt-2 block text-2xl">{key==='all'?data.rooms.length:data.rooms.filter((room)=>room.status===key).length}</b></button>)}</section>}
     {guestView ? <div className="surface mb-6 grid items-end gap-4 rounded-3xl p-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-[1fr_1fr_.8fr_1fr_1fr_auto] sm:p-5">
       <FilterField label="Kelish" value={checkIn} type="date" onChange={(value) => setCheckIn(value)} />
