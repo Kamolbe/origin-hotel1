@@ -191,4 +191,5 @@ class AuditIdentityMigrationTests(TransactionTestCase):
             Audit=executor.loader.project_state(latest).apps.get_model('hotel','AuditEntry')
             details=Audit.objects.get(pk=record.pk).details
             self.assertEqual(details['actorName'],'Old Manager');self.assertEqual(details['actorEmail'],'migration@example.test');self.assertEqual(details['actorRole'],'manager')
-        finally:MigrationExecutor(connection).migrate(latest)
+        finally:
+            restore=MigrationExecutor(connection);restore.migrate(restore.loader.graph.leaf_nodes())

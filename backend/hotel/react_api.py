@@ -189,6 +189,10 @@ def auth(request, action):
                 if not extra.get('profileConfirmedAt'): extra['profileRequired']=True
                 state.revision+=1;state.save()
         login(request,user,backend='django.contrib.auth.backends.ModelBackend')
+        if is_manager(user) and not user.is_superuser:
+            request.session.save()
+            from .device_sessions import track_manager_session
+            track_manager_session(request)
         with transaction.atomic():
             state=lock_hotel_state();audit(user,'Tizimga kirildi',user,{'event':'login'});state.revision+=1;state.save()
     else: return JsonResponse({},status=404)
@@ -410,6 +414,9 @@ def patch(request):
     if not request.user.is_authenticated: raise PermissionDenied
     values=body(request)
     state=lock_hotel_state()
+    if is_manager(request.user):
+        from django.contrib.sessions.models import Session
+        if not Session.objects.filter(pk=request.session.session_key,expire_date__gt=timezone.now()).exists(): raise PermissionDenied
     if extras(state,'users',key_for(state,'users',request.user.pk)).get('profileRequired'): raise ValidationError('Avval ism, familiya va telefoningizni tasdiqlang.')
     if values.get('revision')!=state.revision: return JsonResponse({'message':'Boshqa qurilmada ma’lumot yangilandi. Server nusxasi qayta yuklanadi.'},status=409)
     changes=values.get('changes',[])
@@ -472,6 +479,8 @@ def health(request):
         StaffMember.objects.exists()
         SalaryPayment.objects.exists()
         ReportSnapshot.objects.exists()
+        from .models import ManagerDeviceSession
+        ManagerDeviceSession.objects.exists()
         configured = get_user_model().objects.filter(is_superuser=True,is_active=True).exists()
     except DatabaseError:
         configured = False
@@ -479,7 +488,7 @@ def health(request):
     trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
     durable = settings.HOTEL_DURABLE_STORAGE
     ready = configured and trusted and durable
-    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access','map-preview']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
+    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access','map-preview','manager-device-sessions']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
 
 
 @endpoint
@@ -493,3 +502,32 @@ def revision(request):
     if request.method != 'GET': return JsonResponse({},status=405)
     value=SiteState.objects.filter(pk=1).values_list('revision',flat=True).first()
     return JsonResponse({'revision':value or 0},headers={'Cache-Control':'no-store, private'})
+
+
+@endpoint
+@transaction.atomic
+def manager_sessions(request):
+    if not request.user.is_authenticated or not request.user.is_superuser: raise PermissionDenied
+    if request.method not in ['GET','POST']: return JsonResponse({},status=405)
+    from django.contrib.sessions.models import Session
+    from .models import ManagerDeviceSession
+    from .device_sessions import import_existing_sessions, device_label, valid_session
+    state=lock_hotel_state()
+    import_existing_sessions()
+    removed=0
+    if request.method=='POST':
+        values=body(request)
+        target=find_record(state,'users',str(values.get('managerId','')))
+        if not target or target.is_superuser or not is_manager(target): raise PermissionDenied
+        rows=ManagerDeviceSession.objects.filter(user=target,session__expire_date__gt=timezone.now())
+        if values.get('all') is not True:
+            if not values.get('sessionId'): raise ValidationError('Qurilmani tanlang.')
+            rows=rows.filter(pk=values['sessionId'])
+        keys=list(rows.values_list('session_id',flat=True));removed=len(keys)
+        Session.objects.filter(pk__in=keys).delete()
+        if removed:
+            audit(request.user,'manager sessions revoked',target,{'event':'manager_sessions_revoked','sessionCount':removed})
+            state.revision+=1;state.save()
+    rows=ManagerDeviceSession.objects.filter(user__in=manager_accounts().filter(is_active=True),session__expire_date__gt=timezone.now()).select_related('session','user').order_by('-last_seen_at')
+    items=[{'id':str(row.pk),'managerId':key_for(state,'users',row.user_id),'device':device_label(row.user_agent),'createdAt':iso(row.created_at),'lastSeenAt':iso(row.last_seen_at),'expiresAt':iso(row.session.expire_date),'legacy':not bool(row.user_agent)} for row in rows if valid_session(row.session,row.user)]
+    return JsonResponse({'sessions':items,'revoked':removed},headers={'Cache-Control':'no-store, private'})

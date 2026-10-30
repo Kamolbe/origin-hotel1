@@ -1,3 +1,5 @@
+import uuid
+from django.utils import timezone
 from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -136,3 +138,11 @@ class ReportSnapshot(models.Model):
         ordering = ['-created_at']
         constraints = [models.CheckConstraint(condition=models.Q(end_date__gte=models.F('start_date')), name='report_valid_range')]
     def __str__(self): return self.title
+
+class ManagerDeviceSession(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    session = models.OneToOneField('sessions.Session', on_delete=models.CASCADE)
+    user_agent = models.CharField(max_length=512, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField(default=timezone.now)

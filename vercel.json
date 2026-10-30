@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "routes": [
     {
-      "src": "^/hotel-api/(live|health|session|state|visit|revision)/?$",
+      "src": "^/hotel-api/(live|health|session|state|visit|revision|manager-sessions)/?$",
       "dest": "https://origin-hotel1-1.onrender.com/hotel-api/$1/"
     },
     {

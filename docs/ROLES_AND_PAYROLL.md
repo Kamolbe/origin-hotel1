@@ -92,3 +92,15 @@ Mehmonxona va aloqa sozlamalaridagi joylashuv havolasi saytda Google Maps iframe
 Google Maps qisqa havolalari saqlash paytida faqat ruxsat etilgan Google domenlari orqali ochiladi; boshqa xostga yo‘naltirish rad etiladi.
 To‘liq joylashuv, koordinata, qidiruv yoki Google Maps embed havolalari ishlatiladi. Google bo‘lmagan xarita havolalari uchun manzil bo‘yicha Google ko‘rinishi beriladi, asl havola saqlanadi.
 Mavjud qisqa havola uchun sozlamalarni bir marta qayta saqlang. Avval Render (map-preview feature), keyin Vercel deploy qiling. API kaliti kerak emas; iframe Google serveridan yuklanadi.
+
+
+## Manager qurilmalari va sessiyalarini tugatish
+
+Admin → Managerlar → kerakli managerdagi Qurilmalar tugmasi sessiyalar soni va ro‘yxatini ochadi.
+Har bir brauzer sessiyasi alohida; bir brauzerning tablari alohida qurilma hisoblanmaydi. Fizik qurilmaning aniq identifikatsiyasi berilmaydi.
+Qurilma/brauzer turi User-Agent’dan olinadi, faollik 30 soniyadan tez yozilmaydi. Admin ro‘yxati 10 soniyada va oyna faollashganda yangilanadi.
+Eski, hali muddati tugamagan sessiyalar ham import qilinadi. Eski sessiyada qurilma turi keyingi so‘rovgacha noma’lum bo‘lishi mumkin.
+Faqat admin bitta sessiyani yoki tanlangan managerning barcha sessiyalarini inline tasdiq bilan tugata oladi. Sessiya kalitlari brauzerga yuborilmaydi. Boshqa managerlarning sessiyalari saqlanadi.
+Chiqarilgan sessiya keyingi server so‘rovida ruxsatsiz bo‘ladi; ochiq va internetga ulangan panel odatda navbatdagi 3 soniyalik tekshiruvda kirish sahifasiga qaytadi. Offline qurilma qayta ulanganda chiqadi.
+Tizimdan chiqarish parolni almashtirmaydi va hisobni bloklamaydi: parol bilan qayta kirish mumkin. Qayta kirishni to‘xtatish uchun manager hisobini bloklang.
+Server bazasiga 0006_managerdevicesession migratsiyasi qo‘shildi. Avval Render latest commit deploy (health features: manager-device-sessions), keyin Vercel redeploy.

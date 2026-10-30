@@ -54,3 +54,12 @@ export async function hotelRevision(): Promise<number> {
   if (!Number.isSafeInteger(result.revision) || result.revision < 0) throw new Error('Server yangilanish javobi noto‘g‘ri.');
   return result.revision;
 }
+
+
+export type ManagerDeviceSession = { id: string; managerId: string; device: string; createdAt: string; lastSeenAt: string; expiresAt: string; legacy: boolean };
+export async function managerDeviceRequest(body?: { managerId: string; sessionId?: string; all?: boolean }): Promise<{ sessions: ManagerDeviceSession[]; revoked: number }> {
+  const response = await fetch('/hotel-api/manager-sessions/', { method: body ? 'POST' : 'GET', credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(15000), headers: { ...(body ? { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message ?? 'Qurilmalar ro‘yxatini yuklab bo‘lmadi.');
+  return result;
+}

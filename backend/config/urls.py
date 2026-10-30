@@ -7,6 +7,7 @@ urlpatterns = [
     path('django-admin/', admin.site.urls), path('management/', include('hotel.urls')),
     path('hotel-api/live/', react_api.live),
     path('hotel-api/health/', react_api.health),
+    path('hotel-api/manager-sessions/', react_api.manager_sessions),
     path('hotel-api/revision/', react_api.revision),
     path('hotel-api/visit/', react_api.visit),
     path('hotel-api/session/', react_api.session), path('hotel-api/state/', react_api.patch), path('hotel-api/auth/<str:action>/', react_api.auth),
