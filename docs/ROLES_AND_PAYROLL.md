@@ -104,3 +104,10 @@ Faqat admin bitta sessiyani yoki tanlangan managerning barcha sessiyalarini inli
 Chiqarilgan sessiya keyingi server so‘rovida ruxsatsiz bo‘ladi; ochiq va internetga ulangan panel odatda navbatdagi 3 soniyalik tekshiruvda kirish sahifasiga qaytadi. Offline qurilma qayta ulanganda chiqadi.
 Tizimdan chiqarish parolni almashtirmaydi va hisobni bloklamaydi: parol bilan qayta kirish mumkin. Qayta kirishni to‘xtatish uchun manager hisobini bloklang.
 Server bazasiga 0006_managerdevicesession migratsiyasi qo‘shildi. Avval Render latest commit deploy (health features: manager-device-sessions), keyin Vercel redeploy.
+
+
+## O‘chirishni tasdiqlash
+
+Yangi talabga muvofiq yakka va guruhlab o‘chirish amali tasdiqlash modalidan keyin bajariladi. Barchasini belgilash va yozuvlarni tanlash sahifaning o‘zida qoladi.
+Bekor qilish, Esc va modalni yopish yozuvlarni o‘chirmaydi. Xonalar, mehmonlar, bronlar, moliya, foydalanuvchilar, managerlar, ishchilar, saqlangan hisobotlar va rasm olib tashlash amallari tasdiqlanadi.
+Serverdagi ruxsatlar va himoyalangan yozuvlarni o‘chirish cheklovlari saqlanadi.
