@@ -544,3 +544,14 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
 }
 
 [data-hotel-invalid="true"][aria-invalid="true"] { border-color: var(--danger, #dc3545); outline-color: var(--danger, #dc3545); }
+
+.hotel-field-feedback { display: block; width: 100%; min-width: 0; margin-top: 8px; }
+.hotel-field-feedback-content { display: flex; align-items: flex-start; gap: 7px; border: 1px solid color-mix(in srgb, var(--danger, #dc3545) 18%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--danger, #dc3545) 6%, var(--surface)); padding: 9px 11px; color: var(--danger, #dc3545); font-size: 11px; font-weight: 500; line-height: 1.6; animation: field-feedback-in .18s ease-out; }
+.hotel-field-feedback-content > svg { flex-shrink: 0; margin-top: 2px; }
+.hotel-field-feedback-content > span { min-width: 0; overflow-wrap: anywhere; }
+[data-hotel-invalid="true"][aria-invalid="true"]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger, #dc3545) 10%, transparent); }
+@keyframes field-feedback-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .hotel-field-feedback-content { animation: none; } }
+
+label.hotel-validation-label { flex-wrap: wrap; }
+label.hotel-validation-label > .hotel-field-feedback { flex-basis: 100%; }
