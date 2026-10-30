@@ -68,7 +68,7 @@ export function App() {
       <Route path="settings/:section" element={<SettingsPage />} />
       <Route path="settings/:section/:editorTab" element={<SettingsPage />} />
       <Route path="profile" element={<ProfilePage />} />
-      <Route path="users" element={<ProtectedRoute roles={['manager']}><UsersPage /></ProtectedRoute>} />
+      <Route path="users" element={<ProtectedRoute roles={staffRoles}><UsersPage /></ProtectedRoute>} />
     </Route>
     <Route path="*" element={<NotFoundPage />} />
   </Routes></Suspense><MobileNavigation /></>;

@@ -6,7 +6,7 @@
 - **Manager**: avvalgi kundalik panel: xona qo‘shish/tahrirlash/o‘chirish, mehmonlar, bronlar va statuslar, moliya/hisobotlar, foydalanuvchi hisoblari, sayt matni/rasmi/logo va qolgan sozlamalar. Admin hisobini tahrirlay olmaydi yoki yangi admin yarata olmaydi. Ishchi shaxsiy ma’lumotlari va ish haqi API kolleksiyalari unga yuborilmaydi. Moliya yozuvlarida ish haqi chiqimlari ko‘rinadi.
 - **Mehmon**: faqat o‘z hisobi va bronlari. Kirishdagi rol tanlash huquq bermaydi: server real rolni tekshiradi.
 
-Admin superuser hisobining favqulodda backend/Django admin huquqlari saqlanadi; kundalik operatsiyalar uning React menyusidan olib tashlangan. Eski `Employee` guruhi cheklangan server ruxsatlarini saqlaydi; `Manager` guruhining ruxsatlari migrate tugaganda yangilanadi.
+Admin superuser hisobining favqulodda backend/Django admin huquqlari saqlanadi; kundalik xona/mehmon amallari managerda, admin React menyusida esa barcha bo‘limlar kuzatuvi ham ochiq. Eski `Employee` guruhi cheklangan server ruxsatlarini saqlaydi; `Manager` guruhining ruxsatlari migrate tugaganda yangilanadi.
 
 ## Jonli saytga chiqarish
 
@@ -42,3 +42,14 @@ Firebase ID tokeni backend’da imzo, issuer, audience, email_verified bo‘yich
 ## Nazorat statistikasi chegarasi
 
 Alohida check-in/out tugmalari foydalanuvchi so‘roviga ko‘ra olib tashlangan. Shu sabab adminning “kelgan” va “hozirgi” sonlari tasdiqlangan/yakunlangan bronlar va sana oralig‘iga asoslangan; haqiqiy jismoniy kelishni mustaqil tasdiqlamaydi. Takroriy safarlar alohida tashrif hisoblanadi.
+
+
+## Admin nazorati va moliya/hisobotlar ruxsati
+
+- Admin navigatsiyasida barcha xonalar, mehmonlar, bronlar, hisoblar/tashriflar, moliya, hisobotlar va ishchilar nazorati ochiq. Xona/mehmonlar ro‘yxatida managerning tahrirlash/o‘chirish tugmalari admin kuzatuviga qo‘shilmaydi.
+- Admin nazorat markazida bo‘limlar sonlari, xonalar holati bo‘yicha filtrlar, sayt kontaktlari/bo‘limlarining holati, galereya va faoliyat qaydlari bor. Faoliyat/tashrif sonlari API’dagi so‘nggi qaydlar doirasida ko‘rsatiladi.
+- Manager moliya yozuvini qo‘shishi va tahrirlashi mumkin, lekin **o‘chira olmaydi**. `delete_financeentry` Manager guruhidan migrate paytida olinadi. API, Django HTML bulk handler va Django admin ham faqat superuserga o‘chirishga ruxsat beradi; hatto eski direct permission qolgan bo‘lsa ham manager API orqali o‘chira olmaydi.
+- Adminning moliya sahifasida barcha vaqtni ko‘rish, bitta va belgilangan yozuvlarni inline tasdiqlab o‘chirish bor. Payroll bilan bog‘langan moliya yozuvlarining himoyalangan tarixi avvalgidek o‘chirilmaydi/tahrirlanmaydi; tugmalar ham ko‘rsatilmaydi.
+- Hisobotlar sahifasidagi **Hisobotni saqlash** joriy davr natijasini `ReportSnapshot` jadvaliga saqlaydi. Server sana va summalarni tekshiradi; mijoz yuborgan jami summaga ishonmaydi. Manager va admin yangi hisobot qo‘sha oladi, faqat admin o‘chiradi. Nusxalar qayta yozilmaydi, yangi nusxa yaratish kerak.
+- Saqlangan hisobotni o‘chirish manba moliya yoki bronlarni o‘chirmaydi. Manba yozuvlari keyin o‘zgarsa ham avval saqlangan natija o‘zgarmaydi. Hisobot kartasidan nusxani JSON sifatida yuklab olish mumkin; joriy davrning PDF/Excel eksporti ham saqlangan.
+- Yangi migratsiya: `0004_reportsnapshot`. Readiness `features` ichida `owner-finance-control` paydo bo‘ladi. **Avval Render deploy**, undan keyin Vercel. Vercel yangi imkoniyat tayyor bo‘lmaguncha yangi frontendni nashr qilmaydi.

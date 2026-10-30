@@ -21,7 +21,7 @@ export function RoomInventoryCard({ room, image, guestCount, currency, canManage
     <div className="inventory-room-body">
       <div className="inventory-room-facts">
         <div><Users size={16} /><span>Sig‘im<strong>{room.capacity} kishi</strong></span></div>
-        <div><BedDouble size={16} /><span>Hozirgi mehmonlar<strong>{guestCount} kishi</strong></span></div>
+        <div><BedDouble size={16} /><span>Joriy bron mehmonlari<strong>{guestCount} kishi</strong></span></div>
       </div>
       <div className="inventory-room-amenities" aria-label="Xona qulayliklari">
         {room.amenities.slice(0, 3).map((amenity, index) => <span key={`${amenity}-${index}`}><Check size={12} />{amenity}</span>)}

@@ -51,7 +51,7 @@ class StaffAndManagerTests(TestCase):
         self.change('salaryPayments','p1',{'employeeId':item['id'],'period':timezone.localdate().strftime('%Y-%m')})
         self.client.force_login(self.manager)
         finance=self.session()['data']['finance'][0]
-        self.assertEqual(self.change('finance',finance['id'],None).status_code,400)
+        self.assertEqual(self.change('finance',finance['id'],None).status_code,403)
         entry=FinanceEntry.objects.get();entry.amount=1
         from django.core.exceptions import ValidationError
         with self.assertRaises(ValidationError): entry.full_clean()

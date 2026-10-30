@@ -16,11 +16,11 @@ from django.middleware.csrf import get_token
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import ensure_csrf_cookie
-from .models import SiteState, Room, Guest, Booking, FinanceEntry, AuditEntry, StaffMember, SalaryPayment
+from .models import SiteState, Room, Guest, Booking, FinanceEntry, AuditEntry, StaffMember, SalaryPayment, ReportSnapshot
 from .permissions import configure_manager, is_manager
 from .services import transition_booking, audit, lock_hotel_state
 
-MODELS = {'rooms': Room, 'guests': Guest, 'bookings': Booking, 'finance': FinanceEntry, 'employees': StaffMember, 'salaryPayments': SalaryPayment}
+MODELS = {'rooms': Room, 'guests': Guest, 'bookings': Booking, 'finance': FinanceEntry, 'employees': StaffMember, 'salaryPayments': SalaryPayment, 'reports': ReportSnapshot}
 PUBLIC_SETTINGS = ['website','hotelName','contact','currency','timeZone','dateFormat','checkInTime','checkOutTime','taxRate','serviceFeeRate','seo','interface']
 
 def role(user):
@@ -70,9 +70,10 @@ def snapshot(state, user):
         key = key_for(state,'guests',guest.pk)
         guests.append({'id':key,'archived':guest.archived,'firstName':guest.first_name,'lastName':guest.last_name,'email':guest.email,'phone':guest.phone,'nationality':guest.nationality,'passportNumber':guest.passport_number,'notes':guest.notes,'createdAt':iso(guest.created_at)})
     if user.is_authenticated and user.has_perm('hotel.view_financeentry'):
+        payroll_ids=set(SalaryPayment.objects.values_list('finance_id',flat=True))
         for entry in FinanceEntry.objects.all():
             key = key_for(state,'finance',entry.pk)
-            finance.append({**extras(state,'finance',key),'id':key,'type':entry.entry_type,'category':entry.category,'amount':float(entry.amount),'date':str(entry.date),'description':entry.description,'paymentMethod':extras(state,'finance',key).get('paymentMethod','cash'),'bookingId':key_for(state,'bookings',entry.booking_id) if entry.booking_id else None})
+            finance.append({**extras(state,'finance',key),'id':key,'isPayroll':entry.pk in payroll_ids,'type':entry.entry_type,'category':entry.category,'amount':float(entry.amount),'date':str(entry.date),'description':entry.description,'paymentMethod':extras(state,'finance',key).get('paymentMethod','cash'),'bookingId':key_for(state,'bookings',entry.booking_id) if entry.booking_id else None})
     users = [account(state,item) for item in (get_user_model().objects.all() if user.is_authenticated and (role(user)=='admin' or is_manager(user)) else [user] if user.is_authenticated else [])]
     config = state.payload.get('settings',{})
     if not user.is_authenticated or role(user) not in ['admin','manager']: config = {key:value for key,value in config.items() if key in PUBLIC_SETTINGS}
@@ -83,7 +84,8 @@ def snapshot(state, user):
     logs = [{'id':str(item.pk),'action':item.action,'entityType':{'financeentry':'finance'}.get(item.entity,item.entity),'entityId':item.entity_id,'userId':key_for(state,'users',item.actor_id) if item.actor_id else None,'createdAt':iso(item.created_at)} for item in AuditEntry.objects.all()[:500]] if staff(user) else []
     employees = [{'id':key_for(state,'employees',e.pk),'name':e.name,'jobTitle':e.job_title,'phone':e.phone,'email':e.email,'monthlySalary':float(e.monthly_salary),'startDate':str(e.start_date),'payday':e.payday,'notes':e.notes,'isActive':e.is_active,'createdAt':iso(e.created_at)} for e in StaffMember.objects.all()] if user.is_authenticated and role(user)=='admin' else []
     salaries = [{'id':key_for(state,'salaryPayments',p.pk),'employeeId':key_for(state,'employees',p.employee_id),'period':p.period.strftime('%Y-%m'),'amount':float(p.amount),'paidAt':iso(p.paid_at),'paidBy':key_for(state,'users',p.paid_by_id) if p.paid_by_id else None} for p in SalaryPayment.objects.all()] if user.is_authenticated and role(user)=='admin' else []
-    return {'serverPermissions':list(user.get_all_permissions()) if user.is_authenticated else [],'employees':employees,'salaryPayments':salaries,'rooms':rooms,'guests':guests,'bookings':bookings,'finance':finance,'users':users,'settings':config,'notifications':notifications,'visits':state.payload.get('visits',[]) if user.is_authenticated and role(user) in ['admin','manager'] else [],'auditLog':logs,'unavailableStays':[{'roomId':key_for(state,'rooms',b.room_id),'checkIn':str(b.check_in),'checkOut':str(b.check_out)} for b in all_bookings if b.status in ['pending','confirmed']]}
+    reports = [{'id':key_for(state,'reports',record.pk),'title':record.title,'from':str(record.start_date),'to':str(record.end_date),'summary':record.summary,'createdBy':key_for(state,'users',record.created_by_id) if record.created_by_id else None,'createdAt':iso(record.created_at)} for record in ReportSnapshot.objects.all()] if staff(user) and user.has_perm('hotel.view_financeentry') else []
+    return {'serverPermissions':list(user.get_all_permissions()) if user.is_authenticated else [],'reports':reports,'employees':employees,'salaryPayments':salaries,'rooms':rooms,'guests':guests,'bookings':bookings,'finance':finance,'users':users,'settings':config,'notifications':notifications,'visits':state.payload.get('visits',[]) if user.is_authenticated and role(user) in ['admin','manager'] else [],'auditLog':logs,'unavailableStays':[{'roomId':key_for(state,'rooms',b.room_id),'checkIn':str(b.check_in),'checkOut':str(b.check_out)} for b in all_bookings if b.status in ['pending','confirmed']]}
 
 def response(request,state):
     return JsonResponse({'data':snapshot(state,request.user),'user':account(state,request.user) if request.user.is_authenticated else None,'revision':state.revision,'csrfToken':get_token(request)},headers={'Cache-Control':'no-store, private'})
@@ -237,6 +239,23 @@ def mutate(state,user,kind,key,after):
         save_extra(state,kind,key,after,['phone','nationality','avatarUrl','preferences','twoFactorEnabled'])
         audit(user,'profile',obj)
         return
+    if kind == 'reports':
+        if not user.has_perm('hotel.view_financeentry') or not (admin or manager): raise PermissionDenied
+        obj=find_record(state,kind,key)
+        if after is None:
+            if not admin: raise PermissionDenied
+            if obj: audit(user,'delete saved report',obj);obj.delete()
+            return
+        if obj: raise ValidationError('Saqlangan hisobot qayta yozilmaydi. Yangi hisobot yarating.')
+        start=parse_date(after.get('from',''));end=parse_date(after.get('to',''))
+        title=str(after.get('title','')).strip()
+        if not start or not end or end<start or (end-start).days>3660 or not title: raise ValidationError('Hisobot nomi va sanalarini tekshiring. Davr 10 yildan oshmasin.')
+        from .services import period_report
+        report=period_report(start,end)
+        summary={name:float(value) if isinstance(value,Decimal) else value for name,value in report.items() if name not in ['entries','bookings']}
+        summary.update({'bookingCount':report['bookings'].count(),'financeCount':report['entries'].count(),'currency':state.payload.get('settings',{}).get('currency','UZS')})
+        obj=ReportSnapshot(title=title,start_date=start,end_date=end,summary=summary,created_by=user);obj.full_clean();obj.save()
+        state.payload.setdefault('ids',{}).setdefault(kind,{})[key]=obj.pk;audit(user,'save report',obj);return
     if kind == 'employees':
         if not admin: raise PermissionDenied
         obj=find_record(state,kind,key)
@@ -264,6 +283,7 @@ def mutate(state,user,kind,key,after):
         state.payload.setdefault('ids',{}).setdefault(kind,{})[key]=obj.pk;audit(user,'salary paid',obj);return
     if kind not in MODELS: raise ValidationError('Noma’lum kolleksiya.')
     obj=find_record(state,kind,key)
+    if kind=='finance' and after is None and not admin: raise PermissionDenied
     if kind=='finance' and obj and SalaryPayment.objects.filter(finance=obj).exists(): raise ValidationError('Bu ish haqi yozuvi; to‘lov tarixi himoyalangan.')
     if after is None:
         check_permission(user,kind,'delete')
@@ -395,6 +415,7 @@ def health(request):
         Room.objects.exists()
         StaffMember.objects.exists()
         SalaryPayment.objects.exists()
+        ReportSnapshot.objects.exists()
         configured = get_user_model().objects.filter(is_superuser=True,is_active=True).exists()
     except DatabaseError:
         configured = False
@@ -402,7 +423,7 @@ def health(request):
     trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
     durable = settings.HOTEL_DURABLE_STORAGE
     ready = configured and trusted and durable
-    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
+    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
 
 
 @endpoint

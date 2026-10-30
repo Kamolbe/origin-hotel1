@@ -123,3 +123,15 @@ class SalaryPayment(models.Model):
         ordering = ['-paid_at']
         constraints = [models.UniqueConstraint(fields=['employee','period'],name='staff_one_salary_per_month')]
     def __str__(self): return f'{self.employee} · {self.period:%Y-%m}'
+
+class ReportSnapshot(models.Model):
+    title = models.CharField(max_length=160)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    summary = models.JSONField(default=dict)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [models.CheckConstraint(condition=models.Q(end_date__gte=models.F('start_date')), name='report_valid_range')]
+    def __str__(self): return self.title

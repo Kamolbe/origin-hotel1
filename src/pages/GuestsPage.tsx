@@ -22,8 +22,8 @@ export function GuestsPage() {
   const { data, updateData } = useAppData();
   const { success, error } = useToast();
   const canManage = user?.role === 'manager';
-  const canAdd = data.serverPermissions?.includes('hotel.add_guest') ?? canManage;
-  const canEdit = data.serverPermissions?.includes('hotel.change_guest') ?? canManage;
+  const canAdd = canManage && (data.serverPermissions?.includes('hotel.add_guest') ?? true);
+  const canEdit = canManage && (data.serverPermissions?.includes('hotel.change_guest') ?? true);
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

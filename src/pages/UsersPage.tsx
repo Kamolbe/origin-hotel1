@@ -32,7 +32,7 @@ export function UsersPage() {
 
   const historyPages = Math.max(1, Math.ceil(data.auditLog.length / 10));
   const currentHistoryPage = Math.min(historyPage, historyPages - 1);
-  const users = data.users.filter((item) => item.role !== 'admin' && `${item.name} ${item.email}`.toLowerCase().includes(query.toLowerCase()));
+  const users = data.users.filter((item) => (user?.role === 'admin' || item.role !== 'admin') && `${item.name} ${item.email}`.toLowerCase().includes(query.toLowerCase()));
 
   const visits = data.visits;
   const visitPages = Math.max(1, Math.ceil(visits.length / 8));
@@ -110,7 +110,7 @@ export function UsersPage() {
         <td className="px-4 py-4">{new Date(item.createdAt).toLocaleDateString('uz-UZ')}</td>
         <td className="px-4 py-4">{item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString('uz-UZ') : 'Hali qayd etilmagan'}</td>
         <td className="px-4 py-4"><div className="flex justify-end gap-1">
-          <button disabled={item.id === user?.id} onClick={() => toggleActive(item.id)} className="secondary-button disabled:opacity-40">{item.isActive ? 'Bloklash' : 'Faollashtirish'}</button>
+          {user?.role === 'manager' && <button disabled={item.id === user?.id} onClick={() => toggleActive(item.id)} className="secondary-button disabled:opacity-40">{item.isActive ? 'Bloklash' : 'Faollashtirish'}</button>}
           {user?.role === 'manager' && <button disabled={item.id === user.id} onClick={() => setRemoveTarget(item)} title="O‘chirish" className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"><Trash2 size={15} /></button>}
         </div></td>
       </tr>)}</tbody></table>{!users.length && <p className="p-6 text-center text-sm text-muted">Hisob topilmadi.</p>}</ResponsiveTable>

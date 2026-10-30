@@ -26,7 +26,7 @@ export async function initializeHotelServer() {
 }
 export function serverChanges(before: AppData, after: AppData): ServerChange[] {
   const changes: ServerChange[] = [];
-  for (const collection of ['users', 'guests', 'bookings', 'rooms', 'finance', 'notifications', 'employees', 'salaryPayments'] as const) {
+  for (const collection of ['users', 'guests', 'bookings', 'rooms', 'finance', 'notifications', 'employees', 'salaryPayments', 'reports'] as const) {
     const previous = new Map((before[collection] ?? []).map((item) => [item.id, item]));
     const next = new Map((after[collection] ?? []).map((item) => [item.id, item]));
     for (const [id, record] of next) if (JSON.stringify(previous.get(id)) !== JSON.stringify(record)) changes.push({ collection, id, after: record });

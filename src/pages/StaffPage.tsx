@@ -52,7 +52,7 @@ export function StaffPage() {
   }
   function pay(employee: StaffMember, period: string) {
     const payment = { id: makeId('salary'), employeeId: employee.id, period, amount: employee.monthlySalary, paidAt: new Date().toISOString(), paidBy: user?.id };
-    updateData((current) => ({ ...current, salaryPayments: [...(current.salaryPayments ?? []), payment], finance: usesHotelServer() ? current.finance : [{ id: makeId('finance'), type: 'expense', category: 'payroll', amount: employee.monthlySalary, date: today, description: `${employee.name} · ${period} oyligi`, paymentMethod: 'bank_transfer' }, ...current.finance] }));setPaying(null);
+    updateData((current) => ({ ...current, salaryPayments: [...(current.salaryPayments ?? []), payment], finance: usesHotelServer() ? current.finance : [{ id: makeId('finance'), isPayroll: true, type: 'expense', category: 'payroll', amount: employee.monthlySalary, date: today, description: `${employee.name} · ${period} oyligi`, paymentMethod: 'bank_transfer' }, ...current.finance] }));setPaying(null);
   }
   return <div className="space-y-5">
     <PageHeader eyebrow="Administrator · Jamoa" title="Ishchilar va oyliklar" description="Jamoa, ish boshlagan sanalar va oylik to‘lovlar nazorati." action={<button className="primary-button gap-2" onClick={() => { setEditing(null);setForm(blank());setOpen(!open); }}><Plus size={15} />Ishchi qo‘shish</button>} />

@@ -19,12 +19,12 @@ import type { UserRole } from '../types';
 
 const navigation = [
   { to: '/app', key: 'nav.dashboard', icon: LayoutDashboard, roles: ['user', 'manager', 'admin'] as UserRole[] },
-  { to: '/app/rooms', key: 'nav.rooms', icon: BedDouble, roles: ['user', 'manager'] as UserRole[] },
-  { to: '/app/guests', key: 'nav.guests', icon: Users, roles: ['manager'] as UserRole[] },
-  { to: '/app/bookings', key: 'nav.bookings', icon: CalendarDays, roles: ['user', 'manager'] as UserRole[] },
-  { to: '/app/finance', key: 'nav.finance', icon: WalletCards, roles: ['manager'] as UserRole[] },
-  { to: '/app/reports', key: 'nav.reports', icon: ChartNoAxesCombined, roles: ['manager'] as UserRole[] },
-  { to: '/app/users', key: 'Foydalanuvchilar', icon: ShieldCheck, roles: ['manager'] as UserRole[] },
+  { to: '/app/rooms', key: 'nav.rooms', icon: BedDouble, roles: ['user', 'manager', 'admin'] as UserRole[] },
+  { to: '/app/guests', key: 'nav.guests', icon: Users, roles: ['manager', 'admin'] as UserRole[] },
+  { to: '/app/bookings', key: 'nav.bookings', icon: CalendarDays, roles: ['user', 'manager', 'admin'] as UserRole[] },
+  { to: '/app/finance', key: 'nav.finance', icon: WalletCards, roles: ['manager', 'admin'] as UserRole[] },
+  { to: '/app/reports', key: 'nav.reports', icon: ChartNoAxesCombined, roles: ['manager', 'admin'] as UserRole[] },
+  { to: '/app/users', key: 'Foydalanuvchilar', icon: ShieldCheck, roles: ['manager', 'admin'] as UserRole[] },
   { to: '/app/employees', key: 'Ishchilar va oyliklar', icon: Users, roles: ['admin'] as UserRole[] },
   { to: '/app/settings', key: 'nav.settings', icon: Settings, roles: ['user', 'manager', 'admin'] as UserRole[] },
 ];
@@ -89,8 +89,8 @@ export function AppLayout() {
     const needle = query.trim().toLocaleLowerCase();
     if (!needle) return quickLinks.slice(0, 6);
     const pages = quickLinks.filter((item) => item.title.toLocaleLowerCase().includes(needle));
-    const rooms = data.rooms.filter((room) => `${room.number} ${room.type}`.toLocaleLowerCase().includes(needle)).slice(0, 5).map((room) => ({ title: `Xona ${room.number} · ${room.type}`, path: user?.role === 'admin' ? '/rooms' : '/app/rooms', kind: 'room' }));
-    const guests = user?.role === 'manager' ? data.guests.filter((guest) => `${guest.firstName} ${guest.lastName} ${guest.email}`.toLocaleLowerCase().includes(needle)).slice(0, 4).map((guest) => ({ title: `${guest.firstName} ${guest.lastName}`, path: '/app/guests', kind: 'guest' })) : [];
+    const rooms = data.rooms.filter((room) => `${room.number} ${room.type}`.toLocaleLowerCase().includes(needle)).slice(0, 5).map((room) => ({ title: `Xona ${room.number} · ${room.type}`, path: '/app/rooms', kind: 'room' }));
+    const guests = (user?.role === 'manager' || user?.role === 'admin') ? data.guests.filter((guest) => `${guest.firstName} ${guest.lastName} ${guest.email}`.toLocaleLowerCase().includes(needle)).slice(0, 4).map((guest) => ({ title: `${guest.firstName} ${guest.lastName}`, path: '/app/guests', kind: 'guest' })) : [];
     return [...pages, ...rooms, ...guests].slice(0, 9);
   }, [data.guests, data.rooms, query, quickLinks, user?.role]);
 

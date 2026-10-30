@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from .admin_lock import SerializedHotelWrites
 from django.contrib import admin
-from .models import Room, Guest, Booking, FinanceEntry, AuditEntry, StaffMember, SalaryPayment
+from .models import Room, Guest, Booking, FinanceEntry, AuditEntry, StaffMember, SalaryPayment, ReportSnapshot
 from .forms import BookingForm, RoomForm, FinanceForm
 from .services import audit
 
@@ -31,6 +31,7 @@ class BookingAdmin(SerializedHotelWrites, admin.ModelAdmin):
 
 @admin.register(FinanceEntry)
 class FinanceAdmin(SerializedHotelWrites, admin.ModelAdmin):
+    def has_delete_permission(self,request,obj=None): return request.user.is_superuser
     form = FinanceForm
     list_display = ['date', 'entry_type', 'category', 'amount', 'description']
     list_filter = ['entry_type', 'category', 'date']
@@ -66,3 +67,11 @@ class SalaryPaymentAdmin(admin.ModelAdmin):
     def has_add_permission(self,request): return False
     def has_change_permission(self,request,obj=None): return False
     def has_delete_permission(self,request,obj=None): return False
+
+@admin.register(ReportSnapshot)
+class ReportSnapshotAdmin(SerializedHotelWrites, admin.ModelAdmin):
+    list_display = ['title','start_date','end_date','created_by','created_at']
+    def has_add_permission(self,request): return False
+    def has_change_permission(self,request,obj=None): return False
+    def has_delete_permission(self,request,obj=None): return request.user.is_superuser
+    def has_view_permission(self,request,obj=None): return request.user.is_superuser

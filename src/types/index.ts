@@ -86,6 +86,7 @@ export interface Booking {
 }
 
 export interface FinanceEntry {
+  isPayroll?: boolean;
   id: string;
   type: FinanceType;
   category: FinanceCategory;
@@ -225,7 +226,12 @@ export interface StaffMember {
 export interface SalaryPayment {
   id: string; employeeId: string; period: string; amount: number; paidAt: string; paidBy?: string | null;
 }
+export interface SavedReport {
+  id: string; title: string; from: string; to: string; createdAt: string; createdBy?: string | null;
+  summary: { income: number; expense: number; net: number; occupancy: number; currency: Currency; bookingCount: number; financeCount: number; room_nights: number; days: number };
+}
 export interface AppData {
+  reports?: SavedReport[];
   employees?: StaffMember[];
   salaryPayments?: SalaryPayment[];
   serverPermissions?: string[];

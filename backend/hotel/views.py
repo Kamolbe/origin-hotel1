@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from .forms import RoomForm, GuestForm, BookingForm, FinanceForm, DateRangeForm
-from .models import Room, Guest, Booking, FinanceEntry
+from .models import Room, Guest, Booking, FinanceEntry, SalaryPayment
 from .services import audit, period_report, transition_booking, lock_hotel_state
 
 MODULES = {
@@ -30,7 +30,9 @@ def module_config(kind):
     return MODULES[kind]
 
 
-def allowed(user, model, action): return user.has_perm(f'hotel.{action}_{model._meta.model_name}')
+def allowed(user, model, action):
+    if model is FinanceEntry and action=='delete' and not user.is_superuser: return False
+    return user.has_perm(f'hotel.{action}_{model._meta.model_name}')
 
 
 def date_range(request):
@@ -59,6 +61,7 @@ def removable(kind, obj):
     if kind == 'rooms': return not obj.booking_set.exists()
     if kind == 'guests': return not obj.booking_set.filter(status__in=['pending', 'confirmed']).exists()
     if kind == 'bookings': return obj.status in ['completed', 'cancelled']
+    if kind == 'finance': return not SalaryPayment.objects.filter(finance=obj).exists()
     return True
 
 
