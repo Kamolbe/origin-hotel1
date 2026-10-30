@@ -481,6 +481,8 @@ def health(request):
         ReportSnapshot.objects.exists()
         from .models import ManagerDeviceSession
         ManagerDeviceSession.objects.exists()
+        from documents.models import Document
+        Document.objects.exists()
         configured = get_user_model().objects.filter(is_superuser=True,is_active=True).exists()
     except DatabaseError:
         configured = False

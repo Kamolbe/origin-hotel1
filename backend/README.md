@@ -105,6 +105,38 @@ Server environment: `DJANGO_DEBUG=0`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS
 
 Vercel frontend alohida qolsa: `VITE_HOTEL_SERVER=django` build environment, `/hotel-api/:path*` uchun haqiqiy Python backendning `/hotel-api/:path*` manziliga rewrite, SPA fallbackdan oldin. Django’da `DJANGO_CSRF_TRUSTED_ORIGINS=https://haqiqiy-vercel-domen` va kerakli ALLOWED_HOSTS bo‘lishi kerak. API cookie’lari frontendning bir xil origin’i orqali olinishi uchun proxy ishlatiladi; frontend API’ni brauzerdan to‘g‘ridan-to‘g‘ri boshqa origin’ga yubormaydi. Haqiqiy domenlar ma’lum bo‘lmaguncha soxta production URL yozilmadi.
 
+## Yopiq PDF hujjatlar (media quyi tizimi)
+
+`documents` ilovasi mehmon va bron hujjatlarini (pasport nusxasi, chek, shartnoma) **yopiq** saqlaydi. Fayl baytlari bazadagi `documents_fileblob` jadvalida yotadi: Render'da disk doimiy emas va yangi deploydan keyin lokal fayllar yo'qoladi, baza zaxira nusxasi bilan hujjatlar ham birga ko'chadi. Shu sababli production uchun **`DATABASE_URL` (PostgreSQL) majburiy**; SQLite faqat lokal demo uchun.
+
+| Method | Endpoint | Vazifasi |
+| --- | --- | --- |
+| `GET` | `/hotel-api/documents/` | Ko'rinadigan hujjatlar ro'yxati — `q`, `kind`, `guestId`, `bookingId`, `page` (25 tadan) |
+| `POST` | `/hotel-api/documents/` | `multipart/form-data` yuklash: `file` (majburiy), `kind`, `title`, `guestId`, `bookingId` → `201` |
+| `GET` | `/hotel-api/documents/<uuid>/` | Faylni biriktirilgan holda yuklab olish |
+| `DELETE` | `/hotel-api/documents/<uuid>/` | Yozuv va baytlarni o'chirish (admin yoki yuklagan foydalanuvchi) |
+
+Server tomonda tekshiriladi:
+
+- **Fayl turi** uch mustaqil usulda: kengaytma (`.pdf`), brauzer MIME turi va fayl boshidagi `%PDF-` baytlari. Uchtasi mos kelmasa `400`.
+- **Hajm:** `MEDIA_MAX_DOCUMENT_BYTES` (standart 10 MB). Lokal diskni to'ldirishga qarshi IP bo'yicha `MEDIA_UPLOAD_LIMIT` (standart 30) urinish / 10 daqiqa; oshsa `429`.
+- **Fayl nomi:** saqlash kaliti tasodifiy UUID (`documents/YYYY/MM/<uuid>.pdf`); foydalanuvchi bergan nom faqat metama'lumot sifatida saqlanadi, shuning uchun `../../` kabi yo'l bilan chetlab o'tish mumkin emas.
+- **Kirish huquqi:** ochiq URL yo'q. Har bir yuklab olish sessiya va ruxsat tekshiruvidan o'tadi: admin, yuklagan foydalanuvchi, hujjat bog'langan mehmonning o'zi yoki xodim (mehmon/bronni ko'rish huquqi bilan). Boshqalarga `404` qaytadi — hujjat bor-yo'qligi oshkor bo'lmaydi.
+- **CSRF:** `POST`/`DELETE` uchun token majburiy; javob `Content-Disposition: attachment` va `X-Content-Type-Options: nosniff` bilan beriladi.
+- Xatolar loyihadagi yagona formatda: `{"message": "..."}`.
+
+Ishlatilmayotgan fayllarni tozalash (masalan, yuklash yarim yo'lda uzilganda qolgan baytlar):
+
+```bash
+python backend/manage.py purge_documents --dry-run          # faqat hisoblaydi
+python backend/manage.py purge_documents                    # yetim baytlarni o'chiradi
+python backend/manage.py purge_documents --stale-days 90    # + 90 kundan eski bog'lanmagan "other" hujjatlar
+```
+
+Testlar: `python backend/manage.py test documents.tests` (validatsiya, ruxsatlar, CSRF, rate limit, pagination, tozalash).
+
+Migratsiya: model o'zgarsa `python backend/manage.py makemigrations documents` va `migrate`.
+
 ## origin-hotel1-1.onrender.com va strix-user.vercel.app uchun tayyor sozlama
 
 [RENDER_DEPLOY.md](./RENDER_DEPLOY.md) aniq build/start buyruqlari, Environment, doimiy baza, birinchi admin va Vercel redeploy tartibini beradi. Vercel API’ni Render’ga rewrite qiladi va server readiness tekshiruvisiz yangi frontendni nashr qilmaydi. Render’da disk borligi tasdiqlanmagan: DATABASE_URL orqali doimiy PostgreSQL varianti ham qo‘shilgan. SQLite lokal demo va haqiqiy Render persistent disk uchun saqlangan. PostgreSQL bilan ham barcha hotel yozishlari umumiy tranzaksiya/row lock ostida ketma-ket tekshiriladi; Django admin/formalar va API bir xil qoidani ishlatadi.

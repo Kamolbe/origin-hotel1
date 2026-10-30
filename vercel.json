@@ -11,6 +11,14 @@
       "dest": "https://origin-hotel1-1.onrender.com/hotel-api/auth/$1/"
     },
     {
+      "src": "^/hotel-api/documents/([0-9a-fA-F-]{36})/?$",
+      "dest": "https://origin-hotel1-1.onrender.com/hotel-api/documents/$1/"
+    },
+    {
+      "src": "^/hotel-api/documents/?$",
+      "dest": "https://origin-hotel1-1.onrender.com/hotel-api/documents/"
+    },
+    {
       "handle": "filesystem"
     },
     {

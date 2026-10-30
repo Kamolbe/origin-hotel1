@@ -10,7 +10,7 @@ if not DEBUG and SECRET_KEY == 'local-demo-only-do-not-use-in-production':
     raise RuntimeError('Production uchun DJANGO_SECRET_KEY kiriting.')
 DEFAULT_HOSTS = 'origin-hotel1-1.onrender.com,strix-user.vercel.app' if ON_RENDER else 'localhost,127.0.0.1,testserver,origin-hotel1-1.onrender.com,strix-user.vercel.app'
 ALLOWED_HOSTS = [value.strip() for value in os.environ.get('DJANGO_ALLOWED_HOSTS', DEFAULT_HOSTS).split(',') if value.strip()]
-INSTALLED_APPS = ['django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles', 'hotel']
+INSTALLED_APPS = ['django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles', 'hotel', 'documents']
 MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'whitenoise.middleware.WhiteNoiseMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'hotel.device_sessions.ManagerSessionMiddleware', 'django.contrib.messages.middleware.MessageMiddleware', 'django.middleware.clickjacking.XFrameOptionsMiddleware']
 ROOT_URLCONF = 'config.urls'
 TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates', 'APP_DIRS': True, 'OPTIONS': {'context_processors': ['django.template.context_processors.request', 'django.contrib.auth.context_processors.auth', 'django.contrib.messages.context_processors.messages']}}]
@@ -42,9 +42,28 @@ X_FRAME_OPTIONS = 'DENY'
 
 FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "origin-hotel")
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5000000
+# Yopiq hujjatlar (documents ilovasi) sozlamalari.
+# Bitta PDF uchun eng katta hajm (bayt) va bir IP uchun 10 daqiqadagi yuklash urinishlari soni.
+MEDIA_MAX_DOCUMENT_BYTES = int(os.environ.get('MEDIA_MAX_DOCUMENT_BYTES', '10485760'))
+MEDIA_UPLOAD_LIMIT = int(os.environ.get('MEDIA_UPLOAD_LIMIT', '30'))
 CSRF_TRUSTED_ORIGINS = [value.strip() for value in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://strix-user.vercel.app,https://origin-hotel1-1.onrender.com').split(',') if value.strip()]
 if os.environ.get('DJANGO_TRUST_PROXY', '1' if ON_RENDER else '0') == '1':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# `default` — vaqtinchalik fayllar; yopiq hujjat baytlari esa `documents.storage.DatabaseStorage`
+# orqali baza ichida saqlanadi (Render diski doimiy emas).
 STORAGES = {"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"}, "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"}}
 FRONTEND_URL = os.environ.get("HOTEL_FRONTEND_URL", "https://strix-user.vercel.app" if ON_RENDER else "").rstrip("/")
+
+# Markaziy log konfiguratsiyasi: muhim hodisalar (hujjat yuklandi/o'chirildi, 5xx xatolar)
+# stdout/stderr orqali hostingning log paneliga chiqadi.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {'standard': {'format': '{levelname} {asctime} {name} {message}', 'style': '{'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'}},
+    'loggers': {
+        'documents': {'handlers': ['console'], 'level': os.environ.get('DOCUMENTS_LOG_LEVEL', 'INFO'), 'propagate': False},
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+    },
+}

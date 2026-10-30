@@ -11,6 +11,8 @@ urlpatterns = [
     path('hotel-api/revision/', react_api.revision),
     path('hotel-api/visit/', react_api.visit),
     path('hotel-api/session/', react_api.session), path('hotel-api/state/', react_api.patch), path('hotel-api/auth/<str:action>/', react_api.auth),
+    # Yopiq PDF hujjatlar: yuklash, ro'yxat, yuklab olish va o'chirish.
+    path('', include('documents.urls')),
     path('assets/<path:path>', lambda request,path: react_api.react_asset(request,'assets/'+path)),
     path('favicon.svg', lambda request: react_api.react_asset(request,'favicon.svg')),
     path('robots.txt', lambda request: react_api.react_asset(request,'robots.txt')),
