@@ -16,8 +16,8 @@ export function MobileCabinetMenu() {
   const links = [
     { to: staff ? '/app' : '/app/my-stay', label: staff ? 'Boshqaruv paneli' : 'Shaxsiy kabinet', icon: LayoutDashboard },
     ...(user?.role === 'admin' ? [{ to: '/app/employees', label: 'Ishchilar va oyliklar', icon: Users }, { to: '/app/rooms', label: 'Xonalar nazorati', icon: BedDouble }] : [{ to: staff ? '/app/rooms' : '/rooms', label: 'Xonalar', icon: BedDouble }]),
-    ...(staff ? [{ to: '/app/guests', label: 'Mehmonlar', icon: Users }] : []),
-    { to: '/app/bookings', label: staff ? 'Bronlar' : 'Mening bronlarim', icon: CalendarDays },
+    ...(user?.role === 'manager' ? [{ to: '/app/guests', label: 'Mehmonlar', icon: Users }] : []),
+    ...(user?.role === 'admin' ? [] : [{ to: '/app/bookings', label: staff ? 'Bronlar' : 'Mening bronlarim', icon: CalendarDays }]),
     ...(staff && canViewFinance ? [{ to: '/app/finance', label: 'Moliya', icon: WalletCards }, { to: '/app/reports', label: 'Hisobotlar', icon: ChartNoAxesCombined }] : []),
     ...(staff ? [{ to: '/app/users', label: 'Foydalanuvchilar', icon: ShieldCheck }] : []),
     { to: '/app/settings', label: 'Sozlamalar', icon: Settings },

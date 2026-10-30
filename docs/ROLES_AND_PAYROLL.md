@@ -53,3 +53,9 @@ Alohida check-in/out tugmalari foydalanuvchi so‘roviga ko‘ra olib tashlangan
 - Hisobotlar sahifasidagi **Hisobotni saqlash** joriy davr natijasini `ReportSnapshot` jadvaliga saqlaydi. Server sana va summalarni tekshiradi; mijoz yuborgan jami summaga ishonmaydi. Manager va admin yangi hisobot qo‘sha oladi, faqat admin o‘chiradi. Nusxalar qayta yozilmaydi, yangi nusxa yaratish kerak.
 - Saqlangan hisobotni o‘chirish manba moliya yoki bronlarni o‘chirmaydi. Manba yozuvlari keyin o‘zgarsa ham avval saqlangan natija o‘zgarmaydi. Hisobot kartasidan nusxani JSON sifatida yuklab olish mumkin; joriy davrning PDF/Excel eksporti ham saqlangan.
 - Yangi migratsiya: `0004_reportsnapshot`. Readiness `features` ichida `owner-finance-control` paydo bo‘ladi. **Avval Render deploy**, undan keyin Vercel. Vercel yangi imkoniyat tayyor bo‘lmaguncha yangi frontendni nashr qilmaydi.
+
+### Bron va mehmonlar bo‘yicha yakuniy taqsimot
+
+Adminning desktop/mobil menyusi, tezkor qidiruvi va nazorat havolalaridan **Bronlar** hamda **Mehmonlar** olib tashlangan; ushbu `/app` sahifalariga bevosita kirish adminni umumiy nazoratga qaytaradi. Adminning umumiy statistika, xona kuzatuvi, moliya/hisobotlar va ishchilar huquqlari qolgan.
+
+Yangi bron va bron holati o‘zgarishi (jumladan, foydalanuvchi bekor qilishi) managerning tizim ichidagi bildirishnomalariga tushadi. Foydalanuvchiga o‘z bronining natijasi alohida yuboriladi. Admin bron bildirishnomasini olmaydi va uni manager o‘rniga o‘qilgan deb belgilay olmaydi. Oylik va moliyaviy nazorat bildirishnomalari admin uchun saqlangan. Bu yo‘naltirish email/SMS jo‘natish emas, sayt ichidagi inbox uchun.

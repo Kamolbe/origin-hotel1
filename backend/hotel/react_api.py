@@ -50,6 +50,12 @@ def account(state, user):
     extra = {name:value for name,value in extras(state,'users',key).items() if name not in ['password','accessCode']}
     return {**extra, 'id': key, 'name': user.get_full_name() or user.username, 'email': user.email or user.username, 'role': role(user), 'password': '', 'isActive': user.is_active, 'profileRequired': bool(extra.get('profileRequired',False)), 'createdAt': iso(user.date_joined), 'lastLoginAt': iso(user.last_login)}
 
+def notification_visible(state,user,note):
+    if not user.is_authenticated or role(user)=='admin' and note.get('type')=='booking': return False
+    if note.get('userId'): return note['userId']==key_for(state,'users',user.pk)
+    if note.get('type')=='booking': return role(user)=='manager'
+    return staff(user)
+
 def snapshot(state, user):
     rooms, guests, bookings, finance = [], [], [], []
     for room in Room.objects.all():
@@ -77,7 +83,7 @@ def snapshot(state, user):
     users = [account(state,item) for item in (get_user_model().objects.all() if user.is_authenticated and (role(user)=='admin' or is_manager(user)) else [user] if user.is_authenticated else [])]
     config = state.payload.get('settings',{})
     if not user.is_authenticated or role(user) not in ['admin','manager']: config = {key:value for key,value in config.items() if key in PUBLIC_SETTINGS}
-    notifications = [note for note in state.payload.get('notifications',[]) if staff(user) and not note.get('userId') or user.is_authenticated and note.get('userId') == key_for(state,'users',user.pk)]
+    notifications = [note for note in state.payload.get('notifications',[]) if notification_visible(state,user,note)]
     if user.is_authenticated and role(user)=='admin':
         from .payroll import due_notifications
         notifications=due_notifications(key_for(state,'users',user.pk),state.payload.get('payrollRead',[]))+notifications
@@ -207,7 +213,7 @@ def mutate(state,user,kind,key,after):
             state.payload['payrollRead']=sorted(read)[-5000:]
             return
         for note in state.payload.get('notifications',[]):
-            if note['id']==key and after and (admin or staff(user) and not note.get('userId') or note.get('userId')==key_for(state,'users',user.pk)): note['read']=bool(after.get('read'))
+            if note['id']==key and after and notification_visible(state,user,note): note['read']=bool(after.get('read'))
         return
     if kind=='users':
         obj=find_record(state,kind,key)
@@ -339,6 +345,7 @@ def mutate(state,user,kind,key,after):
         if not staff(user): metadata['userId']=key_for(state,'users',user.pk);metadata['paidAmount']=0 if new else extras(state,kind,key).get('paidAmount',0)
         save_extra(state,kind,key,metadata,['bookingNumber','userId','source','paidAmount','guestNote'])
         notification(state,'Yangi bron' if new else 'Bron holati yangilandi',f'{guest.first_name} · {room.number}-xona',None if new else extras(state,kind,key).get('userId'))
+        if not new: notification(state,'Bron holati o‘zgardi',f'{guest.first_name} · {room.number}-xona · {obj.get_status_display()}')
     else:
         check_permission(user,kind,'change' if obj else 'add')
         obj=obj or FinanceEntry();obj.entry_type=after['type'];obj.category=after['category'];obj.amount=Decimal(str(after['amount']));obj.date=parse_date(after['date'][:10]);obj.description=after['description'];obj.booking=find_record(state,'bookings',after['bookingId']) if after.get('bookingId') else None

@@ -1,3 +1,4 @@
+import { canSeeNotification } from '../services/notificationVisibility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useState } from 'react';
@@ -19,11 +20,12 @@ export function MobileAccountActions({ onNavigate }: { onNavigate?: () => void }
   const routes = [
     ['/', 'Bosh sahifa'], ['/rooms', 'Xonalar'], ['/contact', 'Aloqa'],
     ...(user ? [['/app/profile', 'Mening profilim'], ...(user?.role === 'admin' ? [] : [['/app/bookings', 'Bronlar']]), ['/app/settings', 'Sozlamalar']] : []),
-    ...(staff ? [['/app/guests', 'Mehmonlar'], ['/app/finance', 'Moliya'], ['/app/reports', 'Hisobotlar']] : []),
+    ...(user?.role === 'manager' ? [['/app/guests', 'Mehmonlar']] : []),
+    ...(staff ? [['/app/finance', 'Moliya'], ['/app/reports', 'Hisobotlar']] : []),
     ...(staff ? [['/app/users', 'Foydalanuvchilar']] : []),
     ...(user?.role === 'admin' ? [['/app/employees', 'Ishchilar va oyliklar']] : []),
   ];
-  const notifications = user ? data.notifications.filter((item) => !item.userId || item.userId === user.id) : [];
+  const notifications = user ? data.notifications.filter((item) => canSeeNotification(user,item)) : [];
   const pages = Math.max(1, Math.ceil(notifications.length / 2));
   const current = Math.min(page, pages - 1);
   const unread = notifications.filter((item) => !item.read).length;
