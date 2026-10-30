@@ -82,5 +82,5 @@ Admin Managerlar nazorati kartasida faqat bitta managerga sayt tahrirlash huquqi
 Boshqa manager tanlansa, oldingisidan huquq atomik ravishda olinadi; huquqni butunlay olish ham mumkin.
 Yangi manager avtomatik ruxsat olmaydi. Boshqa managerlar kundalik bron, xona va moliya ishlarini davom ettiradi.
 Ruxsat server bazasidagi SiteState ichida saqlanadi; manager o‘ziga ruxsat bera olmaydi.
-Managerlar nazorati ishchilar sahifasida ishchi kartalaridan oldin joylashgan.
+Managerlar nazorati alohida /app/managers sahifasida joylashgan. Ishchilar sahifasi faqat ishchilar va oyliklar uchun.
 Deploy: avval Render latest commit (health features: site-editor-access), keyin Vercel redeploy.
