@@ -2,10 +2,8 @@ import { GuestStayPlanner } from '../components/GuestStayPlanner';
 import { BookingNote } from '../components/BookingNote';
 import { PortalImage } from '../components/PortalImage';
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { ArrowRight, BedDouble, CalendarDays, Check, Clock, House, LifeBuoy, LogOut, MapPin, Moon, Phone, Plus, Settings, Sparkles, Users, WalletCards } from 'lucide-react';
-import { MobileAccountActions } from '../components/MobileAccountActions';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { Link, Navigate } from 'react-router-dom';
+import { ArrowRight, BedDouble, CalendarDays, Check, Clock, House, LifeBuoy, MapPin, Moon, Phone, Plus, Settings, Sparkles, Users, WalletCards } from 'lucide-react';
 import { DashboardMetric } from '../components/DashboardMetric';
 import { RoomAvailability } from '../components/RoomAvailability';
 import { PageHeader } from '../components/PageHeader';
@@ -19,12 +17,11 @@ import { optimizedUnsplashUrl } from '../services/imageUtils';
 import { BOOKING_LABELS, dashboardMetrics, hotelToday, ownBookings } from '../services/dashboardMetrics';
 
 export function MyStayPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { data } = useAppData();
   const hotel = useHotelContact();
   const photos = useSitePhotos();
   const roomPhoto = useRoomPhotos();
-  const navigate = useNavigate();
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [limit, setLimit] = useState(3);
   const today = hotelToday(data.settings.timeZone);
@@ -59,6 +56,5 @@ export function MyStayPage() {
     </div>
     <section><div className="mb-4"><p className="portal-eyebrow">Bir bosishda</p><h2 className="portal-section-title">Tezkor amallar</h2></div><nav aria-label="Mehmon kabineti amallari" className="grid gap-3 md:grid-cols-3">{actions.map(({ to, label, hint, icon: Icon }) => <Link key={to} to={to} className="portal-quick-action !p-5"><span className="portal-action-icon"><Icon size={20} /></span><span className="min-w-0 flex-1"><b className="block text-sm">{label}</b><span className="mt-1 block text-[11px] text-muted">{hint}</span></span><ArrowRight size={16} className="text-muted" /></Link>)}</nav></section>
     {recommended.length > 0 && <section><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="portal-eyebrow">Keyingi safaringiz uchun</p><h2 className="portal-section-title">Sizga yoqishi mumkin</h2></div><Link to="/rooms" className="portal-text-link">Barcha xonalar<ArrowRight size={14} /></Link></div><div className="grid gap-4 md:grid-cols-3">{recommended.map((room) => <Link key={room.id} to={`/rooms/${room.id}`} className="portal-room-card"><PortalImage src={optimizedUnsplashUrl(roomPhoto(room), 640, 75)} alt={`${room.type} xona`} className="aspect-[16/9] w-full object-cover" loading="lazy" /><div className="p-4"><div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold">{room.type}</h3><span className="text-[10px] text-muted">{room.capacity} mehmon</span></div><p className="mt-2 text-[11px] leading-5 text-muted">{room.amenities.slice(0, 3).join(' · ')}</p><p className="mt-4 text-sm font-bold">{formatMoney(room.pricePerNight, data.settings.currency)}<span className="text-[10px] font-normal text-muted"> / tun</span></p></div></Link>)}</div></section>}
-    <section aria-label="Kabinet sozlamalari" className="portal-panel"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="portal-eyebrow">Sizning hisobingiz</p><h2 className="portal-section-title">Hisob va sozlamalar</h2></div><LanguageSwitcher /></div><MobileAccountActions /><div className="flex flex-wrap items-center justify-between gap-3"><Link to="/app/settings" className="secondary-button gap-2"><Settings size={15} />Shaxsiy sozlamalar</Link><button type="button" onClick={() => { logout(); navigate('/'); }} className="secondary-button gap-2 text-danger"><LogOut size={15} />Chiqish</button></div></section>
   </div>;
 }
