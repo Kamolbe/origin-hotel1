@@ -14,6 +14,7 @@ export function SiteFooter() {
   const book = useBookingAction();
   const { openContact } = useContactDialog();
   const year = new Date().getFullYear();
+  if (!user || user.role === 'user') return null;
 
   const explore = [
     { href: '/#rooms', label: t('nav.rooms') },
