@@ -14,7 +14,7 @@ export function SiteFooter() {
   const book = useBookingAction();
   const { openContact } = useContactDialog();
   const year = new Date().getFullYear();
-  if (!user || user.role === 'user') return null;
+  const mobileGuest = !user || user.role === 'user';
 
   const explore = [
     { href: '/#rooms', label: t('nav.rooms') },
@@ -29,7 +29,7 @@ export function SiteFooter() {
     { label: 'Facebook', href: HOTEL.facebook, handle: HOTEL.facebookHandle, icon: Share2 },
   ].filter((item) => item.href);
 
-  return <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
+  return <footer className={`border-t border-[var(--line)] bg-[var(--surface)] ${mobileGuest ? 'hidden md:block' : ''}`}>
     <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.3fr] lg:px-10">
       <div>
         <Logo />
