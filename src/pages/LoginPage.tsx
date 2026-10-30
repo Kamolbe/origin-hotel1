@@ -36,7 +36,6 @@ export function LoginPage() {
       ? 'Davom etish uchun tizimga kiring — kirgandan so‘ng o‘sha sahifaga qaytasiz.'
       : '';
   const forwardedState = { bookingSearch: (location.state as { bookingSearch?: unknown } | null)?.bookingSearch, selectedRoomType: (location.state as { selectedRoomType?: string } | null)?.selectedRoomType };
-  const [portal, setPortal] = useState<'user' | 'manager' | 'admin'>('user');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -55,14 +54,14 @@ export function LoginPage() {
     setSubmitting(true); setError('');
     try {
       const result = mode === 'login'
-        ? await login({ email, password, accessCode, ...(portal !== 'user' ? { portal } : {}), name: `${firstName} ${lastName}`.trim() })
+        ? await login({ email, password, accessCode, name: `${firstName} ${lastName}`.trim() })
         : await register({ firstName, lastName, email, password, accessCode });
       if (!result.ok) {
         const message = result.error === 'code' ? t('auth.invalidCode') : result.error === 'duplicate' ? 'Bu email bilan hisob mavjud.' : result.error === 'email' ? 'Maydonlarni to‘g‘ri to‘ldiring. Parol kamida 6 belgidan iborat bo‘lsin.' : t('auth.invalidCredentials');
         setError(result.message ?? message); return;
       }
       success(mode === 'register' ? 'Hisobingiz yaratildi.' : 'Tizimga muvaffaqiyatli kirdingiz.');
-      navigate(portal === 'user' ? destination : '/app', { replace: true, state: forwardedState });
+      navigate(result.role === 'admin' || result.role === 'manager' ? '/app' : destination, { replace: true, state: forwardedState });
     } finally { setSubmitting(false); }
   }
 
@@ -101,10 +100,10 @@ export function LoginPage() {
         <div className="auth-brand mb-6 lg:hidden"><Logo /></div>
         <div><p className="mb-2 text-[10px] font-bold uppercase tracking-[.24em] text-champagne">Origin Hotel · Mehmonlar portali</p><h2 className="font-display text-4xl">{mode === 'login' ? t('auth.welcome') : t('auth.register')}</h2><p className="mt-2 text-sm text-muted">{mode === 'login' ? 'Hisobingizga kiring va bronlaringizni boshqaring.' : 'Bir necha qadamda hisob yarating.'}</p></div>
         {notice && <p role="status" className="auth-notice mt-4 flex items-start gap-2 rounded-2xl border border-champagne/45 bg-champagne/10 px-4 py-3 text-[11px] leading-5 text-[var(--text)]"><ShieldCheck size={14} className="mt-0.5 shrink-0 text-champagne" />{notice}</p>}
-        <div className="auth-mode-switch mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] bg-[var(--surface)] p-1"><button type="button" aria-pressed={mode === 'login'} onClick={() => { setMode('login'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'login' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.signIn')}</button><button type="button" aria-pressed={mode === 'register'} onClick={() => { setMode('register'); setPortal('user'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'register' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.register')}</button></div>
-        {portal === 'user' ? <GoogleSignInButton onProfile={handleGoogleProfile} onError={setError} /> : <p className="mt-4 text-xs leading-6 text-muted">{portal === 'manager' ? 'Manager hisobini administrator yaratadi. Email va parolingiz bilan kiring.' : 'Admin hisobingizning emaili va paroli bilan kiring.'}</p>}
+        <div className="auth-mode-switch mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] bg-[var(--surface)] p-1"><button type="button" aria-pressed={mode === 'login'} onClick={() => { setMode('login'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'login' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.signIn')}</button><button type="button" aria-pressed={mode === 'register'} onClick={() => { setMode('register'); setError(''); }} className={`rounded-full px-4 py-2.5 text-xs font-bold transition ${mode === 'register' ? 'bg-ink text-white' : 'text-muted hover:text-champagne'}`}>{t('auth.register')}</button></div>
+        <GoogleSignInButton onProfile={handleGoogleProfile} onError={setError} />
         <div className="my-3 flex items-center gap-3"><span className="h-px flex-1 bg-[var(--line)]" /><span className="text-[9px] uppercase tracking-[.12em] text-muted">yoki email orqali</span><span className="h-px flex-1 bg-[var(--line)]" /></div>
-        {mode === 'login' && <div className="mb-4 grid grid-cols-3 gap-1 rounded-2xl border border-[var(--line)] bg-[var(--page)] p-1" role="group" aria-label="Kirish turi">{([['user','Mehmon'],['manager','Manager'],['admin','Admin']] as const).map(([value,label])=><button key={value} type="button" aria-pressed={portal===value} onClick={()=>{setPortal(value);setError('');}} className={`min-h-11 rounded-xl text-xs font-semibold ${portal===value?'bg-ink text-white':'text-muted'}`}>{label}</button>)}</div>}
+
         <form onSubmit={onSubmit} key={mode} className="animate-rise-in space-y-3">
           {mode === 'register' && <div className="grid grid-cols-2 gap-3"><Field label={t('auth.firstName')} value={firstName} onChange={setFirstName} required /><Field label={t('auth.lastName')} value={lastName} onChange={setLastName} required /></div>}
           <Field label={t('auth.email')} type="email" value={email} onChange={(value) => { setEmail(value); setError(''); }} autoComplete="email" required placeholder="ism@example.com" />

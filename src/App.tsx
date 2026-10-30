@@ -1,3 +1,4 @@
+import { FormValidationFeedback } from './components/FormValidationFeedback';
 import { ServerSyncStatus } from './components/ServerSyncStatus';
 import { UserPreferenceSync } from './components/UserPreferenceSync';
 import { SiteAppearance } from './components/SiteAppearance';
@@ -47,7 +48,7 @@ export function App() {
   const { data } = useAppData();
   const { pathname } = useLocation();
   if (user && data.users.find((item) => item.id === user.id)?.profileRequired && pathname !== '/complete-profile') return <Navigate to="/complete-profile" replace />;
-  return <><ServerSyncStatus /><UserPreferenceSync /><SiteAppearance /><Suspense fallback={<RouteFallback />}><Routes>
+  return <><FormValidationFeedback /><ServerSyncStatus /><UserPreferenceSync /><SiteAppearance /><Suspense fallback={<RouteFallback />}><Routes>
     <Route path="/" element={<LandingPage />} />
     <Route path="/rooms" element={<PublicRoomsPage />} />
     <Route path="/contact" element={<ContactPage />} />

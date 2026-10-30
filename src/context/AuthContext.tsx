@@ -1,5 +1,6 @@
 import { hotelRequest, serverInitial, usesHotelServer } from '../services/hotelServer';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useToast } from './ToastContext';
 import { recordAudit } from '../services/hotelUtils';
 import { makeId } from '../services/storage';
 import type { GoogleProfile } from '../services/googleAuth';
@@ -8,7 +9,7 @@ import { useAppData } from './AppDataContext';
 
 type SessionUser = Pick<User, 'id' | 'name' | 'email' | 'role'>;
 type ProfileUpdate = Partial<Pick<User, 'name' | 'email' | 'phone' | 'nationality' | 'avatarUrl' | 'password' | 'twoFactorEnabled'>>;
-type AuthResult = { ok: boolean; error?: 'credentials' | 'code' | 'duplicate' | 'email'; message?: string };
+type AuthResult = { ok: boolean; role?: UserRole; error?: 'credentials' | 'code' | 'duplicate' | 'email'; message?: string };
 type AuthContextValue = {
   user: SessionUser | null;
   login: (input: { email: string; password: string; accessCode?: string; name?: string; portal?: 'user' | 'manager' | 'admin' }) => Promise<AuthResult>;
@@ -36,6 +37,7 @@ function persistSession(user: SessionUser) {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data, updateData, replaceServerData } = useAppData();
+  const { error: showError } = useToast();
   const [user, setUser] = useState<SessionUser | null>(() => usesHotelServer() ? serverInitial()?.user ?? null : readSession());
   useEffect(() => {
     if (usesHotelServer()) return;
@@ -51,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback<AuthContextValue['login']>(async ({ email, password, accessCode, name, portal }) => {
     if (usesHotelServer()) {
-      try { const reply = await hotelRequest('auth/login', 'POST', { email, password, portal }); replaceServerData(reply); setUser(reply.user); return { ok: true }; }
+      try { const reply = await hotelRequest('auth/login', 'POST', { email, password, portal }); replaceServerData(reply); setUser(reply.user); return { ok: true, role: reply.user?.role }; }
       catch (cause) { return { ok: false, error: 'credentials', message: cause instanceof Error ? cause.message : 'Server kirishi bajarilmadi.' }; }
     }
     const normalizedEmail = email.trim().toLowerCase();
@@ -66,14 +68,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (portal && account.role !== portal) return { ok: false, error: 'credentials' };
       if (!account.isActive || account.password !== password) return { ok: false, error: 'credentials' };
       if ((account.role === 'admin' || account.role === 'manager') && account.accessCode !== accessCode) return { ok: false, error: 'code' };
-      establishSession(account, true); return { ok: true };
+      establishSession(account, true); return { ok: true, role: account.role };
     }
     return { ok: false, error: 'credentials' };
   }, [data.users, establishSession, updateData, replaceServerData]);
 
   const register = useCallback<AuthContextValue['register']>(async ({ firstName, lastName, email, password, accessCode }) => {
     if (usesHotelServer()) {
-      try { const reply = await hotelRequest('auth/register', 'POST', { firstName,lastName,email,password }); replaceServerData(reply); setUser(reply.user); return { ok: true }; }
+      try { const reply = await hotelRequest('auth/register', 'POST', { firstName,lastName,email,password }); replaceServerData(reply); setUser(reply.user); return { ok: true, role: reply.user?.role }; }
       catch (cause) { return { ok: false, error: 'email', message: cause instanceof Error ? cause.message : 'Hisob yaratilmadi.' }; }
     }
     const normalizedEmail = email.trim().toLowerCase();
@@ -97,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const signInWithGoogle = useCallback<AuthContextValue['signInWithGoogle']>(async (profile) => {
     if (usesHotelServer()) {
-      try { const reply = await hotelRequest('auth/google', 'POST', { idToken: profile.idToken }); replaceServerData(reply); setUser(reply.user); return { ok: true }; }
+      try { const reply = await hotelRequest('auth/google', 'POST', { idToken: profile.idToken }); replaceServerData(reply); setUser(reply.user); return { ok: true, role: reply.user?.role }; }
       catch (cause) { return { ok: false, error: 'credentials', message: cause instanceof Error ? cause.message : 'Google server tasdig‘i bajarilmadi.' }; }
     }
     const email = profile.email.trim().toLowerCase();
@@ -144,11 +146,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, data.users, updateData, establishSession]);
 
   const logout = useCallback(() => {
-    if (usesHotelServer()) { void hotelRequest('auth/logout','POST').then((reply)=>{replaceServerData(reply);setUser(null);}).catch(()=>{window.alert('Serverdan chiqilmadi. Qayta urinib ko‘ring.');}); return; }
+    if (usesHotelServer()) { void hotelRequest('auth/logout','POST').then((reply)=>{replaceServerData(reply);setUser(null);}).catch(()=>{showError('Serverdan chiqilmadi. Qayta urinib ko‘ring.');}); return; }
     void import('../services/googleAuth').then(({ signOutFirebaseGoogle }) => signOutFirebaseGoogle()).catch(() => { /* Local logout still completes offline. */ });
     setUser(null);
     try { localStorage.removeItem(SESSION_KEY); } catch { /* Ignore unavailable storage. */ }
-  }, [replaceServerData]);
+  }, [replaceServerData, showError]);
 
   useEffect(() => {
     if (!user) return;

@@ -25,15 +25,15 @@ createRoot(root!).render(
   <React.StrictMode>
     <BrowserRouter>
       <AppDataProvider>
-        <AuthProvider>
-          <ThemeProvider>
-            <ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <AuthProvider>
               <CloudSyncProvider><ContactDialogProvider>
                 <App />
               </ContactDialogProvider></CloudSyncProvider>
-            </ToastProvider>
-          </ThemeProvider>
-        </AuthProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </ThemeProvider>
       </AppDataProvider>
     </BrowserRouter>
   </React.StrictMode>,

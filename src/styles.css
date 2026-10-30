@@ -542,3 +542,5 @@ button.bg-champagne:not(:hover), a.bg-champagne:not(:hover) { color: var(--accen
   .guest-availability-panel { order: 3; }
   .guest-preparation-panel { order: 4; }
 }
+
+[data-hotel-invalid="true"][aria-invalid="true"] { border-color: var(--danger, #dc3545); outline-color: var(--danger, #dc3545); }
