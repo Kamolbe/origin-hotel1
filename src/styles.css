@@ -592,3 +592,14 @@ label.hotel-validation-label > .hotel-field-feedback { flex-basis: 100%; }
   .contact-mobile-socials .contact-social-handle { margin-left: auto; min-width: 0; max-width: 58%; overflow-wrap: anywhere; text-align: right; font-weight: 400; }
   #contact li > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 }
+
+/* A single circular reveal for every theme switch; no layout shifts or overlay. */
+html[data-theme-transition="ripple"]::view-transition-group(root) { animation-duration: 680ms; }
+html[data-theme-transition="ripple"]::view-transition-old(root),
+html[data-theme-transition="ripple"]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-theme-transition="ripple"]::view-transition-old(root) { z-index: 1; }
+html[data-theme-transition="ripple"]::view-transition-new(root) { z-index: 2; }
+html[data-theme-transition="ripple"]::view-transition { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme-transition]::view-transition-group(root) { animation-duration: 0s; }
+}
