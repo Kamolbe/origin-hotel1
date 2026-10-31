@@ -496,7 +496,7 @@ def health(request):
     trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
     durable = settings.HOTEL_DURABLE_STORAGE
     ready = configured and trusted and durable
-    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access','map-preview','manager-device-sessions','visit-delete']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
+    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access','map-preview','manager-device-sessions','visit-delete','owner-account-history']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
 
 
 @endpoint
@@ -539,3 +539,19 @@ def manager_sessions(request):
     rows=ManagerDeviceSession.objects.filter(user__in=manager_accounts().filter(is_active=True),session__expire_date__gt=timezone.now()).select_related('session','user').order_by('-last_seen_at')
     items=[{'id':str(row.pk),'managerId':key_for(state,'users',row.user_id),'device':device_label(row.user_agent),'createdAt':iso(row.created_at),'lastSeenAt':iso(row.last_seen_at),'expiresAt':iso(row.session.expire_date),'legacy':not bool(row.user_agent)} for row in rows if valid_session(row.session,row.user)]
     return JsonResponse({'sessions':items,'revoked':removed},headers={'Cache-Control':'no-store, private'})
+
+
+@endpoint
+@transaction.atomic
+def account_history(request):
+    if request.method!='POST': return JsonResponse({},status=405)
+    if not request.user.is_authenticated or not request.user.is_superuser: raise PermissionDenied
+    values=body(request);ids=values.get('ids')
+    if not isinstance(ids,list) or len(ids)>1000 or any(not isinstance(item,str) or not item.isascii() or not item.isdigit() for item in ids):
+        raise ValidationError('O‘chiriladigan tarix yozuvlarini tanlang (ko‘pi bilan 1000 ta).')
+    state=lock_hotel_state()
+    count,_=AuditEntry.objects.filter(pk__in=ids).delete()
+    if count:
+        audit(request.user,'Hisoblar tarixi tozalandi',state,{'event':'account_history_deleted','deletedCount':count})
+        state.revision+=1;state.save()
+    return response(request,state)

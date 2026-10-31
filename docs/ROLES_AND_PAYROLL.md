@@ -119,3 +119,11 @@ Manager va admin Foydalanuvchilar → Sayt tashriflari ichida yakka yoki belgila
 Google hisobining profili yakunlanmagan bo‘lsa, App bosh sahifa, kabinet yoki ularning yuklanish maketini ko‘rsatmaydi: ism, familiya, telefon va tasdiq shakli darhol render qilinadi. Shu oynaning kodi asosiy bundle ichida.
 Profil tasdiqlangach odatiy sahifaga o‘tiladi; avval tasdiqlangan profillardan har kirishda qayta ma’lumot so‘ralmaydi. Telefon tasdig‘i o‘zini tasdiqlash bo‘lib, SMS OTP emas.
 Avval Render yangi kodga deploy (health feature: visit-delete), so‘ng Vercel redeploy qilinadi.
+
+
+## Admin: hisoblar va hisoblar tarixi
+
+Admin Foydalanuvchilar → Hisoblar ichida oddiy foydalanuvchi hisobini yakka yoki belgilab, tasdiqlash modali orqali o‘chira oladi. Managerlar alohida Managerlar bo‘limida boshqariladi; administrator hisoblari bu yerdan o‘chirilmaydi. Bronlar va mehmon yozuvlari saqlanadi.
+Hisoblar va faoliyat tarixi kartasida qidiruv, 10 tadan sahifalash va admin uchun yakka/guruhlab o‘chirish mavjud. Manager faqat ko‘radi. Tarixni tozalash asosiy yozuvlarni o‘chirmaydi; tozalash amali yangi audit qaydi sifatida saqlanadi.
+Tarix o‘chirish alohida admin-only POST /hotel-api/account-history/ orqali bajariladi. Oddiy mahalliy audit ro‘yxati qisqarishlari server tarixini tasodifan o‘chirmaydi. Saqlash navbatiga aralashmaslik uchun API javobidan keyin odatiy himoyalangan refresh ishlatiladi.
+Deploy: Render latest commit (owner-account-history feature), keyin Vercel redeploy. Yangi migratsiya talab qilinmaydi.

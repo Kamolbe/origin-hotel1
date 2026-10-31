@@ -1,10 +1,11 @@
+import { AccountHistory } from '../components/AccountHistory';
 import { DeleteConfirmation } from '../components/DeleteConfirmation';
 import { usesHotelServer } from '../services/hotelServer';
 import { SearchField } from '../components/SearchField';
 import { BulkDeletePanel } from '../components/BulkDeletePanel';
 import { ResponsiveTable } from '../components/ResponsiveTable';
 import { useMemo, useState, type FormEvent } from 'react';
-import { Activity, Download, Monitor, Plus, ShieldCheck, Smartphone, Tablet, Trash2, UserPlus, Users } from 'lucide-react';
+import { Activity, Monitor, Plus, ShieldCheck, Smartphone, Tablet, Trash2, UserPlus, Users } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -21,16 +22,16 @@ const demoCode: Partial<Record<UserRole, string>> = { admin: 'admin1234', manage
 
 /** Site traffic and account management for the administrator. */
 export function UsersPage() {
-  const { data, updateData } = useAppData();
+  const { data, updateData, serverStatus } = useAppData();
   const { user } = useAuth();
   const { success, error } = useToast();
   const [query, setQuery] = useState('');
-  const [historyPage, setHistoryPage] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'user' as UserRole });
   const [removeTarget, setRemoveTarget] = useState<User | null>(null);
   const [visitPage, setVisitPage] = useState(0);
   const [removeVisitId, setRemoveVisitId] = useState<string|null>(null);
+  const canDeleteAccounts = user?.role === 'manager' || user?.role === 'admin';
   const canDeleteVisits = user?.role === 'manager' || user?.role === 'admin';
   function removeVisits(ids: string[]) {
     if (!canDeleteVisits) return;
@@ -38,8 +39,6 @@ export function UsersPage() {
     setRemoveVisitId(null);
   }
 
-  const historyPages = Math.max(1, Math.ceil(data.auditLog.length / 10));
-  const currentHistoryPage = Math.min(historyPage, historyPages - 1);
   const users = data.users.filter((item) => (user?.role === 'admin' || item.role !== 'admin') && `${item.name} ${item.email}`.toLowerCase().includes(query.toLowerCase()));
 
   const visits = data.visits;
@@ -74,11 +73,9 @@ export function UsersPage() {
   }
 
   function removeUser() {
-    if (!removeTarget || user?.role !== 'manager') return;
-    if (removeTarget.role === 'manager') { error('Manager hisoblarini administrator boshqaradi.'); return; }
+    if (!removeTarget || !canDeleteAccounts || serverStatus==='saving') return;
+    if (removeTarget.role !== 'user') { error('Bu bo‘limdan faqat oddiy foydalanuvchi hisobini o‘chirish mumkin. Managerlar alohida bo‘limda boshqariladi.'); return; }
     if (removeTarget.id === user.id) { error('O‘z hisobingizni o‘chira olmaysiz.'); setRemoveTarget(null); return; }
-    const admins = data.users.filter((item) => item.role === 'admin');
-    if (removeTarget.role === 'admin' && admins.length <= 1) { error('Tizimda kamida bitta administrator qolishi kerak.'); setRemoveTarget(null); return; }
     updateData((current) => ({ ...current, users: current.users.filter((item) => item.id !== removeTarget.id), auditLog: recordAudit(current, 'Foydalanuvchi o‘chirildi', 'user', removeTarget.id, user.id).slice(0, 500) }));
     success(`${removeTarget.name} o‘chirildi.`);
     setRemoveTarget(null);
@@ -109,30 +106,26 @@ export function UsersPage() {
       {visitPages > 1 && <nav aria-label="Tashrif sahifalari" className="flex items-center justify-between gap-3 border-t border-[var(--line)] px-5 py-3"><button type="button" disabled={currentVisitPage === 0} onClick={() => setVisitPage(currentVisitPage - 1)} className="secondary-button disabled:opacity-40">Oldingi</button><span className="text-xs text-muted">{currentVisitPage + 1} / {visitPages}</span><button type="button" disabled={currentVisitPage + 1 >= visitPages} onClick={() => setVisitPage(currentVisitPage + 1)} className="secondary-button disabled:opacity-40">Keyingi</button></nav>}
     </section>
 
-    <section className="surface overflow-hidden rounded-3xl">
+    <section aria-label="Foydalanuvchi hisoblari" className="surface overflow-hidden rounded-3xl">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--line)] p-4">
-        <h2 className="flex items-center gap-2 font-display text-2xl"><Users size={18} className="text-champagne" />Hisoblar</h2>
+        <h2 className="flex items-center gap-3 font-display text-2xl"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-champagne/10 text-champagne"><Users size={19}/></span>Hisoblar<span className="rounded-full bg-[var(--page)] px-3 py-1 text-xs font-semibold">{users.length}</span></h2>
         <SearchField value={query} onChange={setQuery} label="Foydalanuvchilarni qidirish" placeholder="Ism yoki email bo‘yicha qidirish" className="w-full sm:max-w-xs" />
       </div>
-    {user?.role === 'manager' && <BulkDeletePanel subject="ta foydalanuvchi" items={users.filter((item) => item.id !== user.id && item.role !== 'admin' && item.role !== 'manager').map((item) => ({ id: item.id, label: `${item.name} · ${item.email}` }))} note="O‘z hisobingiz va administratorlar guruhlab o‘chirilmaydi. Joriy qidiruv natijalari belgilanadi." onDelete={(ids) => { if (user.role !== 'manager') return; updateData((current) => ({ ...current, users: current.users.filter((item) => !ids.includes(item.id) || item.id === user.id || item.role === 'admin'), auditLog: recordAudit(current, 'Belgilangan foydalanuvchilar o‘chirildi', 'user', ids.join(','), user.id).slice(0, 500) })); success('Belgilangan foydalanuvchilar o‘chirildi.'); }} />}
+    {canDeleteAccounts && <div className="px-4"><BulkDeletePanel subject="ta foydalanuvchi" items={users.filter((item)=>item.id!==user?.id && item.role==='user').map((item)=>({id:item.id,label:`${item.name} · ${item.email}`}))} note="Oddiy foydalanuvchi hisoblari tanlanadi. Administrator va managerlar saqlanadi; bronlar o‘chirilmaydi." onDelete={(ids)=>{if(!canDeleteAccounts)return;updateData((current)=>({...current,users:current.users.filter((item)=>!ids.includes(item.id)||item.role!=='user'||item.id===user?.id),auditLog:recordAudit(current,'Belgilangan foydalanuvchilar o‘chirildi','user',ids.join(','),user?.id)}));success('Tanlangan hisoblar o‘chirildi.');}}/></div>}
       <ResponsiveTable><table className="w-full min-w-[880px] text-left"><thead className="bg-[var(--page)] text-[10px] uppercase text-muted"><tr>{['Foydalanuvchi', 'Rol', 'Holat', 'Ro‘yxatdan o‘tgan', 'Oxirgi kirish', 'Amallar'].map((label) => <th key={label} className="px-4 py-3">{label}</th>)}</tr></thead><tbody>{users.map((item) => <tr key={item.id} className="border-t border-[var(--line)] text-xs">
         <td className="px-4 py-4 font-semibold">{item.name}<span className="block text-[10px] font-normal text-muted">{item.email}</span></td>
         <td className="px-4 py-4"><span className="inline-flex items-center gap-1.5"><ShieldCheck size={14} />{roleLabels[item.role]}</span></td>
-        <td className="px-4 py-4">{item.isActive ? 'Faol' : 'Bloklangan'}</td>
+        <td className="px-4 py-4"><span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[10px] font-semibold ${item.isActive?'bg-emerald-500/10 text-success':'bg-rose-500/10 text-danger'}`}><span className="h-1.5 w-1.5 rounded-full bg-current"/>{item.isActive?'Faol':'Bloklangan'}</span></td>
         <td className="px-4 py-4">{new Date(item.createdAt).toLocaleDateString('uz-UZ')}</td>
         <td className="px-4 py-4">{item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString('uz-UZ') : 'Hali qayd etilmagan'}</td>
         <td className="px-4 py-4"><div className="flex justify-end gap-1">
           {user?.role === 'manager' && <button disabled={item.id === user?.id || item.role === 'manager'} onClick={() => toggleActive(item.id)} className="secondary-button disabled:opacity-40">{item.isActive ? 'Bloklash' : 'Faollashtirish'}</button>}
-          {user?.role === 'manager' && <button disabled={item.id === user.id || item.role === 'manager'} onClick={() => setRemoveTarget(item)} title="O‘chirish" className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"><Trash2 size={15} /></button>}
+          {canDeleteAccounts && item.role==='user' && <button disabled={item.id === user?.id || serverStatus==='saving'} aria-label={`${item.name} hisobini o‘chirish`} onClick={() => setRemoveTarget(item)} title="O‘chirish" className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"><Trash2 size={15} /></button>}
         </div></td>
       </tr>)}</tbody></table>{!users.length && <p className="p-6 text-center text-sm text-muted">Hisob topilmadi.</p>}</ResponsiveTable>
     </section>
 
-    <section className="surface mt-6 rounded-3xl p-5">
-      <h2 className="flex items-center gap-2 font-display text-2xl"><Download size={18} className="text-champagne" />Faoliyat tarixi</h2>
-      <div className="mt-4 divide-y divide-[var(--line)]">{data.auditLog.slice(currentHistoryPage * 10, (currentHistoryPage + 1) * 10).map((entry) => <div key={entry.id} className="flex flex-wrap justify-between gap-2 py-3 text-xs"><div><p className="font-semibold">{entry.action}</p><p className="mt-1 text-muted">{data.users.find((item) => item.id === entry.userId)?.name ?? 'Tizim'} · {entry.entityType}</p></div><time className="text-muted">{new Date(entry.createdAt).toLocaleString('uz-UZ')}</time></div>)}{!data.auditLog.length && <p className="py-4 text-xs text-muted">Hali faoliyat qayd etilmagan.</p>}</div>
-      <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--line)] pt-4"><button type="button" className="secondary-button disabled:opacity-40" disabled={currentHistoryPage === 0} onClick={() => setHistoryPage(currentHistoryPage - 1)}>Oldingi</button><span className="text-xs text-muted">{currentHistoryPage + 1} / {historyPages}</span><button type="button" className="secondary-button disabled:opacity-40" disabled={currentHistoryPage + 1 >= historyPages} onClick={() => setHistoryPage(currentHistoryPage + 1)}>Keyingi</button></div>
-    </section>
+    <AccountHistory />
 
     <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Foydalanuvchi qo‘shish" description="Yangi hisob darhol tizimga kirishi mumkin.">
       <form onSubmit={addUser} className="grid gap-4">
@@ -147,8 +140,7 @@ export function UsersPage() {
       </form>
     </Modal>
 
-    <Modal open={!!removeTarget} onClose={() => setRemoveTarget(null)} title="Hisobni o‘chirish" description={`${removeTarget?.name ?? ''} hisobi va uning kirish huquqi o‘chiriladi.`}>
-      <div className="flex justify-end gap-2"><button onClick={() => setRemoveTarget(null)} className="secondary-button">Bekor qilish</button><button onClick={removeUser} className="inline-flex items-center gap-2 rounded-full bg-danger px-4 py-2.5 text-xs font-semibold text-white"><Trash2 size={14} />O‘chirish</button></div>
-    </Modal>
+    <DeleteConfirmation open={!!removeTarget} onClose={()=>setRemoveTarget(null)} onConfirm={removeUser} disabled={serverStatus==='saving'} title="Hisobni o‘chirish" description={`${removeTarget?.name ?? ''} · ${removeTarget?.email ?? ''} hisobi o‘chiriladi va tizimga kirish huquqi tugatiladi. Bronlar va faoliyat tarixi alohida saqlanadi.`}/>
+
   </div>;
 }
