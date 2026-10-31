@@ -72,6 +72,10 @@ export function LoginPage() {
       return;
     }
     setError('');
+    if (result.profileRequired) {
+      navigate('/complete-profile', { replace: true, state: { ...forwardedState, returnTo: destination } });
+      return;
+    }
     success('Tizimga muvaffaqiyatli kirdingiz.');
     navigate(destination, { replace: true, state: forwardedState });
   }, [signInWithGoogle, t, success, navigate, destination, forwardedState]);

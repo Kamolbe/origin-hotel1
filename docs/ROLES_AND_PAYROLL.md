@@ -111,3 +111,11 @@ Server bazasiga 0006_managerdevicesession migratsiyasi qo‘shildi. Avval Render
 Yangi talabga muvofiq yakka va guruhlab o‘chirish amali tasdiqlash modalidan keyin bajariladi. Barchasini belgilash va yozuvlarni tanlash sahifaning o‘zida qoladi.
 Bekor qilish, Esc va modalni yopish yozuvlarni o‘chirmaydi. Xonalar, mehmonlar, bronlar, moliya, foydalanuvchilar, managerlar, ishchilar, saqlangan hisobotlar va rasm olib tashlash amallari tasdiqlanadi.
 Serverdagi ruxsatlar va himoyalangan yozuvlarni o‘chirish cheklovlari saqlanadi.
+
+
+## Sayt tashriflarini o‘chirish va Google profilini yakunlash
+
+Manager va admin Foydalanuvchilar → Sayt tashriflari ichida yakka yoki belgilangan tashriflarni tasdiqlash modalidan keyin o‘chira oladi. Faqat tanlangan qaydlar o‘chiriladi; boshqa tashriflar, hisoblar va bronlar saqlanadi. Oddiy foydalanuvchiga bu amal serverda taqiqlangan. O‘chirish auditda qayd etiladi.
+Google hisobining profili yakunlanmagan bo‘lsa, App bosh sahifa, kabinet yoki ularning yuklanish maketini ko‘rsatmaydi: ism, familiya, telefon va tasdiq shakli darhol render qilinadi. Shu oynaning kodi asosiy bundle ichida.
+Profil tasdiqlangach odatiy sahifaga o‘tiladi; avval tasdiqlangan profillardan har kirishda qayta ma’lumot so‘ralmaydi. Telefon tasdig‘i o‘zini tasdiqlash bo‘lib, SMS OTP emas.
+Avval Render yangi kodga deploy (health feature: visit-delete), so‘ng Vercel redeploy qilinadi.

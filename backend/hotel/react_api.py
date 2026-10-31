@@ -216,6 +216,14 @@ def save_extra(state,kind,key,after,fields):
 def mutate(state,user,kind,key,after):
     admin=role(user)=='admin'
     manager=is_manager(user)
+    if kind=='visits':
+        if not (admin or manager) or after is not None: raise PermissionDenied
+        visits=state.payload.get('visits',[])
+        record=next((item for item in visits if item.get('id')==key),None)
+        if record:
+            state.payload['visits']=[item for item in visits if item.get('id')!=key]
+            audit(user,'site visit deleted',state,{'event':'visit_deleted','visitId':key,'path':record.get('path','')})
+        return
     if kind=='settings':
         if not can_edit_site(state,user) or not isinstance(after,dict): raise PermissionDenied
         contact=after.get('contact')
@@ -488,7 +496,7 @@ def health(request):
     trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
     durable = settings.HOTEL_DURABLE_STORAGE
     ready = configured and trusted and durable
-    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access','map-preview','manager-device-sessions']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
+    return JsonResponse({'service':'origin-hotel','apiVersion':1,'ready':ready,'trustedFrontend':trusted,'durableStorage':durable,'features':['manager-operations','staff-payroll','google-profile','owner-finance-control','manager-team-sync','site-editor-access','map-preview','manager-device-sessions','visit-delete']},status=200 if ready else 503,headers={'Cache-Control':'no-store, private'})
 
 
 @endpoint

@@ -1,3 +1,4 @@
+import { CompleteProfilePage } from './pages/CompleteProfilePage';
 import { FormValidationFeedback } from './components/FormValidationFeedback';
 import { ServerSyncStatus } from './components/ServerSyncStatus';
 import { UserPreferenceSync } from './components/UserPreferenceSync';
@@ -10,7 +11,6 @@ import { AppLayout } from './app/AppLayout';
 import { DashboardRouteSkeleton, MarketingRouteSkeleton } from './components/RouteSkeleton';
 import { useVisitLog } from './hooks/useVisitLog';
 import { UnauthorizedPage, NotFoundPage } from './pages/UtilityPages';
-import { Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useAppData } from './context/AppDataContext';
 import type { UserRole } from './types';
@@ -18,7 +18,7 @@ import type { UserRole } from './types';
 const ManagersPage = lazy(async () => ({ default: (await import('./pages/ManagersPage')).ManagersPage }));
 const StaffPage = lazy(async () => ({ default: (await import('./pages/StaffPage')).StaffPage }));
 const AdminOversightPage = lazy(async () => ({ default: (await import('./pages/AdminOversightPage')).AdminOversightPage }));
-const CompleteProfilePage = lazy(async () => ({ default: (await import('./pages/CompleteProfilePage')).CompleteProfilePage }));
+
 const PublicRoomsPage = lazy(async () => ({ default: (await import('./pages/PublicRoomsPage')).PublicRoomsPage }));
 const ContactPage = lazy(async () => ({ default: (await import('./pages/ContactPage')).ContactPage }));
 const MyStayPage = lazy(async () => ({ default: (await import('./pages/MyStayPage')).MyStayPage }));
@@ -47,8 +47,7 @@ export function App() {
   useVisitLog();
   const { user } = useAuth();
   const { data } = useAppData();
-  const { pathname } = useLocation();
-  if (user && data.users.find((item) => item.id === user.id)?.profileRequired && pathname !== '/complete-profile') return <Navigate to="/complete-profile" replace />;
+  if (user && data.users.find((item) => item.id === user.id)?.profileRequired) return <><FormValidationFeedback /><UserPreferenceSync /><SiteAppearance /><CompleteProfilePage /></>;
   return <><FormValidationFeedback /><ServerSyncStatus /><UserPreferenceSync /><SiteAppearance /><Suspense fallback={<RouteFallback />}><Routes>
     <Route path="/" element={<LandingPage />} />
     <Route path="/rooms" element={<PublicRoomsPage />} />

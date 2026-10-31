@@ -9,7 +9,7 @@ import { useAppData } from './AppDataContext';
 
 type SessionUser = Pick<User, 'id' | 'name' | 'email' | 'role'>;
 type ProfileUpdate = Partial<Pick<User, 'name' | 'email' | 'phone' | 'nationality' | 'avatarUrl' | 'password' | 'twoFactorEnabled'>>;
-type AuthResult = { ok: boolean; role?: UserRole; error?: 'credentials' | 'code' | 'duplicate' | 'email'; message?: string };
+type AuthResult = { ok: boolean; role?: UserRole; profileRequired?: boolean; error?: 'credentials' | 'code' | 'duplicate' | 'email'; message?: string };
 type AuthContextValue = {
   user: SessionUser | null;
   login: (input: { email: string; password: string; accessCode?: string; name?: string; portal?: 'user' | 'manager' | 'admin' }) => Promise<AuthResult>;
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const signInWithGoogle = useCallback<AuthContextValue['signInWithGoogle']>(async (profile) => {
     if (usesHotelServer()) {
-      try { const reply = await hotelRequest('auth/google', 'POST', { idToken: profile.idToken }); replaceServerData(reply); setUser(reply.user); return { ok: true, role: reply.user?.role }; }
+      try { const reply = await hotelRequest('auth/google', 'POST', { idToken: profile.idToken }); replaceServerData(reply); setUser(reply.user); return { ok: true, role: reply.user?.role, profileRequired: reply.user?.profileRequired }; }
       catch (cause) { return { ok: false, error: 'credentials', message: cause instanceof Error ? cause.message : 'Google server tasdig‘i bajarilmadi.' }; }
     }
     const email = profile.email.trim().toLowerCase();
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const linked: User = { ...account, name: account.name || profile.name, profileRequired: account.profileRequired ?? true, avatarUrl: account.avatarUrl ?? profile.picture };
       updateData((current) => ({ ...current, users: current.users.map((item) => item.id === account.id ? linked : item) }));
       establishSession(linked, true);
-      return { ok: true };
+      return { ok: true, profileRequired: Boolean(linked.profileRequired) };
     }
 
     const record: User = {
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     updateData((current) => ({ ...current, users: [...current.users, record] }));
     establishSession(record, true);
-    return { ok: true };
+    return { ok: true, profileRequired: true };
   }, [data.users, establishSession, updateData, replaceServerData]);
 
   const updateProfile = useCallback((updates: ProfileUpdate) => {

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Check, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAppData } from '../context/AppDataContext';
@@ -8,6 +8,7 @@ import { Logo } from '../components/Logo';
 
 export function CompleteProfilePage() {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const { data, replaceServerData, updateData } = useAppData();
   const account = data.users.find((item)=>item.id===user?.id);
   const parts = user?.name.split(' ') ?? [];
@@ -15,7 +16,9 @@ export function CompleteProfilePage() {
   const [error,setError] = useState('');
   const [busy,setBusy] = useState(false);
   if(!user) return <Navigate to="/login" replace />;
-  if(!account?.profileRequired) return <Navigate to={user.role==='user'?'/app/my-stay':'/app'} replace />;
+  const requested = (location.state as { returnTo?: string } | null)?.returnTo;
+  const destination = requested?.startsWith('/') && !requested.startsWith('//') && !['/login','/complete-profile'].includes(requested) ? requested : user.role==='user'?'/app/my-stay':'/app';
+  if(!account?.profileRequired) return <Navigate to={destination} replace state={location.state} />;
   async function submit(event:FormEvent) {
     event.preventDefault();if(busy)return;
     const phone=form.phone.replace(/[\s()-]/g,'');

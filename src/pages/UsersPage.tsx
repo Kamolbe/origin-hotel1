@@ -1,3 +1,4 @@
+import { DeleteConfirmation } from '../components/DeleteConfirmation';
 import { usesHotelServer } from '../services/hotelServer';
 import { SearchField } from '../components/SearchField';
 import { BulkDeletePanel } from '../components/BulkDeletePanel';
@@ -29,6 +30,13 @@ export function UsersPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'user' as UserRole });
   const [removeTarget, setRemoveTarget] = useState<User | null>(null);
   const [visitPage, setVisitPage] = useState(0);
+  const [removeVisitId, setRemoveVisitId] = useState<string|null>(null);
+  const canDeleteVisits = user?.role === 'manager' || user?.role === 'admin';
+  function removeVisits(ids: string[]) {
+    if (!canDeleteVisits) return;
+    updateData((current)=>({...current,visits:current.visits.filter((item)=>!ids.includes(item.id))}));
+    setRemoveVisitId(null);
+  }
 
   const historyPages = Math.max(1, Math.ceil(data.auditLog.length / 10));
   const currentHistoryPage = Math.min(historyPage, historyPages - 1);
@@ -83,17 +91,19 @@ export function UsersPage() {
       {[['Hisoblar', data.users.length], ['Faol hisoblar', data.users.filter((item) => item.isActive).length], ['Kirgan hisoblar', data.users.filter((item) => item.lastLoginAt).length], ['7 kunlik tashrif', weeklyVisits.length]].map(([label, value]) => <div key={label} className="surface rounded-2xl p-4"><p className="text-xs text-muted">{label}</p><p className="mt-2 text-2xl font-semibold">{value}</p></div>)}
     </div>
 
-    <section className="surface mb-6 overflow-hidden rounded-3xl">
+    <section aria-label="Sayt tashriflari" className="surface mb-6 overflow-hidden rounded-3xl">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--line)] px-5 py-4">
         <div><h2 className="flex items-center gap-2 font-display text-2xl"><Activity size={18} className="text-champagne" />Sayt tashriflari</h2><p className="mt-1 text-[10px] text-muted">Kim, qaysi sahifadan kirgani va qaysi qurilmada — oxirgi 300 tashrif.</p></div>
         <div className="flex gap-3 text-center"><span className="rounded-xl bg-[var(--page)] px-4 py-2"><span className="block text-[9px] uppercase tracking-widest text-muted">Noyob mehmon</span><b className="text-sm">{uniqueVisitors}</b></span><span className="rounded-xl bg-[var(--page)] px-4 py-2"><span className="block text-[9px] uppercase tracking-widest text-muted">Hisob bilan</span><b className="text-sm">{signedInVisits}</b></span></div>
       </div>
+      {canDeleteVisits && <div className="px-4"><BulkDeletePanel subject="ta tashrif" items={visits.map((item)=>({id:item.id,label:`${item.userName ?? 'Mehmon'} · ${item.path} · ${new Date(item.at).toLocaleString('uz-UZ')}`}))} note="Faqat tashrif qaydlari o‘chiriladi. Foydalanuvchi hisoblari va bronlar saqlanadi." onDelete={removeVisits} /></div>}
+      <DeleteConfirmation open={!!removeVisitId} onClose={()=>setRemoveVisitId(null)} onConfirm={()=>{if(removeVisitId)removeVisits([removeVisitId]);}} title="Sayt tashrifini o‘chirish" description="Tanlangan tashrif qaydi o‘chiriladi. Foydalanuvchi hisobi va bronlari saqlanadi." />
       {pageVisits.length === 0 ? <p className="p-6 text-center text-sm text-muted">Hali tashrif qayd etilmagan.</p> : <div className="divide-y divide-[var(--line)]">
         {pageVisits.map((visit) => { const Icon = deviceIcon[visit.device]; return <div key={visit.id} className="flex flex-wrap items-center gap-3 px-5 py-3.5 text-xs">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-champagne/12 text-champagne"><Icon size={16} /></span>
           <span className="min-w-[140px] flex-1"><b className="block">{visit.userName ?? 'Mehmon (hisobsiz)'}</b><span className="text-[10px] text-muted">{visit.userRole ? roleLabels[visit.userRole] : 'Tashrifchi'} · {visit.browser} · {visit.device}</span></span>
           <span className="rounded-full bg-[var(--page)] px-3 py-1.5 font-mono text-[10px] text-muted">{visit.path}</span>
-          <time className="text-[10px] text-muted">{new Date(visit.at).toLocaleString('uz-UZ')}</time>
+          <time className="text-[10px] text-muted">{new Date(visit.at).toLocaleString('uz-UZ')}</time>{canDeleteVisits && <button type="button" aria-label={`${visit.path} tashrifini o‘chirish`} className="rounded-lg p-2 text-danger hover:bg-rose-500/10" onClick={()=>setRemoveVisitId(visit.id)}><Trash2 size={15}/></button>}
         </div>; })}
       </div>}
       {visitPages > 1 && <nav aria-label="Tashrif sahifalari" className="flex items-center justify-between gap-3 border-t border-[var(--line)] px-5 py-3"><button type="button" disabled={currentVisitPage === 0} onClick={() => setVisitPage(currentVisitPage - 1)} className="secondary-button disabled:opacity-40">Oldingi</button><span className="text-xs text-muted">{currentVisitPage + 1} / {visitPages}</span><button type="button" disabled={currentVisitPage + 1 >= visitPages} onClick={() => setVisitPage(currentVisitPage + 1)} className="secondary-button disabled:opacity-40">Keyingi</button></nav>}
