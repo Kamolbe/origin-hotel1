@@ -484,7 +484,7 @@ def health(request):
         configured = get_user_model().objects.filter(is_superuser=True,is_active=True).exists()
     except DatabaseError:
         configured = False
-    frontend = settings.FRONTEND_URL or 'https://strix-user.vercel.app'
+    frontend = settings.FRONTEND_URL or 'https://origin-hotel.vercel.app'
     trusted = frontend in settings.CSRF_TRUSTED_ORIGINS
     durable = settings.HOTEL_DURABLE_STORAGE
     ready = configured and trusted and durable

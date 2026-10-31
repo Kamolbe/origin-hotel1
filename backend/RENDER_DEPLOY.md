@@ -65,3 +65,16 @@ Bu ijro muhitining tarmoq proksisi foydalanuvchi bergan ikkala public domenni 40
 ## Admin / manager va ish haqi yangilanishi
 
 Yangi rol taqsimoti, Render’da manager yaratish, migratsiyalar, oyliklar va Google profilining chegaralari: [ROLES_AND_PAYROLL.md](../docs/ROLES_AND_PAYROLL.md). Avval Render’ni deploy qiling, keyin Vercel yangi backend xususiyatlari tekshiruvidan o‘tsin.
+
+
+## Yangi frontend domeni: origin-hotel.vercel.app
+
+Render → origin-hotel1-1 → Environment ichida alohida mavjud qatorlarni yangilang:
+
+- `DJANGO_ALLOWED_HOSTS`: `origin-hotel1-1.onrender.com,origin-hotel.vercel.app,strix-user.vercel.app`
+- `DJANGO_CSRF_TRUSTED_ORIGINS`: `https://origin-hotel.vercel.app,https://strix-user.vercel.app,https://origin-hotel1-1.onrender.com`
+- `HOTEL_FRONTEND_URL`: `https://origin-hotel.vercel.app`
+
+Environment qiymatlari koddagi default qiymatlarni almashtiradi, shuning uchun eski qiymatlar panelda ham yangilanishi shart. `DJANGO_SECRET_KEY` va `DATABASE_URL`ni bu o‘zgarish uchun almashtirmang. Saqlang va deploy tugashini kuting.
+Firebase Authentication → Settings → Authorized domains ro‘yxatiga `origin-hotel.vercel.app` ham qo‘shiladi.
+Health `ready: true` oldingi domen bilan ham chiqishi mumkin; yangi domen orqali haqiqiy login so‘rovini tekshirish kerak.

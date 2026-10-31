@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.db import OperationalError
-from django.test import TestCase, SimpleTestCase
+from django.test import TestCase, SimpleTestCase, Client
 from config.database import database_config, durable_storage
 
 class DeploymentHealthTests(TestCase):
@@ -23,6 +23,14 @@ class DeploymentHealthTests(TestCase):
         with self.settings(FRONTEND_URL='https://strix-user.vercel.app'), patch('hotel.react_api.Path.exists',return_value=False):
             response=self.client.get('/app/rooms?q=test')
         self.assertRedirects(response,'https://strix-user.vercel.app/app/rooms?q=test',fetch_redirect_response=False)
+
+    def test_new_frontend_origin_accepts_login_csrf_and_unknown_origin_does_not(self):
+        client=Client(enforce_csrf_checks=True)
+        token=client.get('/hotel-api/session/').json()['csrfToken']
+        response=client.post('/hotel-api/auth/login/',data='{"email":"absent@example.test","password":"wrong"}',content_type='application/json',secure=True,HTTP_ORIGIN='https://origin-hotel.vercel.app',HTTP_X_CSRFTOKEN=token)
+        self.assertEqual(response.status_code,401)
+        blocked=client.post('/hotel-api/auth/login/',data='{}',content_type='application/json',secure=True,HTTP_ORIGIN='https://unknown.example.test',HTTP_X_CSRFTOKEN=token)
+        self.assertEqual(blocked.status_code,403)
 
 class DatabaseConfigurationTests(SimpleTestCase):
     def test_local_sqlite_retains_immediate_transactions(self):
